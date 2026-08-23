@@ -1,0 +1,33 @@
+---
+title: "AQDesk — Sequence — Applying to an Opportunity"
+---
+sequenceDiagram
+    autonumber
+    actor U as Member (browser)
+    participant R as routes/web.php
+    participant MW as Middleware<br/>auth + active
+    participant C as JobApplicationController
+    participant M as Eloquent<br/>JobPost / JobApplication
+    participant FS as Storage (public disk)
+    participant DB as MySQL
+
+    U->>R: GET /jobs/laravel-developer/apply
+    R->>MW: dispatch
+    MW->>MW: signed in? account active?
+    MW->>C: create(Request, JobPost $job)
+    C->>M: $job->isOpen() / hasApplicationFrom(user)
+    M->>DB: SELECT job_posts, job_applications
+    DB-->>M: rows
+    M-->>C: eligible
+    C-->>U: render jobs/apply.blade.php
+
+    U->>R: POST /jobs/laravel-developer/apply<br/>cover_letter + resume + CSRF token
+    R->>MW: verify CSRF, auth
+    MW->>C: store(Request, JobPost $job)
+    C->>C: validate(min:30, mimes:pdf/doc/docx, max:4MB)
+    C->>FS: store résumé → storage/app/public/resumes
+    FS-->>C: resume_path
+    C->>M: JobApplication::create(...)
+    M->>DB: INSERT INTO job_applications
+    DB-->>M: id
+    C-->>U: redirect /applications<br/>flash "Application submitted"

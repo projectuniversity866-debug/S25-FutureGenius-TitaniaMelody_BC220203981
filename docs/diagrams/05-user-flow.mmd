@@ -1,0 +1,45 @@
+---
+title: AQDesk — Primary User Flow (Prototype Demo Path)
+---
+flowchart TD
+    START([Visitor lands on Home]) --> BROWSE["Browse Q&A / Jobs<br/>(no account needed)"]
+    BROWSE --> REG["Register<br/>choose Member or Expert"]
+    REG --> LOGIN["Sign in"]
+    LOGIN --> DASH{"Role-based<br/>Dashboard"}
+
+    DASH -->|Member| MDASH["My questions · My answers<br/>My applications · Open jobs"]
+    DASH -->|Expert| EDASH["My answers · Jobs I posted<br/>Applicants"]
+    DASH -->|Admin| ADASH["Total users · Questions<br/>Answers · Open opportunities"]
+
+    MDASH --> ASK["Ask a question<br/>title · category · body · tags"]
+    ASK --> QDETAIL["Question detail page"]
+    EDASH --> ANSWER["Post an answer"]
+    ANSWER --> QDETAIL
+    QDETAIL --> VOTE["Upvote the answer"]
+    VOTE --> ACCEPT["Author accepts the answer"]
+
+    EDASH --> POST["Post a job / internship"]
+    POST --> JOBS["Jobs board"]
+    MDASH --> JOBS
+    JOBS --> JDETAIL["Opportunity detail"]
+    JDETAIL --> APPLY["Apply — cover letter + CV"]
+    APPLY --> MYAPPS["My applications<br/>status: pending"]
+    APPLY --> APPLICANTS["Employer reviews applicants"]
+    APPLICANTS --> STATUS["Set status → shortlisted"]
+    STATUS --> MYAPPS
+
+    ADASH --> ADMIN["Admin panel"]
+    ADMIN --> ROLECHANGE["Change a user's role"]
+    ADMIN --> MODERATE["Close or delete a question"]
+
+    MDASH --> PROFILE["Edit profile<br/>avatar · bio · skills"]
+    PROFILE --> PUBPROF["Public profile page"]
+
+    classDef entry fill:#0f172a,stroke:#0f172a,color:#fff
+    classDef qa fill:#d1ecf1,stroke:#0c5460,color:#0c5460
+    classDef job fill:#fff3cd,stroke:#856404,color:#856404
+    classDef adm fill:#f8d7da,stroke:#721c24,color:#721c24
+    class START,REG,LOGIN entry
+    class ASK,QDETAIL,ANSWER,VOTE,ACCEPT qa
+    class POST,JOBS,JDETAIL,APPLY,MYAPPS,APPLICANTS,STATUS job
+    class ADMIN,ROLECHANGE,MODERATE,ADASH adm

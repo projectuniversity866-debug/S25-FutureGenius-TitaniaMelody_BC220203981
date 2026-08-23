@@ -1,0 +1,76 @@
+---
+title: AQDesk — Use Case Diagram (Prototype Scope)
+---
+flowchart LR
+    G(("Guest"))
+    M(("Member"))
+    E(("Expert"))
+    A(("Administrator"))
+
+    subgraph UC1["Authentication & Profile"]
+        u1(["Register an account"])
+        u2(["Sign in / Sign out"])
+        u3(["View a public profile"])
+        u4(["Edit own profile"])
+        u5(["Change password"])
+    end
+
+    subgraph UC2["Community Q&A"]
+        u6(["Browse & search questions"])
+        u7(["Filter by category / tag"])
+        u8(["Ask a question"])
+        u9(["Post an answer"])
+        u10(["Upvote / downvote"])
+        u11(["Accept an answer"])
+        u12(["Edit / delete own post"])
+    end
+
+    subgraph UC3["Jobs & Opportunities"]
+        u13(["Browse opportunities"])
+        u14(["Apply with CV"])
+        u15(["Track my applications"])
+        u16(["Post job / internship"])
+        u17(["Review applicants"])
+        u18(["Update application status"])
+    end
+
+    subgraph UC4["Administration"]
+        u19(["Manage users"])
+        u20(["Assign roles"])
+        u21(["Activate / deactivate account"])
+        u22(["Moderate questions"])
+        u23(["Moderate opportunities"])
+    end
+
+    G --> u1
+    G --> u2
+    G --> u3
+    G --> u6
+    G --> u7
+    G --> u13
+
+    M --> u2
+    M --> u4
+    M --> u5
+    M --> u8
+    M --> u9
+    M --> u10
+    M --> u11
+    M --> u12
+    M --> u14
+    M --> u15
+
+    E --> u9
+    E --> u10
+    E --> u16
+    E --> u17
+    E --> u18
+
+    A --> u19
+    A --> u20
+    A --> u21
+    A --> u22
+    A --> u23
+
+    classDef actor fill:#0f172a,stroke:#0f172a,color:#fff
+    class G,M,E,A actor

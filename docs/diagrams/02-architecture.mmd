@@ -1,0 +1,34 @@
+---
+title: "AQDesk — System Architecture (Prototype Phase)"
+---
+flowchart TB
+    subgraph T1["PRESENTATION TIER — Web Browser"]
+        V["<b>Blade templates</b> — 32 views<br/>layouts · partials · auth · dashboard<br/>profile · questions · jobs · admin<br/><br/>Bootstrap 5 (CDN) · Bootstrap Icons · aqdesk.css<br/>Accessible markup — labels, skip link, ARIA, focus rings"]
+    end
+
+    subgraph T2["APPLICATION TIER — Laravel 12 on Apache + PHP 8.2 (WampServer)"]
+        R["<b>Routing</b> — routes/web.php<br/>grouped by the six prototype modules"]
+        MW["<b>Middleware</b><br/>guest · auth · CSRF · session<br/>EnsureUserHasRole (role:admin,expert)<br/>EnsureUserIsActive"]
+        C["<b>Controllers</b> — 11<br/>Register · Login · Dashboard · Profile<br/>Question · Answer · Vote<br/>JobPost · JobApplication<br/>Admin User · Admin Moderation"]
+        M["<b>Eloquent Models</b> — 10<br/>Role · User · Profile · Category · Tag<br/>Question · Answer · Vote<br/>JobPost · JobApplication"]
+    end
+
+    subgraph T3["DATA TIER"]
+        DB[("<b>MySQL 8</b><br/>11 application tables<br/>+ Laravel framework tables")]
+        FS["<b>File storage</b><br/>storage/app/public<br/>avatars · résumés"]
+    end
+
+    V   -->|"HTTP request"| R
+    R   -->|"dispatch"| MW
+    MW  -->|"authorised"| C
+    C   -->|"query / persist"| M
+    M   -->|"SQL over PDO"| DB
+    C   -->|"upload / read files"| FS
+    C   -.->|"rendered HTML response"| V
+
+    classDef tierA fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:1.5px
+    classDef tierB fill:#d1f0dd,stroke:#1a7f43,color:#0f5132,stroke-width:1.5px
+    classDef tierC fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:1.5px
+    class V tierA
+    class R,MW,C,M tierB
+    class DB,FS tierC

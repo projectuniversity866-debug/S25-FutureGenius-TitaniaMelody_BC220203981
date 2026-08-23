@@ -1,0 +1,13 @@
+# Laravel
+/src/vendor/
+/src/node_modules/
+/src/public/storage
+/src/public/hot
+/src/storage/*.key
+/src/storage/pail
+/src/.env
+/src/.env.backup
+/src/.phpunit.result.cache
+/src/auth.json
+.DS_Store
+Thumbs.db

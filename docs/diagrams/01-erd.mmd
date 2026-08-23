@@ -1,0 +1,115 @@
+---
+title: AQDesk — Entity Relationship Diagram (Prototype Phase)
+---
+erDiagram
+    ROLES ||--o{ USERS : "assigned to"
+    USERS ||--|| PROFILES : "has one"
+    USERS ||--o{ QUESTIONS : asks
+    USERS ||--o{ ANSWERS : writes
+    USERS ||--o{ VOTES : casts
+    USERS ||--o{ JOB_POSTS : publishes
+    USERS ||--o{ JOB_APPLICATIONS : submits
+    CATEGORIES ||--o{ QUESTIONS : classifies
+    QUESTIONS ||--o{ ANSWERS : receives
+    QUESTIONS ||--o{ QUESTION_TAG : has
+    TAGS ||--o{ QUESTION_TAG : labels
+    JOB_POSTS ||--o{ JOB_APPLICATIONS : receives
+
+    ROLES {
+        bigint id PK
+        varchar name
+        varchar slug UK "admin, expert, member"
+        varchar description
+        timestamp created_at
+    }
+    USERS {
+        bigint id PK
+        varchar name
+        varchar email UK
+        bigint role_id FK "roles.id"
+        varchar password
+        varchar remember_token
+        boolean is_active
+        timestamp created_at
+    }
+    PROFILES {
+        bigint id PK
+        bigint user_id FK "unique - one profile per user"
+        varchar avatar_path
+        varchar headline
+        text bio
+        varchar skills
+        varchar organization
+        varchar location
+        varchar website
+        varchar linkedin
+        varchar github
+    }
+    CATEGORIES {
+        bigint id PK
+        varchar name
+        varchar slug UK "edtech, ai, web-dev, governance"
+        varchar description
+        varchar icon
+    }
+    TAGS {
+        bigint id PK
+        varchar name
+        varchar slug UK
+    }
+    QUESTIONS {
+        bigint id PK
+        bigint user_id FK "author"
+        bigint category_id FK "categories.id"
+        varchar title
+        varchar slug UK
+        text body
+        int views_count
+        boolean is_closed
+        timestamp created_at
+    }
+    QUESTION_TAG {
+        bigint id PK
+        bigint question_id FK "pivot table"
+        bigint tag_id FK "pivot table"
+    }
+    ANSWERS {
+        bigint id PK
+        bigint question_id FK "questions.id"
+        bigint user_id FK "author"
+        text body
+        boolean is_accepted
+        timestamp created_at
+    }
+    VOTES {
+        bigint id PK
+        bigint user_id FK "voter"
+        varchar votable_type
+        bigint votable_id
+        tinyint value
+    }
+    JOB_POSTS {
+        bigint id PK
+        bigint user_id FK "employer"
+        varchar title
+        varchar slug UK
+        varchar company
+        enum type
+        enum work_mode
+        varchar location
+        text description
+        text requirements
+        decimal salary_min
+        decimal salary_max
+        date deadline
+        boolean is_active
+    }
+    JOB_APPLICATIONS {
+        bigint id PK
+        bigint job_post_id FK "job_posts.id"
+        bigint user_id FK "applicant"
+        text cover_letter
+        varchar resume_path
+        enum status
+        timestamp created_at
+    }

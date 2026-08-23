@@ -1,0 +1,26 @@
+---
+title: "AQDesk — Request Lifecycle Across the Three Tiers"
+---
+flowchart LR
+    subgraph T1["PRESENTATION"]
+        V["<b>Blade · Bootstrap 5</b><br/>32 templates<br/>accessible markup"]
+    end
+    subgraph T2["APPLICATION — Laravel 12 / PHP 8.2 / Apache"]
+        direction LR
+        R["<b>Routes</b><br/>grouped by<br/>module"] --> MW["<b>Middleware</b><br/>auth · CSRF<br/>role · active"] --> C["<b>Controllers</b><br/>11"] --> M["<b>Models</b><br/>Eloquent · 10"]
+    end
+    subgraph T3["DATA"]
+        DB[("<b>MySQL 8</b><br/>11 tables")]
+        FS["<b>Storage</b><br/>avatars<br/>résumés"]
+    end
+    V -->|HTTP| R
+    M -->|PDO| DB
+    C --> FS
+    C -.->|HTML| V
+
+    classDef a fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:1.5px
+    classDef b fill:#d1f0dd,stroke:#1a7f43,color:#0f5132,stroke-width:1.5px
+    classDef c fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:1.5px
+    class V a
+    class R,MW,C,M b
+    class DB,FS c
