@@ -79,3 +79,30 @@ Open http://localhost:8000
 **Reset everything and start fresh**
 
     php artisan migrate:fresh --seed
+
+## Optional: Google and GitHub sign-in
+
+The "Continue with Google / GitHub" buttons appear only when keys are set in `src/.env`.
+
+1. **Google** — https://console.cloud.google.com → APIs & Services → Credentials →
+   *Create OAuth client ID* (Web application). Authorised redirect URI:
+   `<APP_URL>/auth/google/callback`
+2. **GitHub** — https://github.com/settings/developers → *New OAuth App*.
+   Authorization callback URL: `<APP_URL>/auth/github/callback`
+3. Put the keys in `src/.env`, then run `php artisan config:clear`:
+
+       GOOGLE_CLIENT_ID=...
+       GOOGLE_CLIENT_SECRET=...
+       GITHUB_CLIENT_ID=...
+       GITHUB_CLIENT_SECRET=...
+
+`<APP_URL>` is the address you open AQDesk at, e.g.
+`http://localhost/Spring%202026_CS619_13346_43933_S26PROJECT27FCE/src/public`.
+
+## Scheduled tasks (server)
+
+AQDesk prunes old activity-log entries and failed jobs daily. On the server add one cron entry:
+
+    * * * * * cd /path/to/src && php artisan schedule:run >> /dev/null 2>&1
+
+Locally, `php artisan schedule:list` shows the tasks.

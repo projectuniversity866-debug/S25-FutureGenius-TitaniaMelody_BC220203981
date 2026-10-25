@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', 'AQDesk') — {{ config('app.name', 'AQDesk') }}</title>
@@ -27,6 +28,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{{ asset('css/aqdesk.css') }}" rel="stylesheet">
+
+    {{-- Vue components (resources/js). Built into public/build by `npm run build`;
+         the build is committed, so running the app needs no Node.js. --}}
+    @vite('resources/js/app.js')
 </head>
 <body>
 
@@ -41,6 +46,18 @@
 
             <main id="main-content" class="aq-content" tabindex="-1">
                 <div class="@yield('container', 'aq-container')">
+                    @auth
+                        @unless (auth()->user()->hasVerifiedEmail() || request()->routeIs('verification.notice'))
+                            <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2" role="status">
+                                <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+                                <span class="flex-grow-1">Confirm your email address to start posting. Check your inbox for the link.</span>
+                                <form method="POST" action="{{ route('verification.send') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-quiet">Resend link</button>
+                                </form>
+                            </div>
+                        @endunless
+                    @endauth
                     @include('partials.alerts')
                     @yield('content')
                 </div>
@@ -66,6 +83,8 @@
             });
         });
     </script>
+    @include('partials.toasts')
+    @include('partials.confirm-dialog')
     @stack('scripts')
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\AqDesk;
 
-use App\Models\User;
+use App\Modules\Identity\Models\User;
 
 /**
  * Suite A — Authentication (Module 1). Cases A1–A8.
@@ -69,7 +69,12 @@ class AuthenticationTest extends AqDeskTestCase
         $user = User::where('email', 'expert.signup@aqdesk.test')->firstOrFail();
 
         $this->assertTrue($user->canPostJobs());
-        $this->actingAs($user)->get(route('jobs.create'))->assertOk();
+
+        // Publishing waits for the email to be confirmed (step 1.2).
+        $this->actingAs($user)->get(route('jobs.create'))->assertRedirect(route('verification.notice'));
+
+        $user->markEmailAsVerified();
+        $this->actingAs($user->fresh())->get(route('jobs.create'))->assertOk();
     }
 
     /** A5 — a wrong password is refused. */

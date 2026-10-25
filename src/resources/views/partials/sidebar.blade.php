@@ -53,44 +53,56 @@
         @endauth
 
         @auth
-            @if ($user->isAdmin())
+            @canany(['users.manage', 'content.moderate', 'activity.view'])
                 <li class="aq-sidenav-group"><span class="aq-label">Administration</span></li>
-                <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
-                    <i class="bi bi-people" aria-hidden="true"></i> Users
-                </a></li>
-                <li><a class="{{ request()->routeIs('admin.questions.*') ? 'is-active' : '' }}" href="{{ route('admin.questions.index') }}">
-                    <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate questions
-                </a></li>
-                <li><a class="{{ request()->routeIs('admin.jobs.*') ? 'is-active' : '' }}" href="{{ route('admin.jobs.index') }}">
-                    <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate opportunities
-                </a></li>
-            @endif
+                @can('users.manage')
+                    <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
+                        <i class="bi bi-people" aria-hidden="true"></i> Users
+                    </a></li>
+                    <li><a class="{{ request()->routeIs('admin.roles.*') ? 'is-active' : '' }}" href="{{ route('admin.roles.index') }}">
+                        <i class="bi bi-key" aria-hidden="true"></i> Roles &amp; permissions
+                    </a></li>
+                @endcan
+                @can('content.moderate')
+                    <li><a class="{{ request()->routeIs('admin.questions.*') ? 'is-active' : '' }}" href="{{ route('admin.questions.index') }}">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate questions
+                    </a></li>
+                    <li><a class="{{ request()->routeIs('admin.jobs.*') ? 'is-active' : '' }}" href="{{ route('admin.jobs.index') }}">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate opportunities
+                    </a></li>
+                @endcan
+                @can('activity.view')
+                    <li><a class="{{ request()->routeIs('admin.activity.*') ? 'is-active' : '' }}" href="{{ route('admin.activity.index') }}">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i> Activity log
+                    </a></li>
+                @endcan
+            @endcanany
         @endauth
 
-        {{-- Modules deferred to the final project. Shown, but clearly marked,
-             so the full AQDesk scope stays visible to the reviewer. --}}
-        <li class="aq-sidenav-group"><span class="aq-label">Phase 2</span></li>
+        {{-- Modules still being built. Each link is removed from this group
+             as its module goes live. --}}
+        <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'projects') }}">
-            <i class="bi bi-kanban" aria-hidden="true"></i> Projects <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-kanban" aria-hidden="true"></i> Projects
         </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'events') }}">
-            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts
         </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'consulting') }}">
-            <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting
         </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'newsletter') }}">
-            <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
         </a></li>
     </ul>
 
     <div class="aq-sidefoot">
         @auth
             <div class="d-flex align-items-center gap-2">
-                @include('partials.avatar', ['user' => $user, 'size' => 34])
+                <x-avatar :user="$user" size="sm" />
                 <div class="min-w-0 flex-grow-1">
-                    <div class="text-truncate" style="font-size: .8125rem; font-weight: 600;">{{ $user->name }}</div>
-                    <div class="aq-label" style="font-size: .625rem;">{{ $user->roleName() }}</div>
+                    <div class="text-truncate aq-text-sm aq-strong">{{ $user->name }}</div>
+                    <div class="aq-label aq-sidefoot-role">{{ $user->roleName() }}</div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

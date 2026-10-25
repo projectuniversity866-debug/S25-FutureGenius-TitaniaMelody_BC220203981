@@ -1,11 +1,17 @@
 <footer class="aq-footer">
     <div class="aq-container d-flex flex-wrap justify-content-between align-items-center gap-2">
         <p class="mb-0">
-            <strong style="color: var(--aq-ink);">AQDesk</strong> — Answer Question community,
-            learning and knowledge platform.
+            <strong class="aq-ink">AQDesk</strong> · Community, learning and knowledge platform
+            · &copy; {{ now()->year }}
         </p>
-        <p class="mb-0 aq-label" style="font-size: .6875rem;">
-            Live modules: Auth · Roles · Dashboard · Profile · Q&amp;A · Jobs
-        </p>
+        <nav aria-label="Footer">
+            <ul class="aq-footer-links">
+                <li><a href="{{ route('questions.index') }}">Questions</a></li>
+                <li><a href="{{ route('jobs.index') }}">Jobs &amp; internships</a></li>
+                @guest
+                    <li><a href="{{ route('register') }}">Join AQDesk</a></li>
+                @endguest
+            </ul>
+        </nav>
     </div>
 </footer>

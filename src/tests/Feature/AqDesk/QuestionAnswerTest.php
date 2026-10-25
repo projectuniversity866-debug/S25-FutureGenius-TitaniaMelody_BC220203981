@@ -174,6 +174,7 @@ class QuestionAnswerTest extends AqDeskTestCase
         $this->answerQuestionAs($this->otherMember(), $answered);
 
         $this->askQuestionAs($this->member(), ['title' => 'This one is still waiting for help']);
+        $this->signOut(); // the author's notification bell would mention the answered question
 
         $this->get(route('questions.index', ['sort' => 'unanswered']))
             ->assertOk()
@@ -207,6 +208,13 @@ class QuestionAnswerTest extends AqDeskTestCase
             ->get(route('questions.show', $question))
             ->assertOk()
             ->assertSee('closed by a moderator');
+
+        // The server refuses the answer even if the form is submitted directly.
+        $this->actingAs($this->otherMember())
+            ->post(route('answers.store', $question), ['body' => 'An answer that arrives after closing.'])
+            ->assertForbidden();
+
+        $this->assertSame(0, $question->answers()->count());
     }
 
     /** E17 — an admin can re-open one question and delete another. */

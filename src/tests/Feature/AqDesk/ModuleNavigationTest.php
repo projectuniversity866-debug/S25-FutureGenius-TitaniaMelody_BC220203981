@@ -25,7 +25,7 @@ class ModuleNavigationTest extends AqDeskTestCase
     {
         $this->get(route('modules.coming-soon', $slug))
             ->assertOk()
-            ->assertSee('Planned for Phase 2')
+            ->assertSee('Coming soon')
             ->assertSee('Planned features');
     }
 

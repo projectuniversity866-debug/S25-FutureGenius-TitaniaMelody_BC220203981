@@ -97,7 +97,7 @@ checked against `routes/web.php` and the controllers in
 - Validation keys match each controller's `$request->validate()` array
   (`title`, `category_id`, `body`, `tags`, `cover_letter`, `resume`,
   `salary_max`, `deadline`, `current_password`, `avatar`, `role_slug`).
-- Role slugs are `admin`, `expert`, `member` (`App\Models\Role` constants).
+- Role slugs are `admin`, `expert`, `member` (`App\Modules\Identity\Models\Role` constants).
 - Application statuses are `pending, reviewed, shortlisted, rejected, accepted`
   — `pending` is the default on submit.
 - `EnsureUserIsActive` is appended to the `web` middleware group, which is why
