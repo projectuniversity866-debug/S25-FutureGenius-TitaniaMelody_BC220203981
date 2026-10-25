@@ -43,7 +43,7 @@
 </div>
 
 <div class="mb-4">
-    <label for="tags" class="form-label">Tags <span class="text-muted fw-normal">(optional)</span></label>
+    <label for="tags" class="form-label">Tags <span style="color: var(--aq-muted); font-weight: 400;">(optional)</span></label>
     <input type="text" id="tags" name="tags" class="form-control"
            value="{{ old('tags', isset($question) ? $question->tags->pluck('name')->implode(', ') : '') }}"
            placeholder="laravel, mysql, accessibility"

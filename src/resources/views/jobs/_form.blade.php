@@ -46,6 +46,8 @@
                value="{{ old('location', $job->location ?? '') }}" placeholder="Lahore, Pakistan">
     </div>
 
+    <div class="col-12"><hr class="aq-divider my-1"></div>
+
     <div class="col-12">
         <label for="description" class="form-label">Description</label>
         <textarea id="description" name="description" rows="7"
@@ -56,11 +58,13 @@
 
     <div class="col-12">
         <label for="requirements" class="form-label">
-            Requirements <span class="text-muted fw-normal">(optional)</span>
+            Requirements <span style="color: var(--aq-muted); font-weight: 400;">(optional)</span>
         </label>
         <textarea id="requirements" name="requirements" rows="5"
                   class="form-control">{{ old('requirements', $job->requirements ?? '') }}</textarea>
     </div>
+
+    <div class="col-12"><hr class="aq-divider my-1"></div>
 
     <div class="col-md-3">
         <label for="salary_min" class="form-label">Salary from (PKR)</label>
@@ -80,7 +84,7 @@
         <label for="deadline" class="form-label">Application deadline</label>
         <input type="date" id="deadline" name="deadline"
                class="form-control @error('deadline') is-invalid @enderror"
-               value="{{ old('deadline', $job->deadline?->format('Y-m-d') ?? '') }}">
+               value="{{ old('deadline', isset($job) ? $job->deadline?->format('Y-m-d') : '') }}">
         @error('deadline')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 

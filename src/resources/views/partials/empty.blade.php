@@ -1,7 +1,13 @@
-<div class="text-center text-muted py-5">
-    <i class="bi bi-{{ $icon ?? 'inbox' }} d-block mb-2" style="font-size: 2.5rem;" aria-hidden="true"></i>
-    <p class="mb-1 fw-semibold">{{ $title ?? 'Nothing here yet' }}</p>
+{{-- Empty state. Every list in the app falls back to this. --}}
+<div class="aq-empty">
+    <span class="aq-empty-icon" aria-hidden="true">
+        <i class="bi bi-{{ $icon ?? 'inbox' }}"></i>
+    </span>
+    <h3>{{ $title ?? 'Nothing here yet' }}</h3>
     @isset($message)
-        <p class="small mb-0">{{ $message }}</p>
+        <p>{{ $message }}</p>
+    @endisset
+    @isset($action)
+        <a href="{{ $action['url'] }}" class="btn btn-soft btn-sm mt-3">{{ $action['label'] }}</a>
     @endisset
 </div>

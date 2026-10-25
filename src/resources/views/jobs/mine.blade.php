@@ -1,19 +1,23 @@
 @extends('layouts.app')
 @section('title', 'Opportunities I posted')
+@section('subtitle', 'Jobs & opportunities')
 
 @section('content')
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h4 fw-bold mb-0">Opportunities I posted</h1>
-    <a href="{{ route('jobs.create') }}" class="btn btn-info fw-semibold">
-        <i class="bi bi-plus-lg" aria-hidden="true"></i> Post an opportunity
+<div class="aq-page-head">
+    <div>
+        <h1>Opportunities I posted</h1>
+        <p>Track applicants and keep listings current.</p>
+    </div>
+    <a href="{{ route('jobs.create') }}" class="btn btn-accent">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Post an opportunity
     </a>
 </div>
 
-<div class="card border-0 shadow-sm">
+<div class="card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle">
             <caption class="visually-hidden">Opportunities you have published</caption>
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th scope="col">Title</th>
                     <th scope="col">Type</th>
@@ -25,9 +29,9 @@
             <tbody>
                 @forelse ($jobs as $job)
                     <tr>
-                        <th scope="row" class="fw-semibold">
-                            <a href="{{ route('jobs.show', $job) }}" class="text-decoration-none">{{ $job->title }}</a>
-                            <span class="d-block small text-muted fw-normal">{{ $job->company }}</span>
+                        <th scope="row" class="fw-normal">
+                            <a href="{{ route('jobs.show', $job) }}" class="fw-semibold text-decoration-none d-block">{{ $job->title }}</a>
+                            <span style="font-size: .75rem; color: var(--aq-muted);">{{ $job->company }}</span>
                         </th>
                         <td><span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }}">{{ ucfirst($job->type) }}</span></td>
                         <td>
@@ -39,11 +43,11 @@
                                 <span class="badge text-bg-danger">Expired</span>
                             @endif
                         </td>
-                        <td>{{ $job->applications_count }}</td>
+                        <td class="aq-num">{{ $job->applications_count }}</td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-1">
-                                <a href="{{ route('jobs.applicants', $job) }}" class="btn btn-sm btn-outline-dark">Applicants</a>
-                                <a href="{{ route('jobs.edit', $job) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a href="{{ route('jobs.applicants', $job) }}" class="btn btn-sm btn-quiet">Applicants</a>
+                                <a href="{{ route('jobs.edit', $job) }}" class="btn btn-sm btn-quiet">Edit</a>
                             </div>
                         </td>
                     </tr>
@@ -53,6 +57,7 @@
                             @include('partials.empty', [
                                 'icon' => 'briefcase',
                                 'title' => 'You have not posted anything yet',
+                                'action' => ['url' => route('jobs.create'), 'label' => 'Post your first opportunity'],
                             ])
                         </td>
                     </tr>
