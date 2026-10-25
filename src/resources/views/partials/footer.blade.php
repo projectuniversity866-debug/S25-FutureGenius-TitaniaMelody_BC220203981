@@ -1,18 +1,11 @@
-<footer class="bg-dark text-secondary py-4 mt-auto">
-    <div class="container">
-        <div class="row gy-3 align-items-center">
-            <div class="col-md-6">
-                <p class="mb-1 text-white fw-semibold">
-                    <i class="bi bi-question-diamond-fill text-info" aria-hidden="true"></i> AQDesk
-                </p>
-                <p class="mb-0 small">
-                    Answer Question Community, Learning and Knowledge Platform.
-                </p>
-            </div>
-            <div class="col-md-6 text-md-end small">
-                <p class="mb-1">CS619 Final Year Project &mdash; Prototype Phase</p>
-                <p class="mb-0">Modules live: Authentication &middot; Roles &middot; Dashboard &middot; Profile &middot; Q&amp;A &middot; Jobs</p>
-            </div>
-        </div>
+<footer class="aq-footer">
+    <div class="aq-container d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <p class="mb-0">
+            <strong style="color: var(--aq-ink);">AQDesk</strong> — Answer Question community,
+            learning and knowledge platform.
+        </p>
+        <p class="mb-0 aq-label" style="font-size: .6875rem;">
+            Live modules: Auth · Roles · Dashboard · Profile · Q&amp;A · Jobs
+        </p>
     </div>
 </footer>

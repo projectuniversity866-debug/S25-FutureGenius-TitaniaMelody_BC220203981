@@ -1,36 +1,37 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
+@section('subtitle', 'Your activity across AQDesk')
 
 @section('content')
 
-{{-- Header: identity + role. The role badge is the visible proof that
-     the dashboard is role-aware (prototype module #2 and #3). --}}
-<div class="card border-0 shadow-sm mb-4">
+{{-- Identity + role. The role badge is the visible proof that the
+     dashboard is role-aware (prototype modules #2 and #3). --}}
+<div class="card mb-4">
     <div class="card-body d-flex flex-wrap align-items-center gap-3">
-        @include('partials.avatar', ['user' => $user, 'size' => 56])
+        @include('partials.avatar', ['user' => $user, 'size' => 52])
 
         <div class="flex-grow-1 min-w-0">
-            <h1 class="h5 fw-bold mb-1">Welcome back, {{ $user->name }}</h1>
-            <p class="mb-0 small text-muted">
+            <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 .25rem;">Welcome back, {{ $user->name }}</h1>
+            <p class="mb-0 d-flex flex-wrap align-items-center gap-2" style="font-size: .8125rem; color: var(--aq-muted);">
                 <span class="badge text-bg-dark">{{ $user->roleName() }}</span>
                 @if ($user->profile?->headline)
-                    <span class="ms-1">{{ $user->profile->headline }}</span>
+                    <span>{{ $user->profile->headline }}</span>
                 @endif
             </p>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('questions.create') }}" class="btn btn-info btn-sm fw-semibold">
-                <i class="bi bi-plus-lg" aria-hidden="true"></i> Ask a question
+            <a href="{{ route('questions.create') }}" class="btn btn-accent btn-sm">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Ask a question
             </a>
             @if ($user->canPostJobs())
-                <a href="{{ route('jobs.create') }}" class="btn btn-outline-dark btn-sm">
-                    <i class="bi bi-briefcase" aria-hidden="true"></i> Post an opportunity
+                <a href="{{ route('jobs.create') }}" class="btn btn-quiet btn-sm">
+                    <i class="bi bi-briefcase me-1" aria-hidden="true"></i> Post an opportunity
                 </a>
             @endif
             @if ($user->isAdmin())
-                <a href="{{ route('admin.users.index') }}" class="btn btn-outline-warning btn-sm">
-                    <i class="bi bi-shield-lock" aria-hidden="true"></i> Admin panel
+                <a href="{{ route('admin.users.index') }}" class="btn btn-quiet btn-sm">
+                    <i class="bi bi-shield-lock me-1" aria-hidden="true"></i> Admin panel
                 </a>
             @endif
         </div>
@@ -39,48 +40,42 @@
 
 {{-- Role-specific statistics --}}
 <div class="row g-3 mb-4">
-    @foreach ($stats as $stat)
+    @foreach ($stats as $i => $stat)
         <div class="col-6 col-lg-3">
-            <div class="card border-0 shadow-sm h-100 stat-card">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <span class="stat-icon bg-{{ $stat['color'] }}-subtle text-{{ $stat['color'] }}-emphasis">
-                        <i class="bi bi-{{ $stat['icon'] }}" aria-hidden="true"></i>
-                    </span>
-                    <div class="min-w-0">
-                        <div class="fs-4 fw-bold lh-1">{{ number_format($stat['value']) }}</div>
-                        <div class="small text-muted text-truncate">{{ $stat['label'] }}</div>
-                    </div>
-                </div>
+            <div class="aq-metric">
+                <span class="aq-metric-icon {{ ['', 'is-blue', 'is-green', 'is-amber'][$i % 4] }}" aria-hidden="true">
+                    <i class="bi bi-{{ $stat['icon'] }}"></i>
+                </span>
+                <div class="aq-metric-value">{{ number_format($stat['value']) }}</div>
+                <p class="aq-metric-label text-truncate">{{ $stat['label'] }}</p>
             </div>
         </div>
     @endforeach
 </div>
 
 <div class="row g-4">
-    {{-- Left column: community activity --}}
+    {{-- Community activity --}}
     <div class="col-lg-7">
-        <section class="card border-0 shadow-sm mb-4" aria-labelledby="recent-q-heading">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h2 id="recent-q-heading" class="h6 fw-bold mb-0">Recent community questions</h2>
-                <a href="{{ route('questions.index') }}" class="small">View all</a>
+        <section class="card mb-4" aria-labelledby="recent-q-heading">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 id="recent-q-heading" style="font-size: .9375rem; font-weight: 650; margin: 0;">Recent community questions</h2>
+                <a href="{{ route('questions.index') }}" style="font-size: .8125rem; text-decoration: none;">View all</a>
             </div>
             <ul class="list-group list-group-flush">
                 @forelse ($recentQuestions as $question)
                     <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
                             <div class="min-w-0">
                                 <a href="{{ route('questions.show', $question) }}"
-                                   class="fw-semibold text-decoration-none d-block text-truncate">
-                                    {{ $question->title }}
-                                </a>
-                                <span class="small text-muted">
+                                   class="fw-semibold text-decoration-none d-block text-truncate">{{ $question->title }}</a>
+                                <span style="font-size: .75rem; color: var(--aq-muted);">
                                     {{ $question->category?->name ?? 'Uncategorised' }}
-                                    &middot; by {{ $question->user->name }}
-                                    &middot; {{ $question->created_at->diffForHumans() }}
+                                    · {{ $question->user->name }}
+                                    · {{ $question->created_at->diffForHumans(null, true) }} ago
                                 </span>
                             </div>
-                            <span class="badge {{ $question->answers_count ? 'text-bg-success' : 'text-bg-light border' }} flex-shrink-0">
-                                {{ $question->answers_count }} answer(s)
+                            <span class="badge {{ $question->answers_count ? 'text-bg-success' : 'text-bg-light' }} flex-shrink-0">
+                                {{ $question->answers_count }} {{ \Illuminate\Support\Str::plural('answer', $question->answers_count) }}
                             </span>
                         </div>
                     </li>
@@ -92,16 +87,16 @@
             </ul>
         </section>
 
-        <section class="card border-0 shadow-sm" aria-labelledby="my-q-heading">
-            <div class="card-header bg-white">
-                <h2 id="my-q-heading" class="h6 fw-bold mb-0">My questions</h2>
+        <section class="card" aria-labelledby="my-q-heading">
+            <div class="card-header">
+                <h2 id="my-q-heading" style="font-size: .9375rem; font-weight: 650; margin: 0;">My questions</h2>
             </div>
             <ul class="list-group list-group-flush">
                 @forelse ($myQuestions as $question)
                     <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
                         <a href="{{ route('questions.show', $question) }}"
                            class="text-decoration-none text-truncate">{{ $question->title }}</a>
-                        <span class="badge text-bg-light border flex-shrink-0">{{ $question->answers_count }} answer(s)</span>
+                        <span class="badge text-bg-light flex-shrink-0">{{ $question->answers_count }} {{ \Illuminate\Support\Str::plural('answer', $question->answers_count) }}</span>
                     </li>
                 @empty
                     <li class="list-group-item">
@@ -109,6 +104,7 @@
                             'icon' => 'pencil',
                             'title' => 'You have not asked anything yet',
                             'message' => 'Your questions will appear here.',
+                            'action' => ['url' => route('questions.create'), 'label' => 'Ask your first question'],
                         ])
                     </li>
                 @endforelse
@@ -116,19 +112,19 @@
         </section>
     </div>
 
-    {{-- Right column: opportunities + applications --}}
+    {{-- Opportunities + applications --}}
     <div class="col-lg-5">
-        <section class="card border-0 shadow-sm mb-4" aria-labelledby="recent-jobs-heading">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h2 id="recent-jobs-heading" class="h6 fw-bold mb-0">Latest opportunities</h2>
-                <a href="{{ route('jobs.index') }}" class="small">View all</a>
+        <section class="card mb-4" aria-labelledby="recent-jobs-heading">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 id="recent-jobs-heading" style="font-size: .9375rem; font-weight: 650; margin: 0;">Latest opportunities</h2>
+                <a href="{{ route('jobs.index') }}" style="font-size: .8125rem; text-decoration: none;">View all</a>
             </div>
             <ul class="list-group list-group-flush">
                 @forelse ($recentJobs as $job)
                     <li class="list-group-item">
                         <a href="{{ route('jobs.show', $job) }}"
-                           class="fw-semibold text-decoration-none d-block">{{ $job->title }}</a>
-                        <span class="small text-muted">{{ $job->company }} &middot; {{ ucfirst($job->type) }}</span>
+                           class="fw-semibold text-decoration-none d-block text-truncate">{{ $job->title }}</a>
+                        <span style="font-size: .75rem; color: var(--aq-muted);">{{ $job->company }} · {{ ucfirst($job->type) }}</span>
                     </li>
                 @empty
                     <li class="list-group-item">
@@ -138,10 +134,10 @@
             </ul>
         </section>
 
-        <section class="card border-0 shadow-sm mb-4" aria-labelledby="my-apps-heading">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h2 id="my-apps-heading" class="h6 fw-bold mb-0">My applications</h2>
-                <a href="{{ route('applications.index') }}" class="small">View all</a>
+        <section class="card mb-4" aria-labelledby="my-apps-heading">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 id="my-apps-heading" style="font-size: .9375rem; font-weight: 650; margin: 0;">My applications</h2>
+                <a href="{{ route('applications.index') }}" style="font-size: .8125rem; text-decoration: none;">View all</a>
             </div>
             <ul class="list-group list-group-flush">
                 @forelse ($myApplications as $application)
@@ -156,27 +152,27 @@
                         @include('partials.empty', [
                             'icon' => 'send',
                             'title' => 'No applications yet',
-                            'message' => 'Apply from the Jobs board to track them here.',
+                            'message' => 'Apply from the jobs board to track them here.',
+                            'action' => ['url' => route('jobs.index'), 'label' => 'Browse opportunities'],
                         ])
                     </li>
                 @endforelse
             </ul>
         </section>
 
-        {{-- Deferred modules, visible from the dashboard too. --}}
-        <section class="card border-0 bg-body-secondary" aria-labelledby="phase2-heading">
+        <section class="card aq-card-quiet" aria-labelledby="phase2-heading">
             <div class="card-body">
-                <h2 id="phase2-heading" class="h6 fw-bold mb-2">
-                    <i class="bi bi-signpost-split" aria-hidden="true"></i> Planned for Phase 2
+                <h2 id="phase2-heading" style="font-size: .9375rem; font-weight: 650; margin: 0 0 .25rem;">
+                    <i class="bi bi-signpost-split me-1" style="color: var(--aq-accent);" aria-hidden="true"></i> Planned for Phase 2
                 </h2>
-                <p class="small text-muted">
-                    These AQDesk modules are designed but not implemented in the prototype.
+                <p style="font-size: .8125rem; color: var(--aq-muted);">
+                    These AQDesk modules are designed but intentionally not implemented in the prototype.
                 </p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ route('modules.coming-soon', 'projects') }}" class="badge text-bg-light border text-decoration-none">Projects</a>
-                    <a href="{{ route('modules.coming-soon', 'events') }}" class="badge text-bg-light border text-decoration-none">Events &amp; Podcasts</a>
-                    <a href="{{ route('modules.coming-soon', 'consulting') }}" class="badge text-bg-light border text-decoration-none">Consulting</a>
-                    <a href="{{ route('modules.coming-soon', 'newsletter') }}" class="badge text-bg-light border text-decoration-none">Newsletter</a>
+                    <a href="{{ route('modules.coming-soon', 'projects') }}" class="aq-tag">Projects</a>
+                    <a href="{{ route('modules.coming-soon', 'events') }}" class="aq-tag">Events &amp; podcasts</a>
+                    <a href="{{ route('modules.coming-soon', 'consulting') }}" class="aq-tag">Consulting</a>
+                    <a href="{{ route('modules.coming-soon', 'newsletter') }}" class="aq-tag">Newsletter</a>
                 </div>
             </div>
         </section>

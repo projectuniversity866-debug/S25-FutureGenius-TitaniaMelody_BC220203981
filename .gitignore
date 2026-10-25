@@ -11,3 +11,4 @@
 /src/auth.json
 .DS_Store
 Thumbs.db
+/src/.env.testing

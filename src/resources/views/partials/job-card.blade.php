@@ -1,37 +1,36 @@
 {{-- One card in the jobs / internships grid. --}}
-<div class="col-md-6 col-lg-4">
-    <article class="card h-100 border-0 shadow-sm">
-        <div class="card-body d-flex flex-column">
-            <div class="d-flex justify-content-between align-items-start mb-2">
+<div class="col-md-6 col-xl-4">
+    <a href="{{ route('jobs.show', $job) }}" class="card aq-card-link h-100">
+        <div class="card-body aq-job-card">
+            <div class="d-flex align-items-start gap-3 mb-3">
+                <span class="aq-job-logo" aria-hidden="true">{{ \Illuminate\Support\Str::substr($job->company, 0, 1) }}</span>
+                <div class="min-w-0 flex-grow-1">
+                    <h2 class="aq-card-title text-truncate">{{ $job->title }}</h2>
+                    <p class="mb-0" style="font-size: .8125rem; color: var(--aq-muted);">
+                        {{ $job->company }}@if ($job->location) · {{ $job->location }} @endif
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-2">
                 <span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }}">
                     {{ ucfirst($job->type) }}
                 </span>
-                <span class="badge text-bg-light border text-capitalize">{{ $job->work_mode }}</span>
+                <span class="badge text-bg-light text-capitalize">{{ $job->work_mode }}</span>
             </div>
 
-            <h2 class="h6 mb-1">
-                <a href="{{ route('jobs.show', $job) }}" class="text-decoration-none">{{ $job->title }}</a>
-            </h2>
-
-            <p class="text-muted small mb-2">
-                <i class="bi bi-building" aria-hidden="true"></i> {{ $job->company }}
-                @if ($job->location)
-                    &middot; <i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $job->location }}
-                @endif
+            <p class="flex-grow-1 mb-0" style="font-size: .8125rem; color: var(--aq-ink-2);">
+                {{ \Illuminate\Support\Str::words(strip_tags($job->description), 16) }}
             </p>
 
-            <p class="small text-body-secondary flex-grow-1">
-                {{ \Illuminate\Support\Str::words(strip_tags($job->description), 18) }}
-            </p>
-
-            <div class="d-flex justify-content-between align-items-center small text-muted border-top pt-2 mt-2">
-                <span><i class="bi bi-cash-coin" aria-hidden="true"></i> {{ $job->salaryRange() }}</span>
+            <div class="aq-job-meta">
+                <span><i class="bi bi-cash-coin me-1" aria-hidden="true"></i> {{ $job->salaryRange() }}</span>
                 @if ($job->deadline)
                     <span class="{{ $job->isExpired() ? 'text-danger' : '' }}">
-                        <i class="bi bi-clock" aria-hidden="true"></i> {{ $job->deadline->format('d M Y') }}
+                        <i class="bi bi-clock me-1" aria-hidden="true"></i> {{ $job->deadline->format('d M Y') }}
                     </span>
                 @endif
             </div>
         </div>
-    </article>
+    </a>
 </div>
