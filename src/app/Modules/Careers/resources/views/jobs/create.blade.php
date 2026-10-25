@@ -3,7 +3,7 @@
 @section('subtitle', 'Jobs & opportunities')
 
 @section('content')
-<x-page-header title="Post a job or internship" subtitle="Visible on the board as soon as you publish."
+<x-page-header title="Post an opportunity" subtitle="A job, internship, scholarship, fellowship, grant, hackathon or call for papers. Visible on the board as soon as you publish."
                :breadcrumbs="['Jobs & opportunities' => route('jobs.index'), 'Post an opportunity' => null]" />
 
 

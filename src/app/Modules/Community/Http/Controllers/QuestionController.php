@@ -7,6 +7,7 @@ use App\Modules\Community\Http\Requests\QuestionRequest;
 use App\Modules\Community\Models\Category;
 use App\Modules\Community\Models\Question;
 use App\Modules\Community\Models\Tag;
+use App\Modules\Community\Services\QuestionFeed;
 use App\Modules\Community\Services\QuestionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,29 +18,36 @@ use Illuminate\View\View;
  */
 class QuestionController extends Controller
 {
-    public function __construct(private QuestionService $questions) {}
+    public function __construct(private QuestionService $questions, private QuestionFeed $feed) {}
 
     /** Browsable, searchable, filterable list of questions. */
     public function index(Request $request): View
     {
-        $sort = $request->query('sort', 'latest');
+        $user = $request->user();
+        $sort = $this->feed->sortKey($request->query('sort'));
+        $filter = fn (string $key) => is_string($value = $request->query($key)) ? $value : null;
+        $following = $user && $request->query('following') === '1';
 
-        $questions = Question::query()
-            ->with(['user', 'category', 'tags', 'votes'])
-            ->withCount('answers')
-            ->search($request->query('q'))
-            ->inCategory($request->query('category'))
-            ->withTag($request->query('tag'))
-            ->when($sort === 'unanswered', fn ($query) => $query->doesntHave('answers'))
-            ->when($sort === 'popular', fn ($query) => $query->orderByDesc('views_count'))
-            ->when($sort !== 'popular', fn ($query) => $query->latest())
-            ->paginate(10)
-            ->withQueryString();
+        $query = $this->feed->listing($user)
+            ->search($filter('q'))
+            ->inCategory($filter('category'))
+            ->withTag($filter('tag'))
+            ->when($following, fn ($query) => $query->inTagsFollowedBy($user));
+
+        $questions = $this->feed->sort($query, $sort)->paginate(10)->withQueryString();
 
         $categories = Category::withCount('questions')->get();
         $popularTags = Tag::withCount('questions')->orderByDesc('questions_count')->take(15)->get();
+        $followedTags = $user ? $user->followedTags()->withCount('questions')->orderBy('name')->get() : collect();
 
-        return view('community::questions.index', compact('questions', 'categories', 'popularTags', 'sort'));
+        // Filtering by one tag shows that tag's header with a Follow button.
+        $currentTag = $filter('tag')
+            ? Tag::where('slug', $filter('tag'))->withCount(['questions', 'followers'])->first()
+            : null;
+
+        return view('community::questions.index', compact(
+            'questions', 'categories', 'popularTags', 'followedTags', 'currentTag', 'sort', 'following',
+        ));
     }
 
     public function create(): View
@@ -59,22 +67,29 @@ class QuestionController extends Controller
             ->with('status', 'Your question has been posted.');
     }
 
-    public function show(Question $question): View
+    public function show(Request $request, Question $question): View
     {
         $this->questions->recordView($question);
 
         $question->load([
-            'user.profile', 'category', 'tags',
-            'answers.user.profile', 'answers.votes',
-            'votes',
-        ]);
+            'user.profile', 'category',
+            'tags' => fn ($q) => $q->withCount('followers'),
+            'answers' => fn ($q) => $q->withCount('revisions'),
+            'answers.user.profile', 'answers.votes', 'answers.comments.user',
+            'votes', 'comments.user',
+        ])->loadCount(['revisions', 'bookmarks']);
 
         // Highest scoring answer first, accepted answer always on top.
         $answers = $question->answers
             ->sortByDesc(fn ($answer) => [$answer->is_accepted ? 1 : 0, $answer->score()])
             ->values();
 
-        return view('community::questions.show', compact('question', 'answers'));
+        $user = $request->user();
+        $saved = $question->isSavedBy($user);
+        $followedTagIds = $user ? $user->followedTags()->pluck('tags.id')->map('intval')->all() : [];
+        $related = $this->feed->related($question);
+
+        return view('community::questions.show', compact('question', 'answers', 'saved', 'followedTagIds', 'related'));
     }
 
     public function edit(Question $question): View
@@ -88,7 +103,7 @@ class QuestionController extends Controller
 
     public function update(QuestionRequest $request, Question $question): RedirectResponse
     {
-        $this->questions->update($question, $request->validated());
+        $this->questions->update($question, $request->validated(), $request->user());
 
         return redirect()->route('questions.show', $question)
             ->with('status', 'Question updated.');

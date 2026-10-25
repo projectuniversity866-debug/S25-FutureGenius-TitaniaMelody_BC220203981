@@ -1,4 +1,4 @@
-{{-- One card in the jobs / internships grid. --}}
+{{-- One card in the opportunities grid (board and organization profiles). --}}
 <div class="col-md-6 col-xl-4">
     <a href="{{ route('jobs.show', $job) }}" class="card aq-card-link h-100">
         <div class="card-body aq-job-card">
@@ -13,8 +13,8 @@
             </div>
 
             <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }}">
-                    {{ ucfirst($job->type) }}
+                <span class="badge {{ $job->typeBadge() }}">
+                    {{ $job->typeLabel() }}
                 </span>
                 <span class="badge text-bg-light text-capitalize">{{ $job->work_mode }}</span>
             </div>
@@ -24,7 +24,11 @@
             </p>
 
             <div class="aq-job-meta">
-                <span><i class="bi bi-cash-coin me-1" aria-hidden="true"></i> {{ $job->salaryRange() }}</span>
+                @if ($job->dateRange())
+                    <span><i class="bi bi-calendar-event me-1" aria-hidden="true"></i> {{ $job->dateRange() }}</span>
+                @elseif ($job->moneyLabel())
+                    <span><i class="bi bi-cash-coin me-1" aria-hidden="true"></i><span class="visually-hidden">{{ $job->moneyLabel() }}:</span> {{ $job->salaryRange() }}</span>
+                @endif
                 @if ($job->deadline)
                     <span class="{{ $job->isExpired() ? 'text-danger' : '' }}">
                         <i class="bi bi-clock me-1" aria-hidden="true"></i> {{ $job->deadline->format('d M Y') }}

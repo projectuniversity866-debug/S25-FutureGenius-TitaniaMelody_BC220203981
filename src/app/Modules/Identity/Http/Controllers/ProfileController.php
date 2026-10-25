@@ -5,7 +5,6 @@ namespace App\Modules\Identity\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Identity\Http\Requests\UpdatePasswordRequest;
 use App\Modules\Identity\Http\Requests\UpdateProfileRequest;
-use App\Modules\Identity\Models\User;
 use App\Modules\Identity\Services\ProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,19 +16,6 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     public function __construct(private ProfileService $profiles) {}
-
-    /** Public profile of any member. */
-    public function show(User $user): View
-    {
-        $this->authorize('viewProfile', $user);
-
-        $user->load(['role', 'profile']);
-        $user->loadCount(['questions', 'answers']);
-
-        $questions = $user->questions()->withCount('answers')->latest()->take(10)->get();
-
-        return view('identity::profile.show', compact('user', 'questions'));
-    }
 
     public function edit(Request $request): View
     {

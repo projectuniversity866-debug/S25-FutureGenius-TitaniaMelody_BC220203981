@@ -34,6 +34,17 @@ class Answer extends Model
         return $this->morphMany(Vote::class, 'votable');
     }
 
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable')->oldest();
+    }
+
+    /** Earlier versions, newest first. */
+    public function revisions(): MorphMany
+    {
+        return $this->morphMany(Revision::class, 'revisable')->latest('id');
+    }
+
     public function score(): int
     {
         // Use the eager-loaded relation when the caller has already loaded it,

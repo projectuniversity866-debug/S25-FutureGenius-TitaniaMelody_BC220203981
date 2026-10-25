@@ -4,6 +4,7 @@ namespace App\Modules\Careers\Database\Seeders;
 
 use App\Modules\Careers\Models\JobApplication;
 use App\Modules\Careers\Models\JobPost;
+use App\Modules\Careers\Models\Organization;
 use App\Modules\Identity\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -85,7 +86,107 @@ class JobSeeder extends Seeder
                 'deadline'     => 25,
                 'applicants'   => ['sara@aqdesk.test', 'member@aqdesk.test'],
             ],
+            // Professional opportunities beyond jobs (roadmap 1.13).
+            [
+                'poster'       => 'expert@aqdesk.test',
+                'title'        => 'Women in Computing Scholarship 2027',
+                'company'      => 'National University of Sciences',
+                'type'         => 'scholarship',
+                'work_mode'    => 'onsite',
+                'location'     => 'Lahore, Pakistan',
+                'description'  => "A merit scholarship covering tuition for one academic year, with a mentor from the Computer Science faculty.\n\nFive scholarships are awarded each year.",
+                'requirements' => "• Transcript of your last two semesters\n• A one-page statement on what you want to build",
+                'eligibility'  => 'Women enrolled in a BS Computer Science, Software Engineering or Data Science programme in Pakistan, with a CGPA of 3.0 or higher.',
+                'salary_min'   => 150000,
+                'salary_max'   => null,
+                'deadline'     => 40,
+                'applicants'   => ['sara@aqdesk.test'],
+            ],
+            [
+                'poster'       => 'expert@aqdesk.test',
+                'title'        => 'Research Fellowship — Accessible Learning Technology',
+                'company'      => 'National University of Sciences',
+                'type'         => 'fellowship',
+                'work_mode'    => 'hybrid',
+                'location'     => 'Lahore, Pakistan',
+                'description'  => "A twelve month fellowship in the Learning Technology Lab, studying how assistive technology users experience online courses.",
+                'requirements' => "• A research proposal of up to two pages\n• Two references",
+                'eligibility'  => 'Recent graduates (within two years) in Computer Science, HCI or Education.',
+                'salary_min'   => 90000,
+                'salary_max'   => null,
+                'deadline'     => 35,
+                'starts_on'    => 75,
+                'ends_on'      => 440,
+                'applicants'   => [],
+            ],
+            [
+                'poster'       => 'hr@aqdesk.test',
+                'title'        => 'Student Innovation Grant',
+                'company'      => 'Insight Analytics',
+                'type'         => 'grant',
+                'work_mode'    => 'remote',
+                'location'     => 'Pakistan',
+                'description'  => "Seed funding for student teams turning a data project into a working product for a local community or NGO.",
+                'requirements' => "• A short project plan and budget\n• A letter from your supervisor",
+                'eligibility'  => 'Teams of 2–4 students from any Pakistani university.',
+                'salary_min'   => 250000,
+                'salary_max'   => 500000,
+                'deadline'     => 28,
+                'applicants'   => ['member@aqdesk.test'],
+            ],
+            [
+                'poster'       => 'hr@aqdesk.test',
+                'title'        => 'Hack Weekend: AI for Public Services',
+                'company'      => 'CodeCraft Solutions',
+                'type'         => 'hackathon',
+                'work_mode'    => 'hybrid',
+                'location'     => 'Karachi, Pakistan',
+                'description'  => "48 hours to prototype AI tools that make public services easier to use. Mentors on site, meals provided, demo day on Sunday afternoon.",
+                'requirements' => null,
+                'eligibility'  => 'Students and graduates; teams of 2–4. Solo participants are matched with a team.',
+                'salary_min'   => 300000,
+                'salary_max'   => null,
+                'deadline'     => 20,
+                'starts_on'    => 30,
+                'ends_on'      => 32,
+                'applicants'   => ['faisal@aqdesk.test'],
+            ],
+            [
+                'poster'       => 'expert@aqdesk.test',
+                'title'        => 'Call for Papers — Workshop on AI in Education',
+                'company'      => 'National University of Sciences',
+                'type'         => 'call_for_papers',
+                'work_mode'    => 'onsite',
+                'location'     => 'Lahore, Pakistan',
+                'description'  => "Short papers (4–6 pages) on AI-supported teaching, assessment and accessibility in South Asian higher education. Accepted papers are presented at a one-day workshop.",
+                'requirements' => "• Anonymous submission in the workshop template\n• Original work not under review elsewhere",
+                'eligibility'  => 'Researchers and students; student-led papers are especially welcome.',
+                'salary_min'   => null,
+                'salary_max'   => null,
+                'deadline'     => 50,
+                'starts_on'    => 90,
+                'ends_on'      => 90,
+                'applicants'   => [],
+            ],
         ];
+
+        // Organization profiles for the companies above (roadmap 1.12).
+        $profiles = [
+            'CodeCraft Solutions' => ['hr@aqdesk.test', 'Web and mobile products for clients across Pakistan', 'Software', 'Karachi, Pakistan', '51-200',
+                "CodeCraft builds web and mobile products for retail, health and public-sector clients. We hire graduates every year and run an in-house mentoring programme."],
+            'National University of Sciences' => ['expert@aqdesk.test', 'Research and teaching in computing and engineering', 'Higher education', 'Lahore, Pakistan', '1000+',
+                "The School of Computing runs undergraduate and postgraduate programmes and four research labs, including the Learning Technology Lab."],
+            'Insight Analytics' => ['hr@aqdesk.test', 'Dashboards and data products for growing companies', 'Data & analytics', 'Islamabad, Pakistan', '11-50',
+                "A small analytics consultancy helping companies and NGOs make decisions with their own data."],
+        ];
+        $organizations = [];
+        foreach ($profiles as $name => [$owner, $tagline, $industry, $location, $size, $about]) {
+            $organizations[$name] = Organization::updateOrCreate(['slug' => Str::slug($name)], [
+                'user_id' => $users[$owner], 'name' => $name, 'tagline' => $tagline, 'about' => $about,
+                'website' => 'https://'.Str::slug($name).'.example.org', 'location' => $location,
+                'industry' => $industry, 'size' => $size,
+            ]);
+        }
 
         $coverLetters = [
             "I am in the final year of my Computer Science degree and have built several Laravel applications, including a community knowledge platform with role-based access, a Q&A module and a jobs board.\n\nI am comfortable with MySQL schema design and have used Git throughout my final year project. I would value the mentoring this role offers and can start immediately after my submission deadline.",
@@ -97,18 +198,22 @@ class JobSeeder extends Seeder
             $job = JobPost::updateOrCreate(
                 ['slug' => Str::slug($data['title'])],
                 [
-                    'user_id'      => $users[$data['poster']],
-                    'title'        => $data['title'],
-                    'company'      => $data['company'],
-                    'type'         => $data['type'],
-                    'work_mode'    => $data['work_mode'],
-                    'location'     => $data['location'],
-                    'description'  => $data['description'],
-                    'requirements' => $data['requirements'],
-                    'salary_min'   => $data['salary_min'],
-                    'salary_max'   => $data['salary_max'],
-                    'deadline'     => now()->addDays($data['deadline'])->toDateString(),
-                    'is_active'    => true,
+                    'user_id'         => $users[$data['poster']],
+                    'organization_id' => $organizations[$data['company']]->id,
+                    'title'           => $data['title'],
+                    'company'         => $data['company'],
+                    'type'            => $data['type'],
+                    'work_mode'       => $data['work_mode'],
+                    'location'        => $data['location'],
+                    'description'     => $data['description'],
+                    'requirements'    => $data['requirements'],
+                    'eligibility'     => $data['eligibility'] ?? null,
+                    'salary_min'      => $data['salary_min'],
+                    'salary_max'      => $data['salary_max'],
+                    'deadline'        => now()->addDays($data['deadline'])->toDateString(),
+                    'starts_on'       => isset($data['starts_on']) ? now()->addDays($data['starts_on'])->toDateString() : null,
+                    'ends_on'         => isset($data['ends_on']) ? now()->addDays($data['ends_on'])->toDateString() : null,
+                    'is_active'       => true,
                 ]
             );
 

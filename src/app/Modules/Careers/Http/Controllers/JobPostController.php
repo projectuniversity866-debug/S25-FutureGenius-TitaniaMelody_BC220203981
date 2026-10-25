@@ -24,34 +24,37 @@ class JobPostController extends Controller
             ->with('user')
             ->withCount('applications')
             ->active()
-            ->search($request->query('q'))
+            ->search(is_string($request->query('q')) ? $request->query('q') : null)
             ->ofType($request->query('type'))
             ->ofWorkMode($request->query('mode'))
             ->latest()
             ->paginate(9)
             ->withQueryString();
 
-        $counts = [
-            'all'         => JobPost::active()->count(),
-            'job'         => JobPost::active()->where('type', 'job')->count(),
-            'internship'  => JobPost::active()->where('type', 'internship')->count(),
-        ];
+        // One query for every type's count; types with none are 0.
+        $byType = JobPost::active()->selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type');
+        $counts = ['all' => (int) $byType->sum()];
+        foreach (array_keys(JobPost::TYPES) as $key) {
+            $counts[$key] = (int) ($byType[$key] ?? 0);
+        }
 
         return view('careers::jobs.index', compact('jobs', 'counts'));
     }
 
     public function show(Request $request, JobPost $job): View
     {
-        $job->load('user.profile')->loadCount('applications');
+        $job->load('user.profile', 'organization')->loadCount('applications');
 
         $hasApplied = $job->hasApplicationFrom($request->user());
 
         return view('careers::jobs.show', compact('job', 'hasApplied'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('careers::jobs.create');
+        $organizations = $request->user()->organizations()->orderBy('name')->get();
+
+        return view('careers::jobs.create', compact('organizations'));
     }
 
     public function store(JobPostRequest $request): RedirectResponse
@@ -66,7 +69,10 @@ class JobPostController extends Controller
     {
         $this->authorize('update', $job);
 
-        return view('careers::jobs.edit', compact('job'));
+        // The poster's organizations, also when a moderator edits the post.
+        $organizations = $job->user->organizations()->orderBy('name')->get();
+
+        return view('careers::jobs.edit', compact('job', 'organizations'));
     }
 
     public function update(JobPostRequest $request, JobPost $job): RedirectResponse
@@ -94,7 +100,11 @@ class JobPostController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('careers::jobs.mine', compact('jobs'));
+        $organizations = $request->user()->organizations()
+            ->withCount(['jobPosts as open_count' => fn ($q) => $q->open()])
+            ->orderBy('name')->get();
+
+        return view('careers::jobs.mine', compact('jobs', 'organizations'));
     }
 
     /** Applicant list for one opportunity, optionally narrowed to one status. */

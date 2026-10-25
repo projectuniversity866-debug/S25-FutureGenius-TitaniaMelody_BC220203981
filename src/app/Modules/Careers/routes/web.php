@@ -3,6 +3,7 @@
 use App\Modules\Careers\Http\Controllers\Admin\OpportunityModerationController;
 use App\Modules\Careers\Http\Controllers\JobApplicationController;
 use App\Modules\Careers\Http\Controllers\JobPostController;
+use App\Modules\Careers\Http\Controllers\OrganizationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 // Browsable without an account; applying needs one.
 Route::get('/jobs', [JobPostController::class, 'index'])->name('jobs.index');
+Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
 
 // Applying and publishing need a confirmed email address.
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -32,6 +34,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/jobs/{job}', [JobPostController::class, 'update'])->name('jobs.update');
         Route::delete('/jobs/{job}', [JobPostController::class, 'destroy'])->name('jobs.destroy');
         Route::get('/jobs/{job}/applicants', [JobPostController::class, 'applicants'])->name('jobs.applicants');
+
+        Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
+        Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
+        Route::get('/organizations/{organization}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
+        Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])->name('organizations.update');
+        Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])->name('organizations.destroy');
     });
 
     Route::middleware('can:content.moderate')->prefix('admin')->name('admin.')->group(function () {
@@ -43,3 +51,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Declared last so /jobs/create is matched before the {job} wildcard.
 Route::get('/jobs/{job}', [JobPostController::class, 'show'])->name('jobs.show');
+Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');

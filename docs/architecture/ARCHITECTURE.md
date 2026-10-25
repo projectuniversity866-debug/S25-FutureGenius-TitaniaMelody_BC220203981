@@ -123,7 +123,7 @@ flowchart LR
 | # | Module | Requirement | Responsibilities | Owns data |
 |---|---|---|---|---|
 | 1 | **Identity** | FR1 | Registration, email + social login, email verification, password reset, roles, permissions, profiles, account settings | users, roles, permissions, role_permission, profiles, social_accounts |
-| 2 | **Community** | FR2 | Questions, answers, comments, votes, tags, categories, accepted answers, reputation, badges, bookmarks, follows | questions, answers, comments, votes, tags, categories, reputation_events, badges, bookmarks |
+| 2 | **Community** | FR2 | Questions, answers, comments, edit history, votes, tags, categories, accepted answers, reputation, badges, bookmarks, tag follows, sorting and related questions | questions, answers, comments, revisions, votes, tags, question_tag, tag_follows, categories, reputation_events, user_badges, bookmarks |
 | 3 | **Knowledge** | Vision: expert knowledge sharing · EdTech | Expert verification, articles and guides, learning resources, learning paths | expert_verifications, articles, learning_resources, learning_paths |
 | 4 | **Careers** | FR5 · Vision: professional opportunities | Organizations, jobs, internships, scholarships, fellowships, grants, hackathons, calls for papers; applications with status history; saved items and alerts | organizations, opportunities, applications, application_status_history, saved_opportunities |
 | 5 | **Projects** | FR3 | Project spaces, member roles, invitations, versioned file sharing, feedback, task board | projects, project_members, project_invitations, project_files, project_feedback, project_tasks |
@@ -372,6 +372,16 @@ and works on cPanel. Moving to Redis later is a configuration change.
 
 In-app notifications (database channel, shown in a header bell) plus email.
 Users choose per category which channels they receive.
+
+The bell keeps itself current without a page reload: while the tab is visible
+and the user has been active in the last 15 minutes, it asks
+`GET /notifications/summary` every 30 seconds and swaps in the dropdown, which
+the server renders with the same Blade partial as the page. Polling was chosen
+over WebSockets because it needs no extra server process and works on shared
+cPanel hosting; at AQDesk's scale a request every 30 seconds per open tab is
+cheap. Laravel Reverb (WebSockets) is the upgrade path if push becomes
+necessary; the summary endpoint would then become the payload of a broadcast
+event.
 
 ---
 

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Community\Database\Seeders;
 
+use App\Modules\Community\Services\ReputationService;
 use App\Modules\Community\Models\Answer;
 use App\Modules\Community\Models\Category;
 use App\Modules\Community\Models\Question;
@@ -160,6 +161,9 @@ class QuestionSeeder extends Seeder
             // A couple of votes on the question itself.
             $this->addVotes($question, random_int(0, 3), $users);
         }
+
+        // The votes above were written directly, so build the ledger from them.
+        app(ReputationService::class)->rebuild();
     }
 
     /**

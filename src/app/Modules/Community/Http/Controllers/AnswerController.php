@@ -23,7 +23,7 @@ class AnswerController extends Controller
 
     public function update(AnswerRequest $request, Answer $answer): RedirectResponse
     {
-        $this->answers->update($answer, $request->validated('body'));
+        $this->answers->update($answer, $request->validated('body'), $request->user());
 
         return redirect()->route('questions.show', $answer->question)
             ->with('status', 'Answer updated.');

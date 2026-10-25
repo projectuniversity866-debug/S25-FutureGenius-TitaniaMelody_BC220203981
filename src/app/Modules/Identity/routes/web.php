@@ -71,6 +71,3 @@ Route::middleware('auth')->group(function () {
         Route::put('/roles/{role}', [RolePermissionController::class, 'update'])->name('roles.update');
     });
 });
-
-// Public profile
-Route::get('/users/{user}', [ProfileController::class, 'show'])->name('profile.show');

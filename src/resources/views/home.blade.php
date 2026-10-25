@@ -104,8 +104,8 @@
                                     {{ $job->company }}@if ($job->location) · {{ $job->location }}@endif
                                 </span>
                             </div>
-                            <span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }} flex-shrink-0">
-                                {{ ucfirst($job->type) }}
+                            <span class="badge {{ $job->typeBadge() }} flex-shrink-0">
+                                {{ $job->typeLabel() }}
                             </span>
                         </div>
                     </li>

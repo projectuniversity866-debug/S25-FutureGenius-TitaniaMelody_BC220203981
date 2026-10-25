@@ -37,7 +37,8 @@ class PlatformTest extends AqDeskTestCase
 
         $this->answerQuestionAs($author, $question);
 
-        $this->assertSame(0, $author->notifications()->count());
+        // (A "badge earned" notification is fine — it is not about the answer.)
+        $this->assertSame(0, $author->notifications()->where('type', NewAnswer::class)->count());
     }
 
     /** P3 — applying notifies the poster; a status change notifies the applicant, once. */
@@ -87,8 +88,11 @@ class PlatformTest extends AqDeskTestCase
             $this->answerQuestionAs($this->otherMember(), $this->askQuestionAs($author, ['title' => $title]));
         }
 
+        $unread = $author->unreadNotifications()->count();
+        $this->assertSame(2, $author->unreadNotifications()->where('type', NewAnswer::class)->count());
+
         $this->actingAs($author)->get(route('dashboard'))
-            ->assertSee('Notifications, 2 unread')
+            ->assertSee('Notifications, '.$unread.' unread')
             ->assertSee('New answer to your question');
 
         $this->actingAs($author)->post(route('notifications.read-all'))->assertRedirect();

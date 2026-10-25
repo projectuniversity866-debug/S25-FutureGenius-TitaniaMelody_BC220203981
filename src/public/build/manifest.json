@@ -1,8 +1,20 @@
 {
   "resources/js/app.js": {
-    "file": "assets/app-uGgYypfR.js",
+    "file": "assets/app-C3cNk0UW.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/highlight.js"
+    ]
+  },
+  "resources/js/highlight.js": {
+    "file": "assets/highlight-CS08VVLq.js",
+    "name": "highlight",
+    "src": "resources/js/highlight.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
   }
 }

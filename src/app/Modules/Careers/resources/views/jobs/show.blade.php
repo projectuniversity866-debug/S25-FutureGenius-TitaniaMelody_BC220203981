@@ -24,15 +24,21 @@
                     <div class="min-w-0">
                         <h1 class="aq-h1">{{ $job->title }}</h1>
                         <p class="mb-0 aq-text aq-muted">
-                            {{ $job->company }}@if ($job->location) · {{ $job->location }} @endif
+                            @if ($job->organization)
+                                <a href="{{ route('organizations.show', $job->organization) }}">{{ $job->company }}</a>
+                            @else
+                                {{ $job->company }}
+                            @endif
+                            @if ($job->location) · {{ $job->location }} @endif
                             · posted {{ $job->created_at->diffForHumans() }}
                         </p>
                     </div>
                 </div>
 
                 <div class="d-flex flex-wrap gap-2 mb-4">
-                    <span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }}">
-                        {{ ucfirst($job->type) }}
+                    <span class="badge {{ $job->typeBadge() }}">
+                        <i class="bi bi-{{ $job->typeIcon() }} me-1" aria-hidden="true"></i>
+                        {{ $job->typeLabel() }}
                     </span>
                     <span class="badge text-bg-light text-capitalize">{{ $job->work_mode }}</span>
                     @if (! $job->is_active)
@@ -49,6 +55,19 @@
                 @if ($job->requirements)
                     <h2 class="aq-label mb-2">Requirements</h2>
                     <div class="prose mb-4">{{ $job->requirements }}</div>
+                @endif
+
+                @if ($job->eligibility)
+                    <h2 class="aq-label mb-2">Who can apply</h2>
+                    <div class="prose mb-4">{{ $job->eligibility }}</div>
+                @endif
+
+                @if ($job->external_url)
+                    <p class="mb-4">
+                        <a href="{{ $job->external_url }}" target="_blank" rel="noopener noreferrer nofollow">
+                            <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>More information from the organizer<span class="visually-hidden"> (opens in a new tab)</span>
+                        </a>
+                    </p>
                 @endif
 
                 @if ($canManage)
@@ -80,9 +99,15 @@
             <div class="card-body">
                 <h2 class="aq-label mb-3">At a glance</h2>
                 <dl class="aq-dl mb-4">
-                    <dt>Salary</dt><dd>{{ $job->salaryRange() }}</dd>
+                    <dt>Type</dt><dd>{{ $job->typeLabel() }}</dd>
+                    @if ($job->moneyLabel())
+                        <dt>{{ $job->moneyLabel() }}</dt><dd>{{ $job->salaryRange() }}</dd>
+                    @endif
                     <dt>Work mode</dt><dd class="text-capitalize">{{ $job->work_mode }}</dd>
                     <dt>Deadline</dt><dd>{{ $job->deadline?->format('d M Y') ?? 'Open until filled' }}</dd>
+                    @if ($job->dateRange())
+                        <dt>Dates</dt><dd>{{ $job->dateRange() }}</dd>
+                    @endif
                     <dt>Applicants</dt><dd class="aq-num">{{ $job->applications_count }}</dd>
                 </dl>
 
@@ -107,6 +132,24 @@
                 @endauth
             </div>
         </aside>
+
+        @if ($job->organization)
+            <aside class="card mb-3">
+                <div class="card-body">
+                    <h2 class="aq-label mb-3">Organization</h2>
+                    <div class="d-flex align-items-center gap-3">
+                        <x-org-mark :name="$job->organization->name" />
+                        <div class="min-w-0">
+                            <a href="{{ route('organizations.show', $job->organization) }}"
+                               class="fw-semibold text-decoration-none d-block">{{ $job->organization->name }}</a>
+                            @if ($job->organization->tagline)
+                                <span class="aq-text-xs aq-muted">{{ $job->organization->tagline }}</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        @endif
 
         <aside class="card">
             <div class="card-body">

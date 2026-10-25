@@ -10,4 +10,4 @@
     $tone = $tones[crc32($name) % count($tones)];
 @endphp
 
-<span aria-hidden="true" {{ $attributes->class(['aq-org-mark', "is-$tone", 'aq-org-mark-lg' => $size === 'lg']) }}>{{ $initials }}</span>
+<span aria-hidden="true" {{ $attributes->class(['aq-org-mark', "is-$tone", 'aq-org-mark-lg' => $size === 'lg', 'aq-org-mark-xl' => $size === 'xl']) }}>{{ $initials }}</span>

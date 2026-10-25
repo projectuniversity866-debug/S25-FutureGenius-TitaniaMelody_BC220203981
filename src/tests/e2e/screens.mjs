@@ -15,8 +15,8 @@ const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const WIDTHS = { desktop: 1440, phone: 390 };
 
 const SCREENS = {
-    guest: ['/', '/questions', '/jobs', '/login', '/register'],
-    member: ['/dashboard', '/questions/{question}', '/questions/create', '/jobs/{job}', '/jobs/{job}/apply', '/applications', '/profile', '/users/{me}'],
+    guest: ['/', '/questions', '/questions?sort=trending', '/tags', '/jobs', '/login', '/register'],
+    member: ['/dashboard', '/questions/{question}', '/questions/create', '/questions?tag=laravel', '/saved', '/tags', '/jobs/{job}', '/jobs/{job}/apply', '/applications', '/profile', '/users/{me}'],
     expert: ['/dashboard', '/my-jobs', '/jobs/{job}/applicants'],
     admin: ['/dashboard', '/admin/users', '/admin/questions', '/admin/jobs', '/modules/projects'],
 };
@@ -31,14 +31,17 @@ await mkdir(out, { recursive: true });
 const browser = await puppeteer.launch({ executablePath: EDGE, headless: true, args: ['--no-first-run'] });
 const errors = [];
 
-async function newPage(width) {
+async function newPage(width, { expectStatus = null } = {}) {
     // A separate context per role, so sessions never leak between users.
     const context = await browser.createBrowserContext();
     const page = await context.newPage();
     await page.setViewport({ width, height: 900 });
     await page.evaluateOnNewDocument((t) => localStorage.setItem('aq-theme', t), theme);
     page.on('pageerror', (e) => errors.push(`${page.url()}: ${e.message}`));
-    page.on('console', (m) => m.type() === 'error' && errors.push(`${page.url()}: ${m.text()}`));
+    // A check that provokes a refusal on purpose (e.g. a 422) says so with expectStatus.
+    page.on('console', (m) => m.type() === 'error'
+        && !(expectStatus && m.text().includes(`status of ${expectStatus}`))
+        && errors.push(`${page.url()}: ${m.text()}`));
     return page;
 }
 
@@ -86,7 +89,7 @@ for (const [role, paths] of Object.entries(SCREENS)) {
         for (const raw of paths) {
             const path = await resolve(page, raw);
             const response = await page.goto(`${base}${path}`, { waitUntil: 'networkidle0' });
-            const name = `${role}-${raw.replace(/[{}]/g, '').replace(/\//g, '_').replace(/^_$/, '_home').replace(/^_/, '')}-${label}.png`;
+            const name = `${role}-${raw.replace(/[{}]/g, '').replace(/\//g, '_').replace(/[?=&]/g, '-').replace(/^_$/, '_home').replace(/^_/, '')}-${label}.png`;
             await page.screenshot({ path: `${out}/${name}`, fullPage: true });
             const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
             console.log(`${response.status()}  ${label.padEnd(7)} ${role.padEnd(6)} ${path}${overflow > 1 ? `  ⚠ horizontal overflow ${overflow}px` : ''}`);
@@ -281,6 +284,158 @@ const expect = (label, ok, detail = '') => {
         expect(`${role} dashboard renders its 4 tiles`, res.status() === 200 && tiles === 4, `${res.status()} / ${tiles}`);
         await p.browserContext().close();
     }
+}
+
+{
+    // 1.10 / 1.11 — voting, saving and following without a page reload; the
+    // plain forms without JavaScript; the bell updating itself.
+    const page = await newPage(1280);
+    await signIn(page, USERS.expert);
+    // Asked by the member (the dialog check above deleted the newest question).
+    await page.goto(`${base}/questions?q=role-based`, { waitUntil: 'networkidle0' });
+    const question = new URL(await page.$eval('.aq-qrow-title a', (a) => a.getAttribute('href')), base).href;
+    await page.goto(question, { waitUntil: 'networkidle0' });
+    await page.evaluate(() => { window.aqSamePage = true; });
+
+    const island = '[data-vue="VoteControl"]';
+    const vote = (p) => p.$eval(island, (el) => ({
+        score: Number(el.querySelector('.aq-vote-score').firstChild.textContent.trim()),
+        up: el.querySelector('button[aria-label^="Upvote"]').getAttribute('aria-pressed'),
+        down: el.querySelector('button[aria-label^="Downvote"]').getAttribute('aria-pressed'),
+        forms: el.querySelectorAll('form').length,
+    }));
+    const settle = (p) => p.waitForNetworkIdle({ idleTime: 150 });
+
+    // The seed data may already hold this user's upvote, so expect the toggle
+    // of whatever the page started with.
+    const s0 = await vote(page);
+    const upvoted = s0.up === 'true';
+    expect('vote island replaced the plain forms', s0.forms === 0, JSON.stringify(s0));
+
+    await page.click(`${island} button[aria-label^="Upvote"]`);
+    await settle(page);
+    const s1 = await vote(page);
+    const announced = await page.$eval('[data-aq-announcer]', (el) => el.textContent);
+    expect('upvote changes the score without a reload',
+        s1.score === s0.score + (upvoted ? -1 : 1) && s1.up === String(!upvoted) && await page.evaluate(() => window.aqSamePage === true),
+        `${JSON.stringify(s0)} → ${JSON.stringify(s1)}`);
+    expect('the vote is announced to screen readers', announced.startsWith(upvoted ? 'Vote removed.' : 'Upvoted.'), announced);
+
+    await page.click(`${island} button[aria-label^="Upvote"]`);
+    await settle(page);
+    const s2 = await vote(page);
+    expect('clicking again toggles it back', s2.score === s0.score && s2.up === s0.up, JSON.stringify(s2));
+    await page.reload({ waitUntil: 'networkidle0' });
+    const s3 = await vote(page);
+    expect('the server kept the final vote', s3.score === s0.score && s3.up === s0.up, JSON.stringify(s3));
+
+    // A member without the downvote privilege is told why; nothing changes.
+    const low = await newPage(1280, { expectStatus: 422 });
+    await signIn(low, 'hr@aqdesk.test');
+    await low.goto(question, { waitUntil: 'networkidle0' });
+    const lowStart = await vote(low);
+    await low.click(`${island} button[aria-label^="Downvote"]`);
+    await low.waitForSelector('.aq-toast.is-error');
+    const refused = await low.evaluate(() => document.querySelector('.aq-toast.is-error [data-aq-toast-message]').textContent);
+    const lowAfter = await vote(low);
+    expect('a refused downvote explains why', refused.includes('15 reputation'), refused);
+    expect('…and puts the score back', lowAfter.score === lowStart.score && lowAfter.down === 'false', JSON.stringify(lowAfter));
+    await new Promise((r) => setTimeout(r, 400)); // let the toast finish fading in
+    await low.screenshot({ path: `${out}/behaviour-refused-vote.png` });
+    await new Promise((r) => setTimeout(r, 8600));
+    expect('error toasts stay until dismissed', !!(await low.$('.aq-toast.is-error')));
+    await low.browserContext().close();
+
+    // Save for later.
+    await page.click('[data-vue="BookmarkButton"] button');
+    await settle(page);
+    const saved = await page.evaluate(() => ({
+        pressed: document.querySelector('[data-vue="BookmarkButton"] button').getAttribute('aria-pressed'),
+        icon: document.querySelector('[data-vue="BookmarkButton"] i').className,
+        toast: document.querySelector('.aq-toast.is-success [data-aq-toast-message]')?.textContent,
+    }));
+    expect('bookmark saves without a reload', saved.pressed === 'true' && saved.icon.includes('bookmark-fill'), JSON.stringify(saved));
+    expect('…and says where to find it', saved.toast?.includes('under Saved'), saved.toast);
+    await page.goto(`${base}/saved`, { waitUntil: 'networkidle0' });
+    const savedTitles = await page.$$eval('.aq-qrow-title a', (as) => as.map((a) => a.textContent.trim()));
+    expect('Saved page lists it', savedTitles.some((t) => t.includes('role-based access control')), savedTitles.join(' | '));
+
+    // Follow a tag from the question's sidebar.
+    await page.goto(question, { waitUntil: 'networkidle0' });
+    const follow = '.aq-follow-list [data-vue="FollowButton"]';
+    const readFollow = () => page.$eval(follow, (el) => ({
+        text: el.querySelector('button').textContent.trim(),
+        label: el.querySelector('button').getAttribute('aria-label'),
+        count: parseInt(el.querySelector('.aq-follow-count').textContent, 10),
+    }));
+    const f0 = await readFollow();
+    await page.click(`${follow} button`);
+    await settle(page);
+    const f1 = await readFollow();
+    expect('follow switches to "Following" in place',
+        f0.text === 'Follow' && f1.text === 'Following' && f1.label.includes(', select to unfollow'), `${JSON.stringify(f0)} → ${JSON.stringify(f1)}`);
+    expect('…and the follower count goes up', f1.count === f0.count + 1, `${f0.count} → ${f1.count}`);
+
+    // Without JavaScript the plain forms inside the islands still work.
+    const plain = await newPage(1280);
+    await plain.setJavaScriptEnabled(false);
+    await signIn(plain, USERS.admin);
+    await plain.goto(question, { waitUntil: 'networkidle0' });
+    const plainVote = () => plain.$eval(island, (el) => ({
+        score: Number(el.querySelector('.aq-vote-score').firstChild.textContent.trim()),
+        up: el.querySelector('button[aria-label^="Upvote"]').getAttribute('aria-pressed'),
+    }));
+    const p0 = await plainVote();
+    await Promise.all([plain.waitForNavigation({ waitUntil: 'networkidle0' }), plain.click(`${island} form button[aria-label^="Upvote"]`)]);
+    const p1 = await plainVote();
+    expect('without JavaScript the plain vote form still works',
+        p1.score === p0.score + (p0.up === 'true' ? -1 : 1) && p1.up !== p0.up, `${JSON.stringify(p0)} → ${JSON.stringify(p1)}`);
+    await plain.browserContext().close();
+
+    // Live bell: the member keeps the dashboard open while an answer arrives.
+    const member = await newPage(1280);
+    await signIn(member, USERS.member);
+    await member.goto(`${base}/dashboard`, { waitUntil: 'networkidle0' });
+    await member.evaluate(() => { window.aqSamePage = true; });
+    const badge = () => member.$eval('[data-aq-bell-count]', (b) => (b.hidden ? 0 : Number(b.textContent)));
+    const before = await badge();
+
+    await page.goto(question, { waitUntil: 'networkidle0' });
+    await page.type('#answer_body', 'Suggest similar titles while people type, and link duplicates instead of deleting them.');
+    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.click('form[action$="/answers"] button[type=submit]')]);
+
+    await new Promise((r) => setTimeout(r, 5200)); // the bell waits 5 s between checks
+    await member.bringToFront();
+    await member.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await member.waitForSelector('.aq-toast.is-info', { timeout: 5000 }).catch(() => null);
+    const bell = await member.evaluate(() => ({
+        same: window.aqSamePage === true,
+        label: document.querySelector('[data-aq-bell-button]').getAttribute('aria-label'),
+        toast: document.querySelector('.aq-toast.is-info [data-aq-toast-message]')?.textContent,
+        first: document.querySelector('[data-aq-bell-menu] .aq-bell-item strong')?.textContent.trim(),
+    }));
+    expect('the bell count goes up without a reload', bell.same && (await badge()) === before + 1, `${before} → ${await badge()}`);
+    expect('the bell label says how many are unread', bell.label === `Notifications, ${before + 1} unread`, bell.label);
+    expect('a new notification shows as a toast', bell.toast?.startsWith('New answer to your question'), bell.toast);
+    expect('the dropdown lists it first', bell.first === 'New answer to your question', bell.first);
+    await new Promise((r) => setTimeout(r, 400));
+    await member.screenshot({ path: `${out}/behaviour-live-bell.png` });
+
+    await member.click('[data-aq-bell-button]');
+    await member.waitForSelector('[data-aq-bell-menu].show');
+    await member.click('[data-aq-bell-read-all] button');
+    await member.waitForFunction(() => document.querySelector('[data-aq-bell-count]').hidden, { timeout: 5000 }).catch(() => null);
+    const cleared = await member.evaluate(() => ({
+        same: window.aqSamePage === true,
+        hidden: document.querySelector('[data-aq-bell-count]').hidden,
+        label: document.querySelector('[data-aq-bell-button]').getAttribute('aria-label'),
+        unread: document.querySelectorAll('[data-aq-bell-menu] .aq-bell-item.is-unread').length,
+        focus: document.activeElement?.closest('[data-aq-bell-menu]') !== null,
+    }));
+    expect('"Mark all read" clears the bell in place', cleared.same && cleared.hidden && cleared.label === 'Notifications' && cleared.unread === 0, JSON.stringify(cleared));
+    expect('…and keeps focus inside the menu', cleared.focus);
+    await member.browserContext().close();
+    await page.browserContext().close();
 }
 
 await browser.close();

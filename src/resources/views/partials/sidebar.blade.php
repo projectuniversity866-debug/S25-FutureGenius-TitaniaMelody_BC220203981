@@ -32,12 +32,21 @@
         <li><a class="{{ request()->routeIs('questions.*') ? 'is-active' : '' }}" href="{{ route('questions.index') }}">
             <i class="bi bi-patch-question" aria-hidden="true"></i> Questions
         </a></li>
+        <li><a class="{{ request()->routeIs('tags.*') ? 'is-active' : '' }}" href="{{ route('tags.index') }}">
+            <i class="bi bi-tags" aria-hidden="true"></i> Tags
+        </a></li>
         <li><a class="{{ request()->routeIs('jobs.index') || request()->routeIs('jobs.show') ? 'is-active' : '' }}"
                href="{{ route('jobs.index') }}">
-            <i class="bi bi-briefcase" aria-hidden="true"></i> Jobs &amp; internships
+            <i class="bi bi-briefcase" aria-hidden="true"></i> Opportunities
+        </a></li>
+        <li><a class="{{ request()->routeIs('organizations.*') ? 'is-active' : '' }}" href="{{ route('organizations.index') }}">
+            <i class="bi bi-buildings" aria-hidden="true"></i> Organizations
         </a></li>
 
         @auth
+            <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
+                <i class="bi bi-bookmark" aria-hidden="true"></i> Saved
+            </a></li>
             <li><a class="{{ request()->routeIs('applications.*') ? 'is-active' : '' }}" href="{{ route('applications.index') }}">
                 <i class="bi bi-send" aria-hidden="true"></i> My applications
             </a></li>

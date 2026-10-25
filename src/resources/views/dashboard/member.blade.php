@@ -64,7 +64,7 @@
                             <div class="min-w-0">
                                 <a href="{{ route('jobs.show', $job) }}"
                                    class="fw-semibold text-decoration-none d-block text-truncate">{{ $job->title }}</a>
-                                <span class="aq-text-xs aq-muted">{{ $job->company }} · {{ ucfirst($job->type) }}</span>
+                                <span class="aq-text-xs aq-muted">{{ $job->company }} · {{ $job->typeLabel() }}</span>
                             </div>
                         </div>
                     </li>

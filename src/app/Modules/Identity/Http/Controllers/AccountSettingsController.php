@@ -39,6 +39,7 @@ class AccountSettingsController extends Controller
             'profile_visibility' => $validated['profile_visibility'],
             'email_answers'      => $request->boolean('email_answers'),
             'email_applications' => $request->boolean('email_applications'),
+            'email_follows'      => $request->boolean('email_follows'),
         ]);
         $user->save();
 

@@ -34,12 +34,13 @@
 
 <div class="mb-3">
     <label for="body" class="form-label">Details</label>
+    <x-vue name="MarkdownEditor" :props="['for' => 'body', 'previewUrl' => route('markdown.preview')]" />
     <textarea id="body" name="body" rows="10"
               class="form-control @error('body') is-invalid @enderror"
               required minlength="20"
               placeholder="Describe what you have tried and what you expected to happen."
               aria-describedby="bodyHelp">{{ old('body', $question->body ?? '') }}</textarea>
-    <div id="bodyHelp" class="form-text">At least 20 characters.</div>
+    <div id="bodyHelp" class="form-text">At least 20 characters. Formatting with Markdown: **bold**, `code`, lists and code blocks.</div>
     <x-vue name="CharacterCounter" :props="['for' => 'body', 'min' => 20]" />
     @error('body')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>

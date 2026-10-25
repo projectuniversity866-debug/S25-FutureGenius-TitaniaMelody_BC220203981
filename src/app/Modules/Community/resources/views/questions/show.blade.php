@@ -5,7 +5,6 @@
 @php
     $me = auth()->user();
     $canEditQuestion = (bool) $me?->can('update', $question);
-    $myQuestionVote  = $question->voteOf($me)?->value;
 @endphp
 
 @section('content')
@@ -43,36 +42,13 @@
                 </p>
 
                 <div class="d-flex gap-3">
-                    <div class="aq-vote">
-                        @auth
-                            <form method="POST" action="{{ route('votes.question', $question) }}">
-                                @csrf
-                                <input type="hidden" name="value" value="1">
-                                <button type="submit" class="vote-btn {{ $myQuestionVote === 1 ? 'is-active' : '' }}"
-                                        aria-label="Upvote this question"
-                                        aria-pressed="{{ $myQuestionVote === 1 ? 'true' : 'false' }}">
-                                    <i class="bi bi-caret-up-fill" aria-hidden="true"></i>
-                                </button>
-                            </form>
-                        @endauth
-
-                        <div class="aq-vote-score">{{ $question->score() }}<span class="visually-hidden"> {{ \Illuminate\Support\Str::plural('vote', abs($question->score())) }}</span></div>
-
-                        @auth
-                            <form method="POST" action="{{ route('votes.question', $question) }}">
-                                @csrf
-                                <input type="hidden" name="value" value="-1">
-                                <button type="submit" class="vote-btn {{ $myQuestionVote === -1 ? 'is-active' : '' }}"
-                                        aria-label="Downvote this question"
-                                        aria-pressed="{{ $myQuestionVote === -1 ? 'true' : 'false' }}">
-                                    <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
-                                </button>
-                            </form>
-                        @endauth
+                    <div class="aq-vote-col">
+                        @include('community::partials.vote', ['post' => $question, 'url' => route('votes.question', $question), 'noun' => 'question'])
+                        @include('community::partials.bookmark', ['question' => $question, 'saved' => $saved])
                     </div>
 
                     <div class="flex-grow-1 min-w-0">
-                        <div class="prose mb-3">{{ $question->body }}</div>
+                        <x-markdown :text="$question->body" class="mb-3" />
 
                         <div class="d-flex flex-wrap gap-2 mb-3">
                             @if ($question->category)
@@ -111,6 +87,15 @@
                                 </div>
                             @endif
                         </div>
+
+                        @if ($question->revisions_count)
+                            <p class="aq-edited">
+                                Edited {{ $question->updated_at->diffForHumans() }} ·
+                                <a href="{{ route('questions.history', $question) }}">view {{ $question->revisions_count }} earlier {{ \Illuminate\Support\Str::plural('version', $question->revisions_count) }}</a>
+                            </p>
+                        @endif
+
+                        @include('community::partials.comments', ['post' => $question, 'storeRoute' => route('comments.question', $question)])
                     </div>
                 </div>
             </div>
@@ -125,8 +110,6 @@
             </div>
 
             @forelse ($answers as $answer)
-                @php $myAnswerVote = $answer->voteOf($me)?->value; @endphp
-
                 <article id="answer-{{ $answer->id }}" class="card mb-3 {{ $answer->is_accepted ? 'answer-accepted' : '' }}">
                     <div class="card-body">
                         @if ($answer->is_accepted)
@@ -136,36 +119,12 @@
                         @endif
 
                         <div class="d-flex gap-3">
-                            <div class="aq-vote">
-                                @auth
-                                    <form method="POST" action="{{ route('votes.answer', $answer) }}">
-                                        @csrf
-                                        <input type="hidden" name="value" value="1">
-                                        <button type="submit" class="vote-btn {{ $myAnswerVote === 1 ? 'is-active' : '' }}"
-                                                aria-label="Upvote this answer"
-                                                aria-pressed="{{ $myAnswerVote === 1 ? 'true' : 'false' }}">
-                                            <i class="bi bi-caret-up-fill" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
-                                @endauth
-
-                                <div class="aq-vote-score">{{ $answer->score() }}<span class="visually-hidden"> {{ \Illuminate\Support\Str::plural('vote', abs($answer->score())) }}</span></div>
-
-                                @auth
-                                    <form method="POST" action="{{ route('votes.answer', $answer) }}">
-                                        @csrf
-                                        <input type="hidden" name="value" value="-1">
-                                        <button type="submit" class="vote-btn {{ $myAnswerVote === -1 ? 'is-active' : '' }}"
-                                                aria-label="Downvote this answer"
-                                                aria-pressed="{{ $myAnswerVote === -1 ? 'true' : 'false' }}">
-                                            <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
-                                @endauth
+                            <div class="aq-vote-col">
+                                @include('community::partials.vote', ['post' => $answer, 'url' => route('votes.answer', $answer), 'noun' => 'answer'])
                             </div>
 
                             <div class="flex-grow-1 min-w-0">
-                                <div class="prose mb-3">{{ $answer->body }}</div>
+                                <x-markdown :text="$answer->body" class="mb-3" />
 
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2 aq-border-top">
                                     <a href="{{ route('profile.show', $answer->user) }}"
@@ -178,6 +137,12 @@
                                     </a>
 
                                     <div class="d-flex gap-2">
+                                        @if ($me?->can('update', $answer))
+                                            <a href="#edit-answer-{{ $answer->id }}" class="btn btn-sm btn-quiet"
+                                               onclick="document.getElementById('edit-answer-{{ $answer->id }}').open = true">
+                                                <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">Edit answer</span>
+                                            </a>
+                                        @endif
                                         @if (! $answer->is_accepted && $me?->can('accept', $answer))
                                             <form method="POST" action="{{ route('answers.accept', $answer) }}">
                                                 @csrf
@@ -202,6 +167,31 @@
                                         @endif
                                     </div>
                                 </div>
+
+                                @if ($me?->can('update', $answer))
+                                    <details id="edit-answer-{{ $answer->id }}" class="aq-comment-add mt-2">
+                                        <summary class="visually-hidden">Edit this answer</summary>
+                                        <form method="POST" action="{{ route('answers.update', $answer) }}">
+                                            @csrf
+                                            @method('PUT')
+                                            <label for="answer-body-{{ $answer->id }}" class="form-label">Edit your answer</label>
+                                            <textarea id="answer-body-{{ $answer->id }}" name="body" rows="6" class="form-control"
+                                                      required minlength="10">{{ $answer->body }}</textarea>
+                                            <div class="d-flex gap-2 justify-content-end mt-2">
+                                                <button type="submit" class="btn btn-accent btn-sm">Save changes</button>
+                                            </div>
+                                        </form>
+                                    </details>
+                                @endif
+
+                                @if ($answer->revisions_count)
+                                    <p class="aq-edited">
+                                        Edited {{ $answer->updated_at->diffForHumans() }} ·
+                                        <a href="{{ route('answers.history', $answer) }}">view {{ $answer->revisions_count }} earlier {{ \Illuminate\Support\Str::plural('version', $answer->revisions_count) }}</a>
+                                    </p>
+                                @endif
+
+                                @include('community::partials.comments', ['post' => $answer, 'storeRoute' => route('comments.answer', $answer)])
                             </div>
                         </div>
                     </div>
@@ -231,6 +221,7 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="answer_body" class="visually-hidden">Write your answer</label>
+                                <x-vue name="MarkdownEditor" :props="['for' => 'answer_body', 'previewUrl' => route('markdown.preview')]" />
                                 <textarea id="answer_body" name="body" rows="6"
                                           class="form-control @error('body') is-invalid @enderror"
                                           required minlength="10"
@@ -270,6 +261,44 @@
             </div>
         </aside>
 
+        @if ($question->tags->isNotEmpty())
+            <aside class="card mb-3" aria-labelledby="follow-tags-heading">
+                <div class="card-body">
+                    <h2 id="follow-tags-heading" class="aq-label mb-1">Follow these tags</h2>
+                    <p class="aq-text-xs aq-muted mb-2">Get notified when someone asks a new question with them.</p>
+                    <ul class="aq-follow-list">
+                        @foreach ($question->tags as $tag)
+                            <li>
+                                <a href="{{ route('questions.index', ['tag' => $tag->slug]) }}" class="aq-tag">{{ $tag->name }}</a>
+                                @include('community::partials.follow-button', [
+                                    'tag' => $tag, 'following' => in_array($tag->id, $followedTagIds, true), 'count' => $tag->followers_count,
+                                ])
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </aside>
+        @endif
+
+        @if ($related->isNotEmpty())
+            <aside class="card mb-3" aria-labelledby="related-heading">
+                <div class="card-body">
+                    <h2 id="related-heading" class="aq-label mb-2">Related questions</h2>
+                    <ul class="aq-related">
+                        @foreach ($related as $item)
+                            <li>
+                                <span @class(['aq-related-count', 'has-answers' => $item->answers_count && ! $item->has_accepted_answer, 'is-accepted' => $item->has_accepted_answer])>
+                                    @if ($item->has_accepted_answer)<i class="bi bi-check-lg" aria-hidden="true"></i>@endif{{ $item->answers_count }}
+                                    <span class="visually-hidden">{{ \Illuminate\Support\Str::plural('answer', $item->answers_count) }}{{ $item->has_accepted_answer ? ', one accepted' : '' }}</span>
+                                </span>
+                                <a href="{{ route('questions.show', $item) }}">{{ $item->title }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </aside>
+        @endif
+
         <aside class="card aq-card-quiet">
             <div class="card-body">
                 <h2 class="aq-label mb-2">How voting works</h2>
@@ -278,6 +307,7 @@
                     <li>Click the same arrow again to remove your vote.</li>
                     <li>You cannot vote on your own posts.</li>
                     <li>The question author can accept one answer.</li>
+                    <li>Use the bookmark to save a question; find it under Saved.</li>
                 </ul>
             </div>
         </aside>

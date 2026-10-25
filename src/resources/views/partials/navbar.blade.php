@@ -19,7 +19,7 @@
     <form class="aq-search ms-md-auto" method="GET" action="{{ route('questions.index') }}" role="search">
         <label for="topbar-search" class="visually-hidden">Search questions</label>
         <i class="bi bi-search" aria-hidden="true"></i>
-        <input type="search" id="topbar-search" name="q" value="{{ request('q') }}"
+        <input type="search" id="topbar-search" name="q" value="{{ is_string(request('q')) ? request('q') : '' }}"
                placeholder="Search questions…" autocomplete="off">
     </form>
 
@@ -54,6 +54,8 @@
                     <i class="bi bi-person-gear me-2" aria-hidden="true"></i> Edit profile</a></li>
                 <li><a class="dropdown-item" href="{{ route('settings.show') }}">
                     <i class="bi bi-gear me-2" aria-hidden="true"></i> Account settings</a></li>
+                <li><a class="dropdown-item" href="{{ route('saved.index') }}">
+                    <i class="bi bi-bookmark me-2" aria-hidden="true"></i> Saved</a></li>
                 <li><a class="dropdown-item" href="{{ route('applications.index') }}">
                     <i class="bi bi-send me-2" aria-hidden="true"></i> My applications</a></li>
                 <li><hr class="dropdown-divider"></li>

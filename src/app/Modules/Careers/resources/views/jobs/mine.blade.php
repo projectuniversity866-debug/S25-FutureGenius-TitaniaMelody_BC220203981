@@ -11,6 +11,33 @@
     </x-slot:actions>
 </x-page-header>
 
+<x-card title="My organizations" icon="buildings" class="mb-4">
+    <x-slot:actions>
+        <a href="{{ route('organizations.create') }}" class="aq-text-sm">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add an organization
+        </a>
+    </x-slot:actions>
+    @if ($organizations->isEmpty())
+        <p class="aq-text-sm aq-muted mb-0">
+            An organization profile gives your opportunities a home page with your logo mark, description and every open
+            opening. <a href="{{ route('organizations.create') }}">Create one</a> and choose it when you post.
+        </p>
+    @else
+        <ul class="aq-org-list">
+            @foreach ($organizations as $organization)
+                <li>
+                    <x-org-mark :name="$organization->name" />
+                    <a href="{{ route('organizations.show', $organization) }}" class="fw-semibold text-decoration-none">{{ $organization->name }}</a>
+                    <span class="aq-text-xs aq-muted">{{ $organization->open_count }} open</span>
+                    <a href="{{ route('organizations.edit', $organization) }}" class="btn btn-sm btn-quiet ms-auto">
+                        Edit<span class="visually-hidden"> {{ $organization->name }}</span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+</x-card>
+
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover align-middle aq-table">
@@ -32,7 +59,7 @@
                             <span class="aq-text-xs aq-muted">{{ $job->company }}</span>
                         </th>
                         <td data-label="Type">
-                            <span><span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }}">{{ ucfirst($job->type) }}</span></span>
+                            <span><span class="badge {{ $job->typeBadge() }}">{{ $job->typeLabel() }}</span></span>
                         </td>
                         <td data-label="Status">
                             <span><x-status :value="$job->isOpen() ? 'open' : ($job->is_active ? 'expired' : 'unpublished')" /></span>

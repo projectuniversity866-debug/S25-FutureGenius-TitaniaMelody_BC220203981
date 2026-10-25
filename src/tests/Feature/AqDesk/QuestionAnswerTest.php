@@ -92,6 +92,10 @@ class QuestionAnswerTest extends AqDeskTestCase
         $voter    = $this->otherMember();
         $before   = $question->score();
 
+        // Downvoting is a reputation privilege (1.9); give this voter enough
+        // so the test does not depend on the randomly seeded votes.
+        \App\Modules\Community\Models\ReputationEvent::create(['user_id' => $voter->id, 'type' => 'adjustment', 'points' => 20]);
+
         $this->actingAs($voter)->post(route('votes.question', $question), ['value' => 1]);
         $this->actingAs($voter)->post(route('votes.question', $question), ['value' => -1]);
 

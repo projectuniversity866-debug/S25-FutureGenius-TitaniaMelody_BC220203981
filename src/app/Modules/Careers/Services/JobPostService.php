@@ -3,6 +3,7 @@
 namespace App\Modules\Careers\Services;
 
 use App\Modules\Careers\Models\JobPost;
+use App\Modules\Careers\Models\Organization;
 use App\Modules\Identity\Models\User;
 use App\Modules\Platform\Services\ActivityLogger;
 
@@ -13,7 +14,7 @@ class JobPostService
     /** @param  array<string, mixed>  $data  validated JobPostRequest data */
     public function publish(User $poster, array $data): JobPost
     {
-        return JobPost::create($data + [
+        return JobPost::create($this->withOrganizationName($data) + [
             'user_id' => $poster->id,
             'slug'    => JobPost::makeSlug($data['title']),
         ]);
@@ -22,12 +23,22 @@ class JobPostService
     /** @param  array<string, mixed>  $data  validated JobPostRequest data */
     public function update(JobPost $job, array $data, bool $isActive): JobPost
     {
-        $job->update($data + [
+        $job->update($this->withOrganizationName($data) + [
             'slug'      => JobPost::makeSlug($data['title'], $job->id),
             'is_active' => $isActive,
         ]);
 
         return $job;
+    }
+
+    /** Published under an organization, the post carries its name. */
+    private function withOrganizationName(array $data): array
+    {
+        if (! empty($data['organization_id'])) {
+            $data['company'] = Organization::findOrFail($data['organization_id'])->name;
+        }
+
+        return $data;
     }
 
     public function delete(JobPost $job): void

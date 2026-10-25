@@ -41,7 +41,7 @@
 <form method="GET" action="{{ $action }}" role="search" aria-label="{{ $label }}"
       {{ $attributes->class(['aq-filter', 'is-stacked' => $stacked]) }}>
     @foreach ($keep as $param)
-        @if (filled(request($param)))
+        @if (is_string(request($param)) && filled(request($param)))
             <input type="hidden" name="{{ $param }}" value="{{ request($param) }}">
         @endif
     @endforeach

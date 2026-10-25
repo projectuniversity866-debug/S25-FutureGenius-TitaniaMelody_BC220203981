@@ -11,6 +11,7 @@
  */
 import { createApp } from 'vue';
 import { initConfirmDialogs, initToasts } from './feedback.js';
+import { initLiveNotifications } from './live-notifications.js';
 
 const components = import.meta.glob('./components/**/*.vue', { eager: true });
 
@@ -68,3 +69,9 @@ mountIslands();
 restoreTableSemantics();
 initConfirmDialogs();
 initToasts();
+initLiveNotifications();
+
+// The syntax highlighter is only downloaded on pages that show code.
+if (document.querySelector('.aq-markdown pre code')) {
+    import('./highlight.js').then(({ highlightWithin }) => highlightWithin());
+}

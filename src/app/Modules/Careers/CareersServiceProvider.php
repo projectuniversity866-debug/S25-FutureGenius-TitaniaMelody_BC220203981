@@ -7,8 +7,10 @@ use App\Modules\Careers\Events\ApplicationSubmitted;
 use App\Modules\Careers\Listeners\SendApplicationNotifications;
 use App\Modules\Careers\Models\JobApplication;
 use App\Modules\Careers\Models\JobPost;
+use App\Modules\Careers\Models\Organization;
 use App\Modules\Careers\Policies\JobApplicationPolicy;
 use App\Modules\Careers\Policies\JobPostPolicy;
+use App\Modules\Careers\Policies\OrganizationPolicy;
 use App\Modules\Identity\Models\User;
 use App\Modules\ModuleServiceProvider;
 
@@ -25,6 +27,7 @@ class CareersServiceProvider extends ModuleServiceProvider
         return [
             JobPost::class        => JobPostPolicy::class,
             JobApplication::class => JobApplicationPolicy::class,
+            Organization::class   => OrganizationPolicy::class,
         ];
     }
 
@@ -41,6 +44,7 @@ class CareersServiceProvider extends ModuleServiceProvider
         return [
             'job_post'        => JobPost::class,
             'job_application' => JobApplication::class,
+            'organization'    => Organization::class,
         ];
     }
 
@@ -52,6 +56,8 @@ class CareersServiceProvider extends ModuleServiceProvider
                 'jobPosts'        => fn (User $user) => $user->hasMany(JobPost::class),
                 // Applications this user has submitted.
                 'jobApplications' => fn (User $user) => $user->hasMany(JobApplication::class),
+                // Organization profiles this user manages.
+                'organizations'   => fn (User $user) => $user->hasMany(Organization::class),
             ],
         ];
     }

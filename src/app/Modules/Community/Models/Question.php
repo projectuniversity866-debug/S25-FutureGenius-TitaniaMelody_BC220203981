@@ -2,6 +2,7 @@
 
 namespace App\Modules\Community\Models;
 
+use App\Modules\Platform\Services\MarkdownRenderer;
 use App\Modules\Identity\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -57,6 +58,39 @@ class Question extends Model
     public function votes(): MorphMany
     {
         return $this->morphMany(Vote::class, 'votable');
+    }
+
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable')->oldest();
+    }
+
+    /** Earlier versions, newest first. */
+    public function revisions(): MorphMany
+    {
+        return $this->morphMany(Revision::class, 'revisable')->latest('id');
+    }
+
+    public function bookmarks(): MorphMany
+    {
+        return $this->morphMany(Bookmark::class, 'bookmarkable');
+    }
+
+    /**
+     * Lists load this as an "is_saved" column (withExists) to avoid a query
+     * per row; otherwise it is looked up.
+     */
+    public function isSavedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if (array_key_exists('is_saved', $this->attributes)) {
+            return (bool) $this->attributes['is_saved'];
+        }
+
+        return $this->bookmarks()->where('user_id', $user->id)->exists();
     }
 
     // ------------------------------------------------------------------
@@ -121,6 +155,14 @@ class Question extends Model
         return $query->whereHas('tags', fn (Builder $q) => $q->where('slug', $slug));
     }
 
+    /** Questions carrying at least one tag the user follows. */
+    public function scopeInTagsFollowedBy(Builder $query, User $user): Builder
+    {
+        $tagIds = $user->followedTags()->pluck('tags.id');
+
+        return $query->whereHas('tags', fn (Builder $q) => $q->whereIn('tags.id', $tagIds));
+    }
+
     /** Generate a URL-safe, unique slug from a title. */
     public static function makeSlug(string $title, ?int $ignoreId = null): string
     {
@@ -139,6 +181,7 @@ class Question extends Model
 
     public function excerpt(int $words = 30): string
     {
-        return Str::words(strip_tags($this->body), $words);
+        // Plain text: Markdown symbols (**, `, #) must not show in lists.
+        return Str::words(app(MarkdownRenderer::class)->plain($this->body), $words);
     }
 }

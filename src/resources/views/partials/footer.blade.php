@@ -7,7 +7,7 @@
         <nav aria-label="Footer">
             <ul class="aq-footer-links">
                 <li><a href="{{ route('questions.index') }}">Questions</a></li>
-                <li><a href="{{ route('jobs.index') }}">Jobs &amp; internships</a></li>
+                <li><a href="{{ route('jobs.index') }}">Opportunities</a></li>
                 @guest
                     <li><a href="{{ route('register') }}">Join AQDesk</a></li>
                 @endguest

@@ -49,6 +49,12 @@ send() {       # send who METHOD path [curl -d args…] → "code location"
         --data-urlencode "_token=$tok" "${spoof[@]}" "$@" "$B$path"
     php_errors "$method $path"
 }
+json() {       # json who METHOD path [body] → status code; body saved to $WORK/last.json (what the Vue islands send)
+    local tok; tok=$(token "$1")
+    curl -s -o "$WORK/last.json" -w '%{http_code}' -c "$(jar "$1")" -b "$(jar "$1")" -X "$2" \
+        -H 'Accept: application/json' -H 'Content-Type: application/json' -H "X-CSRF-TOKEN: $tok" \
+        ${4:+--data "$4"} "$B$3"
+}
 login() {      # login who email
     rm -f "$(jar "$1")"
     send "$1" POST /login --data-urlencode "email=$2" --data-urlencode "password=password" | cut -d' ' -f1
@@ -96,6 +102,29 @@ check "author sees the Accept button" yes "$([ -n "$A" ] && echo yes || echo no)
 check "sara cannot accept" 403 "$(send sara POST "$A" | cut -d' ' -f1)"
 check "author accepts the answer" 302 "$(send member POST "$A" | cut -d' ' -f1)"
 
+echo "Discovery & live updates"
+for s in trending votes unanswered; do check "GET /questions?sort=$s" 200 "$(get guest "/questions?sort=$s")"; done
+get guest "/questions?sort=trending" >/dev/null
+contains "trending lists the question answered just now" "$WORK/last.html" "How should an e2e smoke test sign in to Laravel"
+check "tag directory" 200 "$(get guest /tags)"
+check "sara follows the testing tag" 302 "$(send sara POST /tags/testing/follow | cut -d' ' -f1)"
+get sara "/questions?tag=testing" >/dev/null
+contains "tag header shows she follows it" "$WORK/last.html" "Following testing, select to unfollow"
+check "sara saves the question" 302 "$(send sara POST "$Q/bookmark" | cut -d' ' -f1)"
+check "saved page" 200 "$(get sara /saved)"
+contains "saved question listed" "$WORK/last.html" "How should an e2e smoke test sign in to Laravel"
+check "saved page needs sign-in" 302 "$(get guest /saved)"
+R=$(send expert POST /questions --data-urlencode "title=Which smoke test runner suits a Laravel monolith" \
+    --data-urlencode "category_id=1" --data-urlencode "body=Looking for a light way to drive the real app over HTTP in CI." \
+    --data-urlencode "tags=testing")
+check "expert asks in the testing tag" 302 "${R%% *}"
+check "sara's bell summary (JSON)" 200 "$(json sara GET /notifications/summary)"
+contains "…tells her about the new question" "$WORK/last.json" "New question tagged testing"
+check "expert votes without a reload (JSON)" 200 "$(json expert POST "$Q/vote" '{"value":1}')"
+contains "…and gets the new score back" "$WORK/last.json" '"vote":1'
+check "own-post vote refused (JSON 422)" 422 "$(json member POST "$Q/vote" '{"value":1}')"
+contains "…with the reason" "$WORK/last.json" "You cannot vote on your own post."
+
 echo "Jobs & opportunities"
 check "member cannot open the post-a-job form" 403 "$(get member /jobs/create)"
 R=$(send expert POST /jobs --data-urlencode "title=Junior QA Automation Engineer" --data-urlencode "company=AQDesk Labs" \
@@ -118,6 +147,24 @@ contains "applicant shown" "$WORK/last.html" "Usman Tariq"
 APP=$(grep -oE '/applications/[0-9]+/status' "$WORK/last.html" | head -1)
 check "poster shortlists the applicant" 302 "$(send expert PUT "$APP" --data-urlencode status=shortlisted | cut -d' ' -f1)"
 check "another member cannot see applicants" 403 "$(get sara "$J/applicants")"
+
+echo "Organizations & opportunity types"
+check "organization directory" 200 "$(get guest /organizations)"
+check "member cannot add an organization" 403 "$(get member /organizations/create)"
+R=$(send expert POST /organizations --data-urlencode "name=AQDesk Test Labs" --data-urlencode "tagline=Testing the platform end to end" \
+    --data-urlencode "website=https://aqdesk-labs.example.org" --data-urlencode "size=11-50")
+check "expert creates an organization" 302 "${R%% *}"
+O=$(path_of "$R")
+ORG_ID=$(grep -oE 'value="[0-9]+"' <(curl -s -b "$(jar expert)" "$B/jobs/create") | head -1 | grep -oE '[0-9]+')
+R=$(send expert POST /jobs --data-urlencode "title=Weekend Hackathon on Accessible Apps" --data-urlencode "organization_id=$ORG_ID" \
+    --data-urlencode type=hackathon --data-urlencode work_mode=onsite \
+    --data-urlencode "description=Build accessible apps in 48 hours with mentors on site." \
+    --data-urlencode "starts_on=$(date -d '+20 days' +%F)" --data-urlencode "ends_on=$(date -d '+22 days' +%F)")
+check "expert posts a hackathon under it" 302 "${R%% *}"
+check "organization profile" 200 "$(get guest "$O")"
+contains "profile lists the hackathon" "$WORK/last.html" "Weekend Hackathon on Accessible Apps"
+check "hackathon tab" 200 "$(get guest "/jobs?type=hackathon")"
+contains "hackathon tab lists it" "$WORK/last.html" "Weekend Hackathon on Accessible Apps"
 
 echo "Administration"
 check "member blocked from admin" 403 "$(get member /admin/users)"

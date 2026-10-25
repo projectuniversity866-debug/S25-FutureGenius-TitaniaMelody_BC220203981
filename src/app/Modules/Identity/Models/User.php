@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Storage;
  * @property-read \Illuminate\Database\Eloquent\Collection $questions        Community
  * @property-read \Illuminate\Database\Eloquent\Collection $answers          Community
  * @property-read \Illuminate\Database\Eloquent\Collection $votes            Community
+ * @property-read \Illuminate\Database\Eloquent\Collection $bookmarks        Community
+ * @property-read \Illuminate\Database\Eloquent\Collection $followedTags     Community
  * @property-read \Illuminate\Database\Eloquent\Collection $jobPosts         Careers
  * @property-read \Illuminate\Database\Eloquent\Collection $jobApplications  Careers
  */
@@ -53,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_visibility' => 'public',   // public | members
         'email_answers'      => true,        // answers to my questions, accepted answers
         'email_applications' => true,        // applicants, application status changes
+        'email_follows'      => false,       // new questions in tags I follow (opt-in: can be many)
     ];
 
     protected function casts(): array

@@ -23,10 +23,16 @@
                    @checked($user->wantsEmailFor('answers'))>
             <label class="form-check-label" for="email_answers">Answers to my questions, and when my answer is accepted</label>
         </div>
-        <div class="form-check form-switch">
+        <div class="form-check form-switch mb-2">
             <input class="form-check-input" type="checkbox" role="switch" id="email_applications" name="email_applications" value="1"
                    @checked($user->wantsEmailFor('applications'))>
             <label class="form-check-label" for="email_applications">New applicants and changes to my applications</label>
+        </div>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="email_follows" name="email_follows" value="1"
+                   aria-describedby="email_follows_hint" @checked($user->wantsEmailFor('follows'))>
+            <label class="form-check-label" for="email_follows">New questions in tags I follow</label>
+            <div id="email_follows_hint" class="form-text">Off by default — popular tags can get many questions a day.</div>
         </div>
     </x-card>
 
