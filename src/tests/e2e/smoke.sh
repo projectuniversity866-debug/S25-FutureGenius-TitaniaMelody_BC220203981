@@ -370,6 +370,28 @@ contains "…shows the hours" "$WORK/last.html" "00:00–23:30"
 check "overlapping hours are refused" 302 "$(send member POST /consulting/availability/hours --data-urlencode weekday=1 --data-urlencode starts=10:00 --data-urlencode ends=11:00 | cut -d' ' -f1)"
 get guest "/consultants?q=Bash" >/dev/null
 contains "…guests find the consultant with free times" "$WORK/last.html" "Next free:"
+CP=$(grep -oE '/consultants/[a-z0-9-]+' "$WORK/last.html" | grep -v '/consultants/book' | head -1)
+get sara "$CP" >/dev/null
+BOOK=$(grep -oE "$CP/book\?start=[^\"]+" "$WORK/last.html" | head -1 | sed 's/&amp;/\&/g')
+START=$(printf '%s' "${BOOK#*start=}" | sed 's/%3A/:/g')
+check "sara opens a free time" 200 "$(get sara "$BOOK")"
+R=$(send sara POST "$CP/book" --data-urlencode "start=$START" --data-urlencode "topic=Help with my smoke tests" --data-urlencode "message=Bring the script.")
+check "sara books it" 302 "${R%% *}"
+SS=$(path_of "$R")
+check "her session page" 200 "$(get sara "$SS")"
+contains "…has a private Jitsi room" "$WORK/last.html" "https://meet.jit.si/AQDesk-Session-"
+send admin POST "$CP/book" --data-urlencode "start=$START" --data-urlencode "topic=Trying the same time" >/dev/null
+get admin /consulting/sessions >/dev/null
+if grep -qF "Trying the same time" "$WORK/last.html"; then check "the same time cannot be booked twice" yes no; else check "the same time cannot be booked twice" yes yes; fi
+check "consultant's client list" 200 "$(get member /consulting/clients)"
+contains "…has sara from her booking" "$WORK/last.html" "Sara Malik"
+CL=$(grep -oE '/consulting/clients/[0-9]+' "$WORK/last.html" | head -1)
+check "consultant adds a private note" 302 "$(send member POST "$CL/notes" --data-urlencode "body=Wants a review of the e2e script." | cut -d' ' -f1)"
+check "sara cannot open the client record" 404 "$(get sara "$CL")"
+check "consultant adds a client by hand" 302 "$(send member POST /consulting/clients --data-urlencode "name=Hina Qureshi" --data-urlencode "organization=Lahore Startups" --data-urlencode status=lead | cut -d' ' -f1)"
+check "sara cancels the session" 302 "$(send sara PUT "$SS/cancel" --data-urlencode "reason=Found the bug myself" | cut -d' ' -f1)"
+get member /notifications >/dev/null
+contains "…the consultant is told" "$WORK/last.html" "Session cancelled by Sara Malik"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done

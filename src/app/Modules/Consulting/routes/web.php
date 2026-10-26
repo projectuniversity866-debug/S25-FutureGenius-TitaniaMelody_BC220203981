@@ -1,7 +1,10 @@
 <?php
 
+use App\Modules\Consulting\Http\Controllers\BookingController;
+use App\Modules\Consulting\Http\Controllers\ClientController;
 use App\Modules\Consulting\Http\Controllers\ConsultantController;
 use App\Modules\Consulting\Http\Controllers\MyConsultingController;
+use App\Modules\Consulting\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -12,7 +15,29 @@ use Illuminate\Support\Facades\Route;
 Route::get('/consultants', [ConsultantController::class, 'index'])->name('consultants.index');
 Route::get('/consultants/{consultant}', [ConsultantController::class, 'show'])->name('consultants.show');
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/consultants/{consultant}/book', [BookingController::class, 'create'])->name('consultants.book');
+    Route::post('/consultants/{consultant}/book', [BookingController::class, 'store'])->middleware('throttle:10,1,consulting-booking')->name('consultants.book.store');
+});
+
 Route::middleware(['auth', 'verified'])->prefix('consulting')->name('consulting.')->group(function () {
+    // Sessions (3.12).
+    Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index');
+    Route::get('/sessions/{consultation}', [SessionController::class, 'show'])->name('sessions.show');
+    Route::put('/sessions/{consultation}/cancel', [SessionController::class, 'cancel'])->name('sessions.cancel');
+    Route::put('/sessions/{consultation}/complete', [SessionController::class, 'complete'])->name('sessions.complete');
+
+    // Clients (3.13).
+    Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('/clients/new', [ClientController::class, 'create'])->name('clients.create');
+    Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
+    Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+    Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+    Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+    Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+    Route::post('/clients/{client}/notes', [ClientController::class, 'storeNote'])->name('clients.notes.store');
+    Route::delete('/clients/{client}/notes/{note}', [ClientController::class, 'destroyNote'])->name('clients.notes.destroy');
+
     Route::get('/profile', [MyConsultingController::class, 'edit'])->name('profile');
     Route::put('/profile', [MyConsultingController::class, 'update'])->name('profile.update');
     Route::get('/availability', [MyConsultingController::class, 'availability'])->name('availability');

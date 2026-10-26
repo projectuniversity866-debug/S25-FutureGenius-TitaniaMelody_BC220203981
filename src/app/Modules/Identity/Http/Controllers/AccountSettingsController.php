@@ -43,6 +43,7 @@ class AccountSettingsController extends Controller
             'email_alerts'       => $request->boolean('email_alerts'),
             'email_projects'     => $request->boolean('email_projects'),
             'email_events'       => $request->boolean('email_events'),
+            'email_consulting'   => $request->boolean('email_consulting'),
         ]);
         $user->save();
 

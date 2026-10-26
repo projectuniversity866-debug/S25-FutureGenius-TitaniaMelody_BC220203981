@@ -55,6 +55,16 @@ class ConsultantProfile extends Model
         return $this->hasMany(AvailabilityException::class)->orderBy('date');
     }
 
+    public function consultations(): HasMany
+    {
+        return $this->hasMany(Consultation::class);
+    }
+
+    public function clients(): HasMany
+    {
+        return $this->hasMany(ConsultingClient::class);
+    }
+
     /** "Free" or "PKR 2,500 per session". */
     public function priceLabel(): string
     {

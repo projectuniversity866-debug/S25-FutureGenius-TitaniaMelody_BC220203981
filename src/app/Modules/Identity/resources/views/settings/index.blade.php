@@ -44,6 +44,11 @@
             <label class="form-check-label" for="email_events">My event registrations and waitlist updates</label>
             <div id="email_events_hint" class="form-text">If an event you registered for is cancelled, you are always emailed.</div>
         </div>
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="email_consulting" name="email_consulting" value="1"
+                   @checked($user->wantsEmailFor('consulting'))>
+            <label class="form-check-label" for="email_consulting">Consulting sessions booked or cancelled</label>
+        </div>
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="email_follows" name="email_follows" value="1"
                    aria-describedby="email_follows_hint" @checked($user->wantsEmailFor('follows'))>

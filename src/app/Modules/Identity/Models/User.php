@@ -59,6 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_alerts'       => true,        // opportunities matching my job alerts (I asked for them)
         'email_projects'     => true,        // feedback and tasks assigned in my projects
         'email_events'       => true,        // my event registrations and waitlist moves
+        'email_consulting'   => true,        // consulting sessions booked or cancelled
     ];
 
     protected function casts(): array

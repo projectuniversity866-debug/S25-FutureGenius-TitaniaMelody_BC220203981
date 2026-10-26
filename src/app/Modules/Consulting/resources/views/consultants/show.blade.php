@@ -42,13 +42,27 @@
 
     <div class="col-lg-5">
         <x-card title="Available times" icon="calendar-week" id="times">
-            <p class="aq-text-xs aq-muted">The next 14 days, at least {{ $profile->notice_hours }} {{ \Illuminate\Support\Str::plural('hour', $profile->notice_hours) }} from now. Online booking opens in the next release.</p>
+            @error('start')<div class="alert alert-danger py-2 aq-text-sm" role="alert">{{ $message }}</div>@enderror
+            @php $canBook = auth()->check() && auth()->id() !== $profile->user_id && $profile->is_accepting; @endphp
+            <p class="aq-text-xs aq-muted">
+                The next 14 days, at least {{ $profile->notice_hours }} {{ \Illuminate\Support\Str::plural('hour', $profile->notice_hours) }} from now.
+                @guest <a href="{{ route('login') }}">Sign in</a> to book a time. @endguest
+                @if ($canBook) Choose a time to book it. @endif
+            </p>
             @forelse ($slots as $date => $times)
                 @php $day = \Carbon\CarbonImmutable::parse($date, $profile->timezone); @endphp
                 <h3 class="aq-label mt-3 mb-1">{{ $day->format('l j F') }}</h3>
                 <ul class="aq-slot-list" aria-label="Free times on {{ $day->format('l j F') }}">
                     @foreach ($times as $time)
-                        <li><time datetime="{{ $time->toIso8601String() }}">{{ $time->format('H:i') }}</time></li>
+                        <li @class(['is-link' => $canBook])>
+                            @if ($canBook)
+                                <a href="{{ route('consultants.book', [$profile, 'start' => $time->utc()->toIso8601ZuluString()]) }}">
+                                    <time datetime="{{ $time->toIso8601String() }}">{{ $time->format('H:i') }}</time><span class="visually-hidden">, book {{ $day->format('l j F') }}</span>
+                                </a>
+                            @else
+                                <time datetime="{{ $time->toIso8601String() }}">{{ $time->format('H:i') }}</time>
+                            @endif
+                        </li>
                     @endforeach
                 </ul>
             @empty

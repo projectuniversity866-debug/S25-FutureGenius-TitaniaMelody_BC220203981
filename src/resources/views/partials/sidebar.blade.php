@@ -54,7 +54,7 @@
         <li><a class="{{ request()->routeIs('podcasts.*') ? 'is-active' : '' }}" href="{{ route('podcasts.index') }}">
             <i class="bi bi-mic" aria-hidden="true"></i> Podcasts
         </a></li>
-        <li><a class="{{ request()->routeIs('consultants.*', 'consulting.*') ? 'is-active' : '' }}" href="{{ route('consultants.index') }}">
+        <li><a class="{{ request()->routeIs('consultants.*', 'consulting.profile*', 'consulting.availability', 'consulting.hours.*', 'consulting.days-off.*') ? 'is-active' : '' }}" href="{{ route('consultants.index') }}">
             <i class="bi bi-person-video3" aria-hidden="true"></i> Consultants
         </a></li>
 
@@ -74,6 +74,14 @@
             <li><a class="{{ request()->routeIs('projects.*') ? 'is-active' : '' }}" href="{{ route('projects.index') }}">
                 <i class="bi bi-kanban" aria-hidden="true"></i> Projects
             </a></li>
+            <li><a class="{{ request()->routeIs('consulting.sessions.*') ? 'is-active' : '' }}" href="{{ route('consulting.sessions.index') }}">
+                <i class="bi bi-calendar-week" aria-hidden="true"></i> My sessions
+            </a></li>
+            @can('consulting.offer')
+                <li><a class="{{ request()->routeIs('consulting.clients.*') ? 'is-active' : '' }}" href="{{ route('consulting.clients.index') }}">
+                    <i class="bi bi-person-lines-fill" aria-hidden="true"></i> My clients
+                </a></li>
+            @endcan
             @can('forms.create')
                 <li><a class="{{ request()->routeIs('forms.*') ? 'is-active' : '' }}" href="{{ route('forms.index') }}">
                     <i class="bi bi-ui-checks" aria-hidden="true"></i> My forms
