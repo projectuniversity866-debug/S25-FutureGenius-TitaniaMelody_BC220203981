@@ -62,6 +62,9 @@
                     <i class="bi bi-clipboard-check" aria-hidden="true"></i> My postings
                 </a></li>
             @endif
+            <li><a class="{{ request()->routeIs('projects.*') ? 'is-active' : '' }}" href="{{ route('projects.index') }}">
+                <i class="bi bi-kanban" aria-hidden="true"></i> Projects
+            </a></li>
             @can('forms.create')
                 <li><a class="{{ request()->routeIs('forms.*') ? 'is-active' : '' }}" href="{{ route('forms.index') }}">
                     <i class="bi bi-ui-checks" aria-hidden="true"></i> My forms
@@ -112,9 +115,6 @@
         {{-- Modules still being built. Each link is removed from this group
              as its module goes live. --}}
         <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'projects') }}">
-            <i class="bi bi-kanban" aria-hidden="true"></i> Projects
-        </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'events') }}">
             <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts
         </a></li>

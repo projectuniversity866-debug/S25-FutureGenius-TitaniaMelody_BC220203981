@@ -12,6 +12,7 @@
 import { createApp } from 'vue';
 import { initConfirmDialogs, initToasts } from './feedback.js';
 import { initLiveNotifications } from './live-notifications.js';
+import { initAccessibilityToolbar } from './a11y.js';
 
 const components = import.meta.glob('./components/**/*.vue', { eager: true });
 
@@ -70,6 +71,7 @@ restoreTableSemantics();
 initConfirmDialogs();
 initToasts();
 initLiveNotifications();
+initAccessibilityToolbar();
 
 // The syntax highlighter is only downloaded on pages that show code.
 if (document.querySelector('.aq-markdown pre code')) {

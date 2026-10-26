@@ -17,13 +17,13 @@ Results go in the progress log.
 |---|---|---|---|
 | 0 | Foundation | 11 | 11 |
 | 1 | Rebuild existing modules | 15 | 15 |
-| 2 | Missing scope | 7 | 6 |
-| 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 0 |
+| 2 | Missing scope | 7 | 7 |
+| 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 3 |
 | 4 | Quality | 4 | 0 |
 | 5 | Deployment & deliverables | 6 | 0 |
-| | **Total** | **61** | **32** |
+| | **Total** | **61** | **36** |
 
-**Next steps:** 2.7 + 3.1
+**Next steps:** 3.4 + 3.5
 
 ---
 
@@ -90,7 +90,7 @@ Results go in the progress log.
 | [x] | 2.4 | Form Builder: creators build forms, respondents submit (events, consulting intake, job questions, surveys) | Forms engine |
 | [x] | 2.5 | Governance: community guidelines, report/flag → moderation queue → decision log, admin audit trail | Digital governance |
 | [x] | 2.6 | Privacy: terms/privacy consent, export my data, delete my account | Data rights |
-| [ ] | 2.7 | Accessibility toolbar (text size, high contrast, dyslexia font, reduced motion, line spacing) + accessibility statement | Demonstrable accessibility |
+| [x] | 2.7 | Accessibility toolbar (text size, high contrast, dyslexia font, reduced motion, line spacing) + accessibility statement | Demonstrable accessibility |
 
 ## Phase 3 — New modules
 
@@ -98,9 +98,9 @@ Results go in the progress log.
 
 | Status | ID | Step | Output |
 |---|---|---|---|
-| [ ] | 3.1 | Project spaces with member roles (owner / collaborator / viewer) | Projects core |
-| [ ] | 3.2 | Invitations with token, expiry, accept/decline | Invite collaborators |
-| [ ] | 3.3 | File sharing with versions (private storage) | Share files |
+| [x] | 3.1 | Project spaces with member roles (owner / collaborator / viewer) | Projects core |
+| [x] | 3.2 | Invitations with token, expiry, accept/decline | Invite collaborators |
+| [x] | 3.3 | File sharing with versions (private storage) | Share files |
 | [ ] | 3.4 | Feedback threads | Provide feedback |
 | [ ] | 3.5 | Task board | Project tracking |
 
@@ -208,3 +208,9 @@ Results go in the progress log.
 | 2026-10-28 | 2.5 | Governance (first real code in the Governance module). **Report** link on questions, answers, comments, articles and opportunities → report form (reason + details; not your own content, one open report per person) → moderators notified. **Moderation queue** (Administration → Reports, with open count): Open / Removed / Dismissed tabs, report page with the content, all reports on it and a decision — *remove* (deleted through the owning module's own service, so clean-up and logs still happen; author told the reason and note) or *keep* (report dismissed); one decision covers every open report on that content; reporters are thanked and told the outcome. **Moderation log**: every decision with content label, reason, note, moderator and report count, kept after the content is gone; also in the activity log (audit trail). **Community guidelines** page. Modules stay independent: content types implement `Platform\Contracts\Reportable`. |
 | 2026-10-28 | 2.6 | Privacy & data rights. Public **terms of use** and **privacy policy** pages (with a retention table); sign-up now requires agreeing, and the accepted version is recorded (`consents`); members who have not accepted the current version see a banner with "I accept". **Privacy & my data** page (account menu): **Download my data** — a JSON file with every module's section (account, profile, Q&A, votes, reputation, applications with history, saved items, alerts, articles, verification requests, learning progress, notifications, form responses, reports, consents); **Delete my account** (password + tick + confirm dialog) — erases name, email, profile, photo, sessions, linked sign-ins, applications and CVs, verification documents, saved items, alerts, follows, notifications and progress; public posts stay as "Deleted user"; sign-in blocked; the last administrator is protected. Each module declares its own data through new `personalData()` / `personalDataErasers()` hooks on `ModuleServiceProvider` (`Platform\Support\PersonalData` registry). |
 | 2026-10-28 | Tests 2.5 + 2.6 | 226 PHPUnit pass on PHP 8.5 + 8.3 (15 new: G1–G8 report + moderator notice, report rules, link only on others' content, remove → module delete + all reports resolved + log + author/reporter notices, dismiss + no double decision, answers/comments/articles/opportunities reportable, queue/log access, public pages; Y1–Y7 consent required + recorded, banner until accepted, export has every section and only your data, delete needs password + tick, full deletion effects incl. CV file and blocked sign-in, last admin protected, privacy page); 4 sign-up tests now tick the consent box. e2e smoke 127/127 (13 new). WAMP MySQL migrated; demo accounts marked as having accepted, one demo report added (additive). |
+| 2026-10-28 | 2.7 | Accessibility toolbar: an "Accessibility options" (♿) menu in the top bar of every page, for visitors and members — text size (Default / Large / Larger), high contrast (darker text, stronger borders, underlined links, thicker focus, both themes), readable font (Atkinson Hyperlegible, wider spacing — dyslexia / low vision), more line spacing, reduce motion (also honours the system setting). Saved in a plain cookie: works without JavaScript (form + "Apply"), and the server adds the classes to `<html>` before the page is drawn (no flash); with JavaScript (`a11y.js`) each change applies instantly and is announced. Public **Accessibility statement** page (WCAG 2.1 AA target, what has been done, known limitations, how to report a problem) with the same options; linked in the footer. |
+| 2026-10-28 | 3.1 | Projects module (FR3, first code there): project spaces with roles **owner / collaborator / viewer** and visibility private or "visible to members". My projects / Discover tabs, create, project page (about, members with roles), settings (owner), archive (read-only) / restore, delete (logged). The owner adds existing members by email (notified), changes roles and removes members; members can leave; the owner can do neither. Private projects are 404 for non-members. `contribute` permission (owner + collaborator, not archived) ready for files, feedback and tasks (3.3 – 3.5). Account deletion hands owned projects to the longest-standing collaborator, or deletes them. "Projects" is now a real sidebar link (no longer "Coming soon"); 2 demo projects. |
+| 2026-10-28 | Tests 2.7 + 3.1 | 237 PHPUnit pass on PHP 8.5 + 8.3 (12 new: T1–T5 toolbar on every page + statement, saving the cookie, classes on `<html>` in both layouts, bad values ignored + reset, members; J1–J7 create + owner role, add members + notification + refusals, private 404 / discover, roles and owner-only management, leave/remove rules, archive + delete log, account-deletion hand-over); the "Projects coming soon" placeholder case retired. e2e smoke 136/136 (9 new); fixed a smoke-script bug the new toolbar exposed (organization id was read from the first numeric value on the page). WAMP MySQL migrated; 2 demo projects added. |
+| 2026-10-28 | 3.2 | Project invitations replace "add by email": the owner invites by email with a role (collaborator / viewer); the invitee gets an in-app notice and an email with a secret link (only its SHA-256 hash is stored), valid 7 days. Link page `/invitations/{token}` works for anyone holding it: shows project, inviter and role; **Accept** needs sign-in with the invited address (visitors are sent back to the link after signing in or registering); **Decline** needs no account. People without an account are emailed directly. Owner sees "Invitations waiting" with **Resend** (new link, old one stops working) and **Cancel**; no inviting existing members or double-inviting; the owner is told when an invitation is accepted or declined. Expired, cancelled and answered links say so. Account deletion removes invitations to your address. |
+| 2026-10-28 | 3.3 | Shared files with versions: owner and collaborators upload (PDF, Office, images, text, zip…; max 10 MB) to private storage (`projects/{id}`, never public); each file has a version history — "Upload new version" with an optional note, numbered v1, v2…, every version downloadable as "v{n} - name" by any project member; viewers download only; archived projects take no uploads; uploader or owner deletes a file (all stored versions removed); deleting a project removes its files. Files card on the project page, file page with the version table. "Files you uploaded" added to Download my data. |
+| 2026-10-28 | Tests 3.2 + 3.3 | 248 PHPUnit pass on PHP 8.5 + 8.3 (11 new Q1–Q11: invite + hashed token + expiry, email-only invite, accept with the right account + owner notice + no reuse, wrong account / unknown link, decline without account + resend kills old link + expiry + cancel, invitation rules, upload to private storage as v1, versions + old version download name, viewer/outsider/archived permissions, file type/size checks + delete removes every version, project deletion removes files); J-suite now joins members through invitations. e2e smoke 145/145 (9 new: invite → sara follows her notification to the link → accepts → uploads → owner adds v2 → sara downloads v1, outsider 404). WAMP MySQL migrated; no new demo data. |

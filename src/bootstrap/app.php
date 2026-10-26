@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Every authenticated web request is checked for a deactivated account.
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
+
+        // Accessibility display preferences are not secret, and the page's
+        // script must be able to change them instantly (roadmap 2.7).
+        $middleware->encryptCookies(except: ['aq_a11y']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

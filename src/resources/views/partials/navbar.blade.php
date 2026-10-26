@@ -23,6 +23,8 @@
                placeholder="Search questions…" autocomplete="off">
     </form>
 
+    @include('partials.a11y-toolbar')
+
     <button type="button" class="aq-icon-btn" data-aq-theme-toggle aria-label="Switch colour theme">
         <i class="bi bi-moon-stars" aria-hidden="true"></i>
     </button>

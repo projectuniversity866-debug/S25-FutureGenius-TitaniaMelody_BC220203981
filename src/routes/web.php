@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccessibilityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PublicProfileController;
@@ -30,6 +31,10 @@ Route::get('/saved', SavedController::class)->middleware('auth')->name('saved.in
 // Public profile: who someone is (Identity) and what they contributed (Community).
 Route::get('/users/{user}', PublicProfileController::class)->name('profile.show');
 
+// Accessibility statement and display preferences (roadmap 2.7).
+Route::get('/accessibility', [AccessibilityController::class, 'show'])->name('accessibility');
+Route::post('/accessibility', [AccessibilityController::class, 'update'])->name('accessibility.update');
+
 // The rules of the community and of the platform (Governance, roadmap 2.5 – 2.6).
 Route::get('/guidelines', [PageController::class, 'legal'])->defaults('page', 'guidelines')->name('guidelines');
 Route::get('/terms', [PageController::class, 'legal'])->defaults('page', 'terms')->name('terms');
@@ -37,5 +42,5 @@ Route::get('/privacy', [PageController::class, 'legal'])->defaults('page', 'priv
 
 // Modules not built yet — visible placeholders that show the full scope.
 Route::get('/modules/{module}', [PageController::class, 'comingSoon'])
-    ->whereIn('module', ['projects', 'events', 'consulting', 'newsletter'])
+    ->whereIn('module', ['events', 'consulting', 'newsletter'])
     ->name('modules.coming-soon');

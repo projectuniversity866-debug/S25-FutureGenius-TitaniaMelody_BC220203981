@@ -18,7 +18,7 @@ const SCREENS = {
     guest: ['/', '/questions', '/questions?sort=trending', '/tags', '/jobs', '/login', '/register'],
     member: ['/dashboard', '/questions/{question}', '/questions/create', '/questions?tag=laravel', '/saved', '/tags', '/jobs/{job}', '/jobs/{job}/apply', '/applications', '/profile', '/users/{me}'],
     expert: ['/dashboard', '/my-jobs', '/jobs/{job}/applicants'],
-    admin: ['/dashboard', '/admin/users', '/admin/questions', '/admin/jobs', '/modules/projects'],
+    admin: ['/dashboard', '/admin/users', '/admin/questions', '/admin/jobs', '/modules/events'],
 };
 
 const USERS = {

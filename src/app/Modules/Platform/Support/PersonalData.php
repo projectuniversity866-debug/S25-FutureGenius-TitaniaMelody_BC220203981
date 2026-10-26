@@ -36,9 +36,14 @@ class PersonalData
         return array_map(fn (Closure $exporter) => $exporter($user), $this->exporters);
     }
 
+    /**
+     * Feature modules first, the core last (reverse of boot order), so every
+     * module still sees the account as it was — e.g. its email — before
+     * Identity anonymises it.
+     */
     public function eraseAll(User $user): void
     {
-        foreach ($this->erasers as $eraser) {
+        foreach (array_reverse($this->erasers) as $eraser) {
             $eraser($user);
         }
     }

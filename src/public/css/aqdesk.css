@@ -1823,3 +1823,56 @@ a.aq-tag.is-active { background: var(--aq-accent-soft); border-color: var(--aq-a
 .aq-legal p, .aq-legal li { font-size: .9375rem; line-height: 1.7; color: var(--aq-ink-2); }
 .aq-card-danger { border-color: color-mix(in srgb, var(--aq-red-ink) 30%, var(--aq-border)); }
 .aq-notes li.is-plain { background: var(--aq-surface-2); }
+
+/* Accessibility toolbar (2.7) — <html> classes set from the aq_a11y cookie. */
+.aq-a11y-menu { width: min(22rem, calc(100vw - 2rem)); padding: .875rem 1rem; }
+.aq-a11y-sizes { display: flex; flex-wrap: wrap; gap: .375rem; }
+.aq-a11y-sizes .btn-check:checked + .btn { background: var(--aq-accent); border-color: var(--aq-accent); color: var(--aq-on-accent); }
+
+html.a11y-text-large { font-size: 112.5%; }
+html.a11y-text-larger { font-size: 125%; }
+
+html.a11y-contrast {
+    --aq-ink: #000000;
+    --aq-ink-2: #111a24;
+    --aq-muted: #2e3b48;
+    --aq-border: #6b7c8f;
+    --aq-border-strong: #3d4c5c;
+    --aq-accent: #0a5a54;
+    --aq-accent-ink: #063f3a;
+}
+html.a11y-contrast[data-bs-theme="dark"] {
+    --aq-ink: #ffffff;
+    --aq-ink-2: #eef3f7;
+    --aq-muted: #d3dde6;
+    --aq-border: #8fa3b3;
+    --aq-border-strong: #b7c6d2;
+    --aq-accent: #7ce8d9;
+    --aq-accent-ink: #b9f3eb;
+}
+html.a11y-contrast a:not(.btn):not(.dropdown-item):not(.aq-tag):not(.stretched-link) { text-decoration: underline; }
+html.a11y-contrast :focus-visible { outline-width: 3px !important; outline-offset: 3px !important; }
+
+html.a11y-readable body, html.a11y-readable .btn, html.a11y-readable .form-control, html.a11y-readable .form-select {
+    font-family: "Atkinson Hyperlegible", "Public Sans", system-ui, sans-serif;
+    letter-spacing: .02em;
+    word-spacing: .06em;
+}
+
+html.a11y-spacing body { line-height: 1.85; }
+html.a11y-spacing p, html.a11y-spacing li { margin-bottom: .75em; }
+html.a11y-spacing .prose, html.a11y-spacing .aq-markdown { line-height: 2; }
+
+html.a11y-motion *, html.a11y-motion *::before, html.a11y-motion *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* Projects (3.1). */
+.aq-member-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.aq-member-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .625rem; }
+.aq-member-list form .form-select { width: auto; }

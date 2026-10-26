@@ -55,6 +55,12 @@ json() {       # json who METHOD path [body] → status code; body saved to $WOR
         -H 'Accept: application/json' -H 'Content-Type: application/json' -H "X-CSRF-TOKEN: $tok" \
         ${4:+--data "$4"} "$B$3"
 }
+upload() {     # upload who path [curl -F args…] → "code location" (multipart form, like a file input)
+    local who=$1 path=$2; shift 2
+    curl -s -o "$WORK/last.html" -w '%{http_code} %{redirect_url}' -c "$(jar "$who")" -b "$(jar "$who")" \
+        -F "_token=$(token "$who")" "$@" "$B$path"
+    php_errors "POST $path"
+}
 login() {      # login who email
     rm -f "$(jar "$1")"
     send "$1" POST /login --data-urlencode "email=$2" --data-urlencode "password=password" | cut -d' ' -f1
@@ -62,7 +68,7 @@ login() {      # login who email
 path_of() { echo "${1#* }" | sed "s#^$B##"; }
 
 echo "Guest"
-for p in / /questions /jobs /login /register /modules/projects; do check "GET $p" 200 "$(get guest "$p")"; done
+for p in / /questions /jobs /login /register /modules/events /accessibility; do check "GET $p" 200 "$(get guest "$p")"; done
 check "dashboard needs sign-in" 302 "$(get guest /dashboard)"
 check "unknown module is 404" 404 "$(get guest /modules/nope)"
 
@@ -166,7 +172,7 @@ R=$(send expert POST /organizations --data-urlencode "name=AQDesk Test Labs" --d
     --data-urlencode "website=https://aqdesk-labs.example.org" --data-urlencode "size=11-50")
 check "expert creates an organization" 302 "${R%% *}"
 O=$(path_of "$R")
-ORG_ID=$(grep -oE 'value="[0-9]+"' <(curl -s -b "$(jar expert)" "$B/jobs/create") | head -1 | grep -oE '[0-9]+')
+ORG_ID=$(grep -oE '<option value="[0-9]+"' <(curl -s -b "$(jar expert)" "$B/jobs/create") | head -1 | grep -oE '[0-9]+')
 R=$(send expert POST /jobs --data-urlencode "title=Weekend Hackathon on Accessible Apps" --data-urlencode "organization_id=$ORG_ID" \
     --data-urlencode type=hackathon --data-urlencode work_mode=onsite \
     --data-urlencode "description=Build accessible apps in 48 hours with mentors on site." \
@@ -221,6 +227,36 @@ check "a visitor submits it" 302 "$(send guest POST "/f/$SLUG" --data-urlencode 
 check "responses page" 200 "$(get expert "$F/responses")"
 contains "…shows the answer" "$WORK/last.html" "Smoke Visitor"
 check "CSV export" 200 "$(get expert "$F/responses.csv")"
+
+echo "Accessibility & projects"
+check "save display options (no JavaScript)" 302 "$(send guest POST /accessibility --data-urlencode text=large --data-urlencode contrast=1 | cut -d' ' -f1)"
+get guest /questions >/dev/null
+contains "…applied on the next page" "$WORK/last.html" 'class="a11y-text-large a11y-contrast"'
+R=$(send member POST /projects --data-urlencode "name=Smoke test project" --data-urlencode visibility=private)
+check "member creates a project" 302 "${R%% *}"
+P=$(path_of "$R")
+check "project page" 200 "$(get member "$P")"
+check "owner invites sara as collaborator" 302 "$(send member POST "$P/invitations" --data-urlencode email=sara@aqdesk.test --data-urlencode role=collaborator | cut -d' ' -f1)"
+get sara /notifications >/dev/null
+NID=$(grep -oE '/notifications/[0-9a-f-]{36}' "$WORK/last.html" | head -1)
+INV=$(path_of "$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -b "$(jar sara)" "$B$NID")")
+check "sara opens the invitation link" 200 "$(get sara "$INV")"
+check "sara accepts" 302 "$(send sara POST "$INV/accept" | cut -d' ' -f1)"
+check "sara opens the project" 200 "$(get sara "$P")"
+printf 'Smoke test plan, first draft.\n' > "$WORK/plan.txt"
+check "sara uploads a file" 302 "$(upload sara "$P/files" -F "file=@$WORK/plan.txt;type=text/plain" -F "name=Smoke plan" | cut -d' ' -f1)"
+get member "$P" >/dev/null
+PF=$(grep -oE "$P/files/[0-9]+" "$WORK/last.html" | head -1)
+printf 'Smoke test plan, second draft.\n' > "$WORK/plan.txt"
+check "owner uploads version 2" 302 "$(upload member "$PF/versions" -F "file=@$WORK/plan.txt;type=text/plain" -F "note=Second draft" | cut -d' ' -f1)"
+check "file page" 200 "$(get member "$PF")"
+contains "…lists version 2 as latest" "$WORK/last.html" "v2 · latest"
+V1=$(grep -oE "$PF/versions/[0-9]+" "$WORK/last.html" | tail -1)
+check "download version 1" 200 "$(get sara "$V1")"
+contains "…is the first draft" "$WORK/last.html" "first draft"
+check "an outsider cannot download" 404 "$(get expert "$V1")"
+check "an outsider gets 404" 404 "$(get expert "$P")"
+check "sara leaves" 302 "$(send sara DELETE "$P/leave" | cut -d' ' -f1)"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done

@@ -10,6 +10,7 @@ use App\Modules\Identity\Database\Seeders\RoleSeeder;
 use App\Modules\Identity\Database\Seeders\UserSeeder;
 use App\Modules\Knowledge\Database\Seeders\KnowledgeSeeder;
 use App\Modules\Platform\Database\Seeders\FormSeeder;
+use App\Modules\Projects\Database\Seeders\ProjectSeeder;
 use Illuminate\Database\Seeder;
 
 /**
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
             KnowledgeSeeder::class,
             FormSeeder::class,
             GovernanceSeeder::class,
+            ProjectSeeder::class,
         ]);
     }
 }
