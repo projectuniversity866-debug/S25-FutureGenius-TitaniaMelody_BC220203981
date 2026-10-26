@@ -1,13 +1,7 @@
-@if (session('status'))
-    <div class="alert alert-success alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
-        <i class="bi bi-check-circle-fill mt-1" aria-hidden="true"></i>
-        <div>{{ session('status') }}</div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close alert"></button>
-    </div>
-@endif
-
+{{-- Validation and permission errors. Success messages are toasts
+     (partials/toasts) instead. --}}
 @if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
+    <div class="alert alert-danger d-flex align-items-start gap-2" role="alert">
         <i class="bi bi-exclamation-triangle-fill mt-1" aria-hidden="true"></i>
         <div>
             <strong>Please correct the following:</strong>
@@ -17,6 +11,5 @@
                 @endforeach
             </ul>
         </div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close alert"></button>
     </div>
 @endif

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\JobPost;
-use App\Models\Question;
-use App\Models\User;
+use App\Modules\Community\Models\Category;
+use App\Modules\Careers\Models\JobPost;
+use App\Modules\Community\Models\Question;
+use App\Modules\Identity\Models\User;
 use Illuminate\View\View;
 
 class PageController extends Controller
@@ -16,7 +16,7 @@ class PageController extends Controller
         $stats = [
             'members'   => User::count(),
             'questions' => Question::count(),
-            'answers'   => \App\Models\Answer::count(),
+            'answers'   => \App\Modules\Community\Models\Answer::count(),
             'jobs'      => JobPost::active()->count(),
         ];
 
@@ -75,5 +75,11 @@ class PageController extends Controller
         abort_unless(isset($modules[$module]), 404);
 
         return view('coming-soon', ['module' => $modules[$module]]);
+    }
+
+    /** Community guidelines, terms of use and privacy policy (roadmap 2.5 – 2.6). */
+    public function legal(string $page): View
+    {
+        return view('legal.'.$page);
     }
 }

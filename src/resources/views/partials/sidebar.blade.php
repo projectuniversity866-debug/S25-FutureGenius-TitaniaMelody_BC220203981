@@ -32,12 +32,27 @@
         <li><a class="{{ request()->routeIs('questions.*') ? 'is-active' : '' }}" href="{{ route('questions.index') }}">
             <i class="bi bi-patch-question" aria-hidden="true"></i> Questions
         </a></li>
+        <li><a class="{{ request()->routeIs('tags.*') ? 'is-active' : '' }}" href="{{ route('tags.index') }}">
+            <i class="bi bi-tags" aria-hidden="true"></i> Tags
+        </a></li>
+        <li><a class="{{ request()->routeIs('articles.*') ? 'is-active' : '' }}" href="{{ route('articles.index') }}">
+            <i class="bi bi-journal-richtext" aria-hidden="true"></i> Knowledge Hub
+        </a></li>
+        <li><a class="{{ request()->routeIs('learning.*') ? 'is-active' : '' }}" href="{{ route('learning.index') }}">
+            <i class="bi bi-signpost-2" aria-hidden="true"></i> Learning Hub
+        </a></li>
         <li><a class="{{ request()->routeIs('jobs.index') || request()->routeIs('jobs.show') ? 'is-active' : '' }}"
                href="{{ route('jobs.index') }}">
-            <i class="bi bi-briefcase" aria-hidden="true"></i> Jobs &amp; internships
+            <i class="bi bi-briefcase" aria-hidden="true"></i> Opportunities
+        </a></li>
+        <li><a class="{{ request()->routeIs('organizations.*') ? 'is-active' : '' }}" href="{{ route('organizations.index') }}">
+            <i class="bi bi-buildings" aria-hidden="true"></i> Organizations
         </a></li>
 
         @auth
+            <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
+                <i class="bi bi-bookmark" aria-hidden="true"></i> Saved
+            </a></li>
             <li><a class="{{ request()->routeIs('applications.*') ? 'is-active' : '' }}" href="{{ route('applications.index') }}">
                 <i class="bi bi-send" aria-hidden="true"></i> My applications
             </a></li>
@@ -47,50 +62,77 @@
                     <i class="bi bi-clipboard-check" aria-hidden="true"></i> My postings
                 </a></li>
             @endif
+            <li><a class="{{ request()->routeIs('projects.*') ? 'is-active' : '' }}" href="{{ route('projects.index') }}">
+                <i class="bi bi-kanban" aria-hidden="true"></i> Projects
+            </a></li>
+            @can('forms.create')
+                <li><a class="{{ request()->routeIs('forms.*') ? 'is-active' : '' }}" href="{{ route('forms.index') }}">
+                    <i class="bi bi-ui-checks" aria-hidden="true"></i> My forms
+                </a></li>
+            @endcan
             <li><a class="{{ request()->routeIs('profile.*') ? 'is-active' : '' }}" href="{{ route('profile.show', $user) }}">
                 <i class="bi bi-person" aria-hidden="true"></i> My profile
             </a></li>
         @endauth
 
         @auth
-            @if ($user->isAdmin())
+            @canany(['users.manage', 'content.moderate', 'activity.view', 'experts.verify'])
                 <li class="aq-sidenav-group"><span class="aq-label">Administration</span></li>
-                <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
-                    <i class="bi bi-people" aria-hidden="true"></i> Users
-                </a></li>
-                <li><a class="{{ request()->routeIs('admin.questions.*') ? 'is-active' : '' }}" href="{{ route('admin.questions.index') }}">
-                    <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate questions
-                </a></li>
-                <li><a class="{{ request()->routeIs('admin.jobs.*') ? 'is-active' : '' }}" href="{{ route('admin.jobs.index') }}">
-                    <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate opportunities
-                </a></li>
-            @endif
+                @can('users.manage')
+                    <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
+                        <i class="bi bi-people" aria-hidden="true"></i> Users
+                    </a></li>
+                    <li><a class="{{ request()->routeIs('admin.roles.*') ? 'is-active' : '' }}" href="{{ route('admin.roles.index') }}">
+                        <i class="bi bi-key" aria-hidden="true"></i> Roles &amp; permissions
+                    </a></li>
+                @endcan
+                @can('content.moderate')
+                    @php $openReports = \App\Modules\Governance\Models\Report::where('status', 'open')->count(); @endphp
+                    <li><a class="{{ request()->routeIs('admin.reports.*', 'admin.moderation.*') ? 'is-active' : '' }}" href="{{ route('admin.reports.index') }}">
+                        <i class="bi bi-flag" aria-hidden="true"></i> Reports
+                        @if ($openReports)<span class="aq-tabs-count ms-auto">{{ $openReports }}<span class="visually-hidden"> open</span></span>@endif
+                    </a></li>
+                    <li><a class="{{ request()->routeIs('admin.questions.*') ? 'is-active' : '' }}" href="{{ route('admin.questions.index') }}">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate questions
+                    </a></li>
+                    <li><a class="{{ request()->routeIs('admin.jobs.*') ? 'is-active' : '' }}" href="{{ route('admin.jobs.index') }}">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate opportunities
+                    </a></li>
+                @endcan
+                @can('experts.verify')
+                    <li><a class="{{ request()->routeIs('admin.verifications.*') ? 'is-active' : '' }}" href="{{ route('admin.verifications.index') }}">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i> Expert verification
+                    </a></li>
+                @endcan
+                @can('activity.view')
+                    <li><a class="{{ request()->routeIs('admin.activity.*') ? 'is-active' : '' }}" href="{{ route('admin.activity.index') }}">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i> Activity log
+                    </a></li>
+                @endcan
+            @endcanany
         @endauth
 
-        {{-- Modules deferred to the final project. Shown, but clearly marked,
-             so the full AQDesk scope stays visible to the reviewer. --}}
-        <li class="aq-sidenav-group"><span class="aq-label">Phase 2</span></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'projects') }}">
-            <i class="bi bi-kanban" aria-hidden="true"></i> Projects <span class="aq-nav-soon">soon</span>
-        </a></li>
+        {{-- Modules still being built. Each link is removed from this group
+             as its module goes live. --}}
+        <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'events') }}">
-            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts
         </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'consulting') }}">
-            <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting
         </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'newsletter') }}">
-            <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter <span class="aq-nav-soon">soon</span>
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
         </a></li>
     </ul>
 
     <div class="aq-sidefoot">
         @auth
             <div class="d-flex align-items-center gap-2">
-                @include('partials.avatar', ['user' => $user, 'size' => 34])
+                <x-avatar :user="$user" size="sm" />
                 <div class="min-w-0 flex-grow-1">
-                    <div class="text-truncate" style="font-size: .8125rem; font-weight: 600;">{{ $user->name }}</div>
-                    <div class="aq-label" style="font-size: .625rem;">{{ $user->roleName() }}</div>
+                    <div class="text-truncate aq-text-sm aq-strong">{{ $user->name }}</div>
+                    <div class="aq-label aq-sidefoot-role">{{ $user->roleName() }}</div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

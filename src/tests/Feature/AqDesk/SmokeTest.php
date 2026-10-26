@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\AqDesk;
 
-use App\Models\Category;
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Community\Models\Category;
+use App\Modules\Identity\Models\Role;
+use App\Modules\Identity\Models\User;
 
 /**
  * Environment smoke test — run this FIRST. If it fails, the install is

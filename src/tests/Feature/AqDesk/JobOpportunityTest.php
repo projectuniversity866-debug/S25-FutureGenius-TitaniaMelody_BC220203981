@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\AqDesk;
 
-use App\Models\JobApplication;
+use App\Modules\Careers\Models\JobApplication;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Suite F — Jobs and opportunities (Module 6). Cases F1–F12.
+ * Suite F — Jobs and opportunities (Module 6). Cases F1–F16.
  */
 class JobOpportunityTest extends AqDeskTestCase
 {
@@ -197,5 +197,75 @@ class JobOpportunityTest extends AqDeskTestCase
         $this->get(route('jobs.index'))
             ->assertOk()
             ->assertDontSee('An opportunity to be unpublished');
+    }
+
+    /** F13 — the poster cannot apply to their own opportunity. */
+    public function test_f13_poster_cannot_apply_to_own_opportunity(): void
+    {
+        $expert = $this->expert();
+        $job    = $this->postJobAs($expert);
+
+        $this->actingAs($expert)->get(route('jobs.apply', $job))->assertForbidden();
+        $this->applyAs($expert, $job)->assertForbidden();
+
+        $this->assertSame(0, $job->applications()->count());
+    }
+
+    /** F14 — returning to the form after applying leads back to the opportunity. */
+    public function test_f14_apply_form_redirects_after_applying(): void
+    {
+        $job    = $this->postJobAs($this->expert());
+        $member = $this->member();
+
+        $this->applyAs($member, $job)->assertSessionHasNoErrors();
+
+        $this->actingAs($member)
+            ->get(route('jobs.apply', $job))
+            ->assertRedirect(route('jobs.show', $job))
+            ->assertSessionHasErrors('apply');
+    }
+
+    /** F15 — an unpublished opportunity cannot be applied to. */
+    public function test_f15_unpublished_opportunity_rejects_applications(): void
+    {
+        $job = $this->postJobAs($this->expert());
+        $this->actingAs($this->admin())->put(route('admin.jobs.toggle', $job));
+        $this->signOut();
+
+        $this->applyAs($this->member(), $job)->assertNotFound();
+
+        $this->assertSame(0, $job->applications()->count());
+    }
+
+    /** F16 — the poster narrows applicants by status, with a count per status. */
+    public function test_f16_applicants_can_be_filtered_by_status(): void
+    {
+        $expert = $this->expert();
+        $job    = $this->postJobAs($expert);
+
+        $this->applyAs($this->member(), $job);
+        $this->applyAs($this->otherMember(), $job);
+
+        $shortlisted = $job->applications()->whereHas('user', fn ($q) => $q->where('email', 'sara@aqdesk.test'))->first();
+        $this->actingAs($expert)->put(route('applications.status', $shortlisted), ['status' => 'shortlisted']);
+        $expert->notifications()->delete(); // the bell would otherwise name both applicants
+
+        $this->actingAs($expert)
+            ->get(route('jobs.applicants', [$job, 'status' => 'shortlisted']))
+            ->assertOk()
+            ->assertSee('Sara Malik')
+            ->assertDontSee('Usman Tariq');
+
+        $this->actingAs($expert)
+            ->get(route('jobs.applicants', [$job, 'status' => 'rejected']))
+            ->assertOk()
+            ->assertSee('No rejected applicants');
+
+        // An unknown status is ignored rather than breaking the page.
+        $this->actingAs($expert)
+            ->get(route('jobs.applicants', [$job, 'status' => 'nonsense']))
+            ->assertOk()
+            ->assertSee('Usman Tariq')
+            ->assertSee('Sara Malik');
     }
 }

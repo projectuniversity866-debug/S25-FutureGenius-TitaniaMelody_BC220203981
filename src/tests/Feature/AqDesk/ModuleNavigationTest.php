@@ -10,7 +10,6 @@ class ModuleNavigationTest extends AqDeskTestCase
     public static function moduleSlugs(): array
     {
         return [
-            'projects'   => ['projects'],
             'events'     => ['events'],
             'consulting' => ['consulting'],
             'newsletter' => ['newsletter'],
@@ -25,7 +24,7 @@ class ModuleNavigationTest extends AqDeskTestCase
     {
         $this->get(route('modules.coming-soon', $slug))
             ->assertOk()
-            ->assertSee('Planned for Phase 2')
+            ->assertSee('Coming soon')
             ->assertSee('Planned features');
     }
 

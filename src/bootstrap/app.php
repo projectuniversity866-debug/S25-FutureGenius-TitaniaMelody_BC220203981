@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Middleware\EnsureUserHasRole;
-use App\Http\Middleware\EnsureUserIsActive;
+use App\Modules\Identity\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,14 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Custom route middleware aliases used across routes/web.php
+        // Access is checked with permissions (can:<slug>), see PermissionCatalog.
         $middleware->alias([
-            'role'   => EnsureUserHasRole::class,
             'active' => EnsureUserIsActive::class,
         ]);
 
         // Every authenticated web request is checked for a deactivated account.
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
+
+        // Accessibility display preferences are not secret, and the page's
+        // script must be able to change them instantly (roadmap 2.7).
+        $middleware->encryptCookies(except: ['aq_a11y']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

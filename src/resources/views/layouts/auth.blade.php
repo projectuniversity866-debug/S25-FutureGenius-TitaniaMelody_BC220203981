@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="light" class="{{ \App\Support\AccessibilityPreferences::fromRequest(request())->classes() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', 'AQDesk') — {{ config('app.name', 'AQDesk') }}</title>
@@ -19,10 +20,11 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{{ asset('css/aqdesk.css') }}" rel="stylesheet">
+    @vite('resources/js/app.js')
 </head>
 <body>
     <a class="visually-hidden-focusable skip-link" href="#main-content">Skip to main content</a>
@@ -41,15 +43,15 @@
                     One desk where students, instructors and industry experts
                     answer each other's questions.
                 </p>
-                <ul class="list-unstyled d-grid gap-2 mb-0" style="font-size: .875rem; color: var(--aq-ink-2);">
-                    <li><i class="bi bi-check2 me-2" style="color: var(--aq-accent);" aria-hidden="true"></i> Ask, answer and upvote across four topic tracks</li>
-                    <li><i class="bi bi-check2 me-2" style="color: var(--aq-accent);" aria-hidden="true"></i> Role-based access for members, experts and admins</li>
-                    <li><i class="bi bi-check2 me-2" style="color: var(--aq-accent);" aria-hidden="true"></i> Jobs and internships with application tracking</li>
+                <ul class="list-unstyled d-grid gap-2 mb-0 aq-text aq-ink-2">
+                    <li><i class="bi bi-check2 me-2 aq-accent" aria-hidden="true"></i> Ask, answer and upvote across four topic tracks</li>
+                    <li><i class="bi bi-check2 me-2 aq-accent" aria-hidden="true"></i> Learn from verified experts and professionals</li>
+                    <li><i class="bi bi-check2 me-2 aq-accent" aria-hidden="true"></i> Jobs, internships and professional opportunities</li>
                 </ul>
             </div>
 
-            <p class="mb-0" style="font-size: .75rem; color: var(--aq-muted);">
-                CS619 Final Year Project — Prototype Phase
+            <p class="mb-0 aq-text-xs aq-muted">
+                &copy; {{ now()->year }} AQDesk · Community, learning and knowledge platform
             </p>
         </aside>
 
@@ -87,5 +89,6 @@
             });
         });
     </script>
+    @include('partials.toasts')
 </body>
 </html>

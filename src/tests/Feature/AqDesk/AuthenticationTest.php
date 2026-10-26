@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\AqDesk;
 
-use App\Models\User;
+use App\Modules\Identity\Models\User;
 
 /**
  * Suite A — Authentication (Module 1). Cases A1–A8.
@@ -15,7 +15,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'New Tester',
             'email'                 => 'new.tester@aqdesk.test',
-            'role_slug'             => 'member',
+            'role_slug'             => 'member', 'terms' => '1',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
         ])->assertSessionHasNoErrors();
@@ -32,7 +32,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'Impostor',
             'email'                 => $existing->email,
-            'role_slug'             => 'member',
+            'role_slug'             => 'member', 'terms' => '1',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
         ])->assertSessionHasErrors('email');
@@ -47,7 +47,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'Short Password',
             'email'                 => 'short@aqdesk.test',
-            'role_slug'             => 'member',
+            'role_slug'             => 'member', 'terms' => '1',
             'password'              => 'abcd',
             'password_confirmation' => 'abcd',
         ])->assertSessionHasErrors('password');
@@ -61,7 +61,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'Expert Signup',
             'email'                 => 'expert.signup@aqdesk.test',
-            'role_slug'             => 'expert',
+            'role_slug'             => 'expert', 'terms' => '1',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
         ])->assertSessionHasNoErrors();
@@ -69,7 +69,12 @@ class AuthenticationTest extends AqDeskTestCase
         $user = User::where('email', 'expert.signup@aqdesk.test')->firstOrFail();
 
         $this->assertTrue($user->canPostJobs());
-        $this->actingAs($user)->get(route('jobs.create'))->assertOk();
+
+        // Publishing waits for the email to be confirmed (step 1.2).
+        $this->actingAs($user)->get(route('jobs.create'))->assertRedirect(route('verification.notice'));
+
+        $user->markEmailAsVerified();
+        $this->actingAs($user->fresh())->get(route('jobs.create'))->assertOk();
     }
 
     /** A5 — a wrong password is refused. */

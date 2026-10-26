@@ -5,13 +5,13 @@
 @section('content')
 
 {{-- Hero --}}
-<section class="aq-hero mb-4">
+<section class="aq-hero mb-4" aria-labelledby="hero-heading">
     <div class="row align-items-center g-4">
         <div class="col-lg-7">
             <span class="aq-hero-eyebrow">
                 <i class="bi bi-broadcast" aria-hidden="true"></i> Emerging technologies
             </span>
-            <h1>One place to ask, answer and grow.</h1>
+            <h1 id="hero-heading">One place to ask, answer and grow.</h1>
             <p class="aq-hero-lead">
                 AQDesk brings students, instructors, researchers, professionals and policy
                 experts together around four topic tracks — and the opportunities that follow.
@@ -32,23 +32,12 @@
         </div>
 
         <div class="col-lg-5">
+            <h2 class="visually-hidden">AQDesk in numbers</h2>
             <div class="row g-2">
-                @foreach ([
-                    ['label' => 'Members',   'value' => $stats['members'],   'icon' => 'people',            'tone' => ''],
-                    ['label' => 'Questions', 'value' => $stats['questions'], 'icon' => 'patch-question',    'tone' => 'is-blue'],
-                    ['label' => 'Answers',   'value' => $stats['answers'],   'icon' => 'chat-left-text',    'tone' => 'is-green'],
-                    ['label' => 'Openings',  'value' => $stats['jobs'],      'icon' => 'briefcase',        'tone' => 'is-amber'],
-                ] as $stat)
-                    <div class="col-6">
-                        <div class="aq-metric">
-                            <span class="aq-metric-icon {{ $stat['tone'] }}" aria-hidden="true">
-                                <i class="bi bi-{{ $stat['icon'] }}"></i>
-                            </span>
-                            <div class="aq-metric-value">{{ number_format($stat['value']) }}</div>
-                            <p class="aq-metric-label">{{ $stat['label'] }}</p>
-                        </div>
-                    </div>
-                @endforeach
+                <div class="col-6"><x-stat label="Members" :value="$stats['members']" icon="people" /></div>
+                <div class="col-6"><x-stat label="Questions" :value="$stats['questions']" icon="patch-question" tone="blue" /></div>
+                <div class="col-6"><x-stat label="Answers" :value="$stats['answers']" icon="chat-left-text" tone="green" /></div>
+                <div class="col-6"><x-stat label="Open opportunities" :value="$stats['jobs']" icon="briefcase" tone="amber" /></div>
             </div>
         </div>
     </div>
@@ -70,8 +59,8 @@
                             <i class="bi bi-{{ $category->icon ?? 'tag' }}"></i>
                         </span>
                         <h3 class="aq-card-title">{{ $category->name }}</h3>
-                        <p class="mb-0 aq-num" style="font-size: .75rem; color: var(--aq-muted);">
-                            {{ $category->questions_count }} questions
+                        <p class="mb-0 aq-num aq-text-xs aq-muted">
+                            {{ $category->questions_count }} {{ \Illuminate\Support\Str::plural('question', $category->questions_count) }}
                         </p>
                     </div>
                 </a>
@@ -90,86 +79,60 @@
             </div>
 
             @forelse ($latestQuestions as $question)
-                @include('partials.question-card', ['question' => $question])
+                @include('community::partials.question-card', ['question' => $question])
             @empty
                 <div class="card">
-                    <div class="card-body">
-                        @include('partials.empty', [
-                            'icon' => 'patch-question',
-                            'title' => 'No questions yet',
-                            'message' => 'Be the first to start a discussion.',
-                        ])
-                    </div>
+                    <x-empty icon="patch-question" title="No questions yet"
+                             message="Be the first to start a discussion." />
                 </div>
             @endforelse
         </section>
     </div>
 
-    {{-- Latest opportunities + roadmap --}}
     <div class="col-lg-5">
-        <section aria-labelledby="latest-jobs-heading">
-            <div class="aq-section-head">
-                <h2 id="latest-jobs-heading">Latest opportunities</h2>
-                <a href="{{ route('jobs.index') }}">View all</a>
-            </div>
-
-            <div class="card mb-4">
-                <ul class="list-group list-group-flush">
-                    @forelse ($latestJobs as $job)
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-start gap-2">
-                                <div class="min-w-0">
-                                    <a href="{{ route('jobs.show', $job) }}"
-                                       class="d-block text-truncate fw-semibold text-decoration-none">{{ $job->title }}</a>
-                                    <span style="font-size: .75rem; color: var(--aq-muted);">
-                                        {{ $job->company }}@if ($job->location) · {{ $job->location }} @endif
-                                    </span>
-                                </div>
-                                <span class="badge {{ $job->type === 'internship' ? 'text-bg-warning' : 'text-bg-primary' }} flex-shrink-0">
-                                    {{ ucfirst($job->type) }}
+        <x-card title="Latest opportunities" icon="briefcase" flush class="mb-4">
+            <x-slot:actions><a href="{{ route('jobs.index') }}">View all</a></x-slot:actions>
+            <ul class="list-group list-group-flush">
+                @forelse ($latestJobs as $job)
+                    <li class="list-group-item">
+                        <div class="d-flex align-items-center gap-3">
+                            <x-org-mark :name="$job->company" />
+                            <div class="min-w-0 flex-grow-1">
+                                <a href="{{ route('jobs.show', $job) }}"
+                                   class="d-block text-truncate fw-semibold text-decoration-none">{{ $job->title }}</a>
+                                <span class="aq-text-xs aq-muted">
+                                    {{ $job->company }}@if ($job->location) · {{ $job->location }}@endif
                                 </span>
                             </div>
-                        </li>
-                    @empty
-                        <li class="list-group-item">
-                            @include('partials.empty', [
-                                'icon' => 'briefcase',
-                                'title' => 'No opportunities posted yet',
-                            ])
-                        </li>
-                    @endforelse
-                </ul>
-            </div>
-        </section>
+                            <span class="badge {{ $job->typeBadge() }} flex-shrink-0">
+                                {{ $job->typeLabel() }}
+                            </span>
+                        </div>
+                    </li>
+                @empty
+                    <li class="list-group-item">
+                        <x-empty icon="briefcase" title="No opportunities posted yet" />
+                    </li>
+                @endforelse
+            </ul>
+        </x-card>
 
-        {{-- Roadmap: keeps the modular scope of AQDesk visible. --}}
-        <section class="card aq-card-quiet" aria-labelledby="roadmap-heading">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <i class="bi bi-signpost-split" style="color: var(--aq-accent);" aria-hidden="true"></i>
-                    <h2 id="roadmap-heading" style="font-size: .9375rem; font-weight: 650; margin: 0;">Coming in Phase 2</h2>
-                </div>
-                <p style="font-size: .8125rem; color: var(--aq-muted);">
-                    Designed in the requirements, scheduled after the prototype.
-                </p>
-                <div class="d-grid gap-1">
-                    @foreach ([
-                        ['projects', 'kanban', 'Project collaboration'],
-                        ['events', 'calendar-event', 'Events & podcasts'],
-                        ['consulting', 'clipboard-data', 'Consulting management'],
-                        ['newsletter', 'envelope-paper', 'Newsletter & announcements'],
-                    ] as [$slug, $icon, $label])
-                        <a href="{{ route('modules.coming-soon', $slug) }}"
-                           class="d-flex align-items-center gap-2 text-decoration-none py-1"
-                           style="font-size: .8125rem; color: var(--aq-ink-2);">
-                            <i class="bi bi-{{ $icon }}" style="color: var(--aq-muted);" aria-hidden="true"></i>
-                            {{ $label }}
-                            <i class="bi bi-arrow-right ms-auto" style="color: var(--aq-muted);" aria-hidden="true"></i>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        </section>
+        <x-card title="How AQDesk works" icon="signpost-split" class="aq-card-quiet">
+            <ol class="aq-steps">
+                <li>
+                    <strong>Ask</strong>
+                    <span>Post a question in one of four topic tracks and tag it.</span>
+                </li>
+                <li>
+                    <strong>Answer and vote</strong>
+                    <span>Members and experts answer; the community votes the best ones up.</span>
+                </li>
+                <li>
+                    <strong>Accept and grow</strong>
+                    <span>The asker accepts the answer that solved it — and opportunities follow.</span>
+                </li>
+            </ol>
+        </x-card>
     </div>
 </div>
 @endsection

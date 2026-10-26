@@ -58,4 +58,56 @@ class DashboardTest extends AqDeskTestCase
             ->assertOk()
             ->assertSee('A distinctive dashboard question title');
     }
+
+    /** C6 — the admin dashboard charts activity and topics, with a table view. */
+    public function test_c6_admin_dashboard_has_charts_with_table_view(): void
+    {
+        $this->actingAs($this->admin())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Community activity')
+            ->assertSee('data-vue="LineChart"', false)
+            ->assertSee('View as table')
+            ->assertSee('Questions by topic')
+            ->assertSee('Internet Governance')
+            ->assertSee('Applications by status')
+            ->assertSee('Needs an answer');
+    }
+
+    /** C7 — today's question is counted in today's slot of the activity series. */
+    public function test_c7_activity_series_counts_todays_posts(): void
+    {
+        $metrics = app(\App\Services\DashboardMetrics::class);
+        $before  = $metrics->admin()['activity']['series'][0]['values'];
+
+        $this->askQuestionAs($this->member());
+
+        $after = $metrics->admin()['activity']['series'][0]['values'];
+
+        $this->assertCount(\App\Services\DashboardMetrics::DAYS, $after);
+        $this->assertSame(end($before) + 1, end($after));
+        $this->assertSame(array_sum($before) + 1, array_sum($after));
+    }
+
+    /** C8 — an expert sees their acceptance rate; a member sees votes received. */
+    public function test_c8_role_specific_figures(): void
+    {
+        $member   = $this->userWithRole('member');
+        $expert   = $this->userWithRole('expert');
+        $question = $this->askQuestionAs($member);
+        $answer   = $this->answerQuestionAs($expert, $question);
+
+        $this->actingAs($member)->post(route('answers.accept', $answer));
+        $this->actingAs($expert)->post(route('votes.question', $question), ['value' => 1]);
+
+        $this->actingAs($expert)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Accepted answers')
+            ->assertSee('100% of your answers')
+            ->assertSee('Hiring pipeline');
+
+        $tiles = collect(app(\App\Services\DashboardMetrics::class)->member($member)['tiles'])->keyBy('label');
+        $this->assertSame(1, $tiles['Votes received']['value']);
+        $this->assertSame(1, $tiles['Questions asked']['value']);
+    }
 }

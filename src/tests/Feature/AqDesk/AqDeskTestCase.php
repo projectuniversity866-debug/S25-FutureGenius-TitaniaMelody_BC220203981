@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\AqDesk;
 
-use App\Models\Category;
-use App\Models\JobPost;
-use App\Models\Question;
-use App\Models\Role;
-use App\Models\User;
+use App\Modules\Community\Models\Category;
+use App\Modules\Careers\Models\JobPost;
+use App\Modules\Community\Models\Question;
+use App\Modules\Identity\Models\Role;
+use App\Modules\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -67,8 +67,11 @@ abstract class AqDeskTestCase extends TestCase
             'is_active' => true,
         ]);
 
+        // Like the seeded demo accounts, test users have a confirmed email.
+        $user->forceFill(['email_verified_at' => now()])->save();
+
         // Every real user gets a profile row at registration, so mirror that.
-        \App\Models\Profile::firstOrCreate(['user_id' => $user->id]);
+        \App\Modules\Identity\Models\Profile::firstOrCreate(['user_id' => $user->id]);
 
         return $user;
     }
