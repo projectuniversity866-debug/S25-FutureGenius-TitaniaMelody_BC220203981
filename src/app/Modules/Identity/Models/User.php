@@ -57,6 +57,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_applications' => true,        // applicants, application status changes
         'email_follows'      => false,       // new questions in tags I follow (opt-in: can be many)
         'email_alerts'       => true,        // opportunities matching my job alerts (I asked for them)
+        'email_projects'     => true,        // feedback and tasks assigned in my projects
+        'email_events'       => true,        // my event registrations and waitlist moves
     ];
 
     protected function casts(): array

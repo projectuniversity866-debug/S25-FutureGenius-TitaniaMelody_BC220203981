@@ -49,12 +49,12 @@ class PageController extends Controller
                 'summary'  => 'Shared project spaces where members collaborate on work.',
                 'features' => ['Create project spaces', 'Invite collaborators', 'Share files', 'Provide feedback'],
             ],
-            'events' => [
-                'title'    => 'Events & Podcasts',
-                'icon'     => 'calendar-event',
+            'podcasts' => [
+                'title'    => 'Podcasts',
+                'icon'     => 'mic',
                 'source'   => 'FR4 — Main Requirement File',
-                'summary'  => 'Educational events, webinars and community podcasts.',
-                'features' => ['Event creation', 'Event registration', 'Webinar integration', 'Podcast publishing'],
+                'summary'  => 'Community podcast series with episodes and transcripts.',
+                'features' => ['Podcast series', 'Episodes with audio', 'Transcripts', 'Podcast publishing'],
             ],
             'consulting' => [
                 'title'    => 'Consulting Management',

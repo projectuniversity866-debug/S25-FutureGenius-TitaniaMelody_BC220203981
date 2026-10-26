@@ -68,7 +68,7 @@ login() {      # login who email
 path_of() { echo "${1#* }" | sed "s#^$B##"; }
 
 echo "Guest"
-for p in / /questions /jobs /login /register /modules/events /accessibility; do check "GET $p" 200 "$(get guest "$p")"; done
+for p in / /questions /jobs /login /register /modules/podcasts /accessibility /events; do check "GET $p" 200 "$(get guest "$p")"; done
 check "dashboard needs sign-in" 302 "$(get guest /dashboard)"
 check "unknown module is 404" 404 "$(get guest /modules/nope)"
 
@@ -255,8 +255,82 @@ V1=$(grep -oE "$PF/versions/[0-9]+" "$WORK/last.html" | tail -1)
 check "download version 1" 200 "$(get sara "$V1")"
 contains "…is the first draft" "$WORK/last.html" "first draft"
 check "an outsider cannot download" 404 "$(get expert "$V1")"
+R=$(send sara POST "$P/feedback" --data-urlencode "title=Review of the smoke plan" --data-urlencode "body=Please add the **file upload** steps.")
+check "sara starts a feedback thread" 302 "${R%% *}"
+T=$(path_of "$R")
+check "owner opens the thread" 200 "$(get member "$T")"
+contains "…Markdown is rendered" "$WORK/last.html" "<strong>file upload</strong>"
+check "owner replies" 302 "$(send member POST "$T/replies" --data-urlencode "body=Added, thanks." | cut -d' ' -f1)"
+check "sara marks it resolved" 302 "$(send sara PUT "$T/resolve" --data-urlencode resolved=1 | cut -d' ' -f1)"
+check "feedback list (resolved)" 200 "$(get member "$P/feedback?tab=resolved")"
+contains "…lists the thread" "$WORK/last.html" "Review of the smoke plan"
+check "task board" 200 "$(get member "$P/tasks")"
+SARA_ID=$(grep -oE '<option value="[0-9]+"[^>]*>Sara Malik' "$WORK/last.html" | head -1 | grep -oE '[0-9]+')
+R=$(send member POST "$P/tasks" --data-urlencode "title=Run the smoke test" --data-urlencode priority=high --data-urlencode "assignee_id=$SARA_ID")
+check "owner adds a task for sara" 302 "${R%% *}"
+TASK=$(get member "$P/tasks" >/dev/null; grep -oE "$P/tasks/[0-9]+/move" "$WORK/last.html" | head -1)
+check "sara starts the task" 302 "$(send sara PUT "$TASK" --data-urlencode status=doing | cut -d' ' -f1)"
+check "sara finishes it" 302 "$(send sara PUT "$TASK" --data-urlencode status=done | cut -d' ' -f1)"
+get sara "$P/tasks?show=mine" >/dev/null
+contains "…shows on her board as finished" "$WORK/last.html" "Finished"
+check "an outsider gets 404 on the board" 404 "$(get expert "$P/tasks")"
 check "an outsider gets 404" 404 "$(get expert "$P")"
 check "sara leaves" 302 "$(send sara DELETE "$P/leave" | cut -d' ' -f1)"
+
+echo "Events"
+check "a member (sara) cannot create events" 403 "$(get sara /events/new)"
+R=$(send expert POST /events --data-urlencode "title=Smoke test workshop" --data-urlencode "summary=A one-seat workshop to test the waitlist." \
+    --data-urlencode format=in_person --data-urlencode "venue=Lab 1" --data-urlencode timezone=Asia/Karachi --data-urlencode capacity=1 \
+    --data-urlencode "starts_at=$(date -d '+7 days' +%Y-%m-%dT10:00)" --data-urlencode "ends_at=$(date -d '+7 days' +%Y-%m-%dT12:00)")
+check "expert saves a draft event" 302 "${R%% *}"
+EV=$(path_of "$R")
+check "a guest cannot see the draft" 404 "$(get guest "$EV")"
+check "expert publishes it" 302 "$(send expert PUT "$EV/publish" | cut -d' ' -f1)"
+check "guest sees the event" 200 "$(get guest "$EV")"
+check "member registers (the only seat)" 302 "$(send member POST "$EV/register" | cut -d' ' -f1)"
+check "sara registers" 302 "$(send sara POST "$EV/register" | cut -d' ' -f1)"
+get sara "$EV" >/dev/null
+contains "…and is first on the waitlist" "$WORK/last.html" "You are number 1 on the waitlist"
+check "member gives up the seat" 302 "$(send member DELETE "$EV/register" | cut -d' ' -f1)"
+get sara "$EV" >/dev/null
+contains "…sara moves up" "$WORK/last.html" "You have a seat."
+check "attendee list (organizer)" 200 "$(get expert "$EV/attendees")"
+contains "…lists sara" "$WORK/last.html" "sara@aqdesk.test"
+check "member cannot see attendees" 403 "$(get member "$EV/attendees")"
+check "attendee CSV" 200 "$(get expert "$EV/attendees.csv")"
+WEB=/events/your-first-machine-learning-model-live-webinar
+check "webinar registration questions" 200 "$(get member "$WEB/register")"
+QF=$(grep -oE 'name="answers\[[0-9]+\]" value="Beginner"' "$WORK/last.html" | grep -oE '[0-9]+' | head -1)
+check "a missing required answer is refused" 302 "$(send member POST "$WEB/register" | cut -d' ' -f1)"
+get member "$WEB" >/dev/null
+contains "…so not registered yet" "$WORK/last.html" "The organizer asks 2 questions"
+check "member answers and registers" 302 "$(send member POST "$WEB/register" --data-urlencode "answers[$QF]=Beginner" | cut -d' ' -f1)"
+get expert "$WEB/attendees" >/dev/null
+contains "…organizer sees the answer" "$WORK/last.html" "Beginner"
+
+echo "Webinars, calendar & reminders"
+R=$(send expert POST /events --data-urlencode "title=Smoke test webinar" --data-urlencode "summary=An online session starting in three hours." \
+    --data-urlencode format=online --data-urlencode timezone=UTC --data-urlencode create_jitsi=1 --data-urlencode "meeting_notes=Cameras optional" \
+    --data-urlencode "starts_at=$(date -u -d '+3 hours' +%Y-%m-%dT%H:%M)" --data-urlencode "ends_at=$(date -u -d '+4 hours' +%Y-%m-%dT%H:%M)")
+check "expert creates a webinar with a Jitsi room" 302 "${R%% *}"
+WB=$(path_of "$R")
+check "…and publishes it" 302 "$(send expert PUT "$WB/publish" | cut -d' ' -f1)"
+check "member takes a seat" 302 "$(send member POST "$WB/register" | cut -d' ' -f1)"
+get member "$WB" >/dev/null
+contains "…sees the joining link" "$WORK/last.html" "https://meet.jit.si/AQDesk-"
+get sara "$WB" >/dev/null
+if grep -qF "https://meet.jit.si/AQDesk-" "$WORK/last.html"; then check "…a member without a seat does not" yes no; else check "…a member without a seat does not" yes yes; fi
+check "calendar file (.ics)" 200 "$(get member "$WB/calendar.ics")"
+contains "…is iCalendar" "$WORK/last.html" "BEGIN:VCALENDAR"
+contains "…with the joining link for a seat-holder" "$WORK/last.html" "meet.jit.si"
+check "guest calendar file" 200 "$(get guest "$WB/calendar.ics")"
+if grep -qF "meet.jit.si" "$WORK/last.html"; then check "…without the joining link" yes no; else check "…without the joining link" yes yes; fi
+REM=$("$PHP" artisan events:send-reminders 2>&1)
+case "$REM" in *"Sent 1 attendee"*) check "scheduled reminder command sends the reminder" yes yes ;; *) check "scheduled reminder command sends the reminder ($REM)" yes no ;; esac
+REM=$("$PHP" artisan events:send-reminders 2>&1)
+case "$REM" in *"Sent 0 attendee and 0 organizer"*) check "…and never twice" yes yes ;; *) check "…and never twice ($REM)" yes no ;; esac
+get member /notifications >/dev/null
+contains "…member sees it under the bell" "$WORK/last.html" "Reminder: Smoke test webinar"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done

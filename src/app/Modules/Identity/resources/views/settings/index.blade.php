@@ -33,6 +33,17 @@
                    @checked($user->wantsEmailFor('alerts'))>
             <label class="form-check-label" for="email_alerts">New opportunities matching my job alerts</label>
         </div>
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="email_projects" name="email_projects" value="1"
+                   @checked($user->wantsEmailFor('projects'))>
+            <label class="form-check-label" for="email_projects">Feedback in my projects, and tasks assigned to me</label>
+        </div>
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="email_events" name="email_events" value="1"
+                   aria-describedby="email_events_hint" @checked($user->wantsEmailFor('events'))>
+            <label class="form-check-label" for="email_events">My event registrations and waitlist updates</label>
+            <div id="email_events_hint" class="form-text">If an event you registered for is cancelled, you are always emailed.</div>
+        </div>
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="email_follows" name="email_follows" value="1"
                    aria-describedby="email_follows_hint" @checked($user->wantsEmailFor('follows'))>

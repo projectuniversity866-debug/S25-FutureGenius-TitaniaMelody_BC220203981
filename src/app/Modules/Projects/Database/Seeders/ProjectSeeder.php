@@ -31,5 +31,36 @@ class ProjectSeeder extends Seeder
                 $project->members()->syncWithoutDetaching([$users[$email] => ['role' => $role]]);
             }
         }
+
+        $this->seedWork(Project::where('slug', 'aqdesk-accessibility-audit')->firstOrFail(), $users);
+    }
+
+    /** Feedback (3.4) and a task board (3.5) for the audit project; skipped when already there. */
+    private function seedWork(Project $project, $users): void
+    {
+        if (! $project->threads()->exists()) {
+            $thread = $project->threads()->create([
+                'user_id' => $users['expert@aqdesk.test'], 'title' => 'Colour contrast on the job board badges',
+                'body'    => "The light badges on the job board look below 4.5:1 to me.\n\n- Check them with the contrast checker\n- Note the ratios in the audit sheet",
+                'last_activity_at' => now(),
+            ]);
+            $thread->replies()->create(['user_id' => $users['sara@aqdesk.test'], 'body' => 'Checked: two badges were 3.9:1. I darkened them; please look again.']);
+            $thread->update(['replies_count' => 1]);
+        }
+
+        if (! $project->tasks()->exists()) {
+            foreach ([
+                ['Audit the sign-in and register pages', 'done', 'high', 'member@aqdesk.test', -6],
+                ['Test every form with a screen reader', 'doing', 'high', 'sara@aqdesk.test', 3],
+                ['Check keyboard focus order on the dashboard', 'todo', 'normal', 'member@aqdesk.test', 7],
+                ['Write up findings for the supervisor', 'todo', 'low', null, 14],
+            ] as [$title, $status, $priority, $assignee, $days]) {
+                $project->tasks()->create([
+                    'created_by' => $users['member@aqdesk.test'], 'assignee_id' => $assignee ? $users[$assignee] : null,
+                    'title' => $title, 'status' => $status, 'priority' => $priority, 'due_on' => today()->addDays($days),
+                    'completed_at' => $status === 'done' ? now()->subDays(7) : null,
+                ]);
+            }
+        }
     }
 }

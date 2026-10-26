@@ -58,8 +58,12 @@ class ProjectController extends Controller
             ? $project->invitations()->where('status', 'pending')->latest()->get()
             : collect();
 
+        $taskCounts = $project->tasks()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $threads = $project->threads()->where('status', 'open')->with('author')->limit(3)->get();
+
         return view('projects::show', [
             'project' => $project, 'role' => $project->roleOf($request->user()), 'files' => $files, 'invitations' => $invitations,
+            'taskCounts' => $taskCounts, 'threads' => $threads,
         ]);
     }
 

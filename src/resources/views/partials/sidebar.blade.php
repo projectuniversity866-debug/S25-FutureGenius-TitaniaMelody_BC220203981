@@ -48,6 +48,9 @@
         <li><a class="{{ request()->routeIs('organizations.*') ? 'is-active' : '' }}" href="{{ route('organizations.index') }}">
             <i class="bi bi-buildings" aria-hidden="true"></i> Organizations
         </a></li>
+        <li><a class="{{ request()->routeIs('events.*') ? 'is-active' : '' }}" href="{{ route('events.index') }}">
+            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events
+        </a></li>
 
         @auth
             <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
@@ -115,8 +118,8 @@
         {{-- Modules still being built. Each link is removed from this group
              as its module goes live. --}}
         <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'events') }}">
-            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts
+        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'podcasts') }}">
+            <i class="bi bi-mic" aria-hidden="true"></i> Podcasts
         </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'consulting') }}">
             <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting

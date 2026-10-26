@@ -42,5 +42,5 @@ Route::get('/privacy', [PageController::class, 'legal'])->defaults('page', 'priv
 
 // Modules not built yet — visible placeholders that show the full scope.
 Route::get('/modules/{module}', [PageController::class, 'comingSoon'])
-    ->whereIn('module', ['events', 'consulting', 'newsletter'])
+    ->whereIn('module', ['podcasts', 'consulting', 'newsletter'])
     ->name('modules.coming-soon');

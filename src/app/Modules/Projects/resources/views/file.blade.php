@@ -42,6 +42,22 @@
     </div>
 
     <div class="col-lg-5">
+        <x-card title="Feedback on this file ({{ $threads->count() }})" icon="chat-left-text" class="mb-4">
+            @forelse ($threads as $thread)
+                <a href="{{ route('projects.threads.show', [$project, $thread]) }}" class="d-block text-decoration-none aq-text-sm">{{ $thread->title }}</a>
+                <span class="d-block aq-text-xs aq-muted mb-2">
+                    {{ $thread->isResolved() ? 'Resolved' : 'Open' }} · {{ $thread->author?->name ?? 'a former member' }} · {{ $thread->replies_count }} {{ \Illuminate\Support\Str::plural('reply', $thread->replies_count) }}
+                </span>
+            @empty
+                <p class="aq-text-sm aq-muted">No feedback on this file yet.</p>
+            @endforelse
+            @can('discuss', $project)
+                <a href="{{ route('projects.threads.index', [$project, 'file' => $file->id]) }}#new-thread" class="btn btn-soft btn-sm">
+                    <i class="bi bi-chat-left-text me-1" aria-hidden="true"></i> Give feedback on this file
+                </a>
+            @endcan
+        </x-card>
+
         @can('contribute', $project)
             <x-card title="Upload a new version" icon="upload">
                 <form method="POST" action="{{ route('projects.files.versions.store', [$project, $file]) }}" enctype="multipart/form-data" novalidate>

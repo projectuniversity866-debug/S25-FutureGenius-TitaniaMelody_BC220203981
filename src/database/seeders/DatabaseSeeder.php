@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Modules\Careers\Database\Seeders\JobSeeder;
 use App\Modules\Community\Database\Seeders\CategorySeeder;
 use App\Modules\Community\Database\Seeders\QuestionSeeder;
+use App\Modules\EventsMedia\Database\Seeders\EventSeeder;
 use App\Modules\Governance\Database\Seeders\GovernanceSeeder;
 use App\Modules\Identity\Database\Seeders\RoleSeeder;
 use App\Modules\Identity\Database\Seeders\UserSeeder;
@@ -34,6 +35,7 @@ class DatabaseSeeder extends Seeder
             FormSeeder::class,
             GovernanceSeeder::class,
             ProjectSeeder::class,
+            EventSeeder::class,
         ]);
     }
 }

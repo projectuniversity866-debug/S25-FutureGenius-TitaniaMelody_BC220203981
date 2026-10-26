@@ -10,7 +10,7 @@ class ModuleNavigationTest extends AqDeskTestCase
     public static function moduleSlugs(): array
     {
         return [
-            'events'     => ['events'],
+            'podcasts'   => ['podcasts'],
             'consulting' => ['consulting'],
             'newsletter' => ['newsletter'],
         ];

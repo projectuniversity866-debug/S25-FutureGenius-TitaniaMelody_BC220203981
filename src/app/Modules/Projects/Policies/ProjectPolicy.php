@@ -5,6 +5,9 @@ namespace App\Modules\Projects\Policies;
 use App\Modules\Identity\Models\User;
 use App\Modules\Projects\Models\Project;
 use App\Modules\Projects\Models\ProjectFile;
+use App\Modules\Projects\Models\ProjectTask;
+use App\Modules\Projects\Models\ProjectThread;
+use App\Modules\Projects\Models\ProjectThreadReply;
 use Illuminate\Auth\Access\Response;
 
 /** Who may do what in a project space (FR3, roadmap 3.1). */
@@ -18,7 +21,7 @@ class ProjectPolicy
             : Response::denyAsNotFound();
     }
 
-    /** Owners and collaborators work on an active project (files, feedback, tasks — 3.3 – 3.5). */
+    /** Owners and collaborators work on an active project (files and tasks — 3.3, 3.5). */
     public function contribute(User $user, Project $project): bool
     {
         return ! $project->isArchived() && in_array($project->roleOf($user), ['owner', 'collaborator'], true);
@@ -28,6 +31,29 @@ class ProjectPolicy
     public function deleteFile(User $user, Project $project, ProjectFile $file): bool
     {
         return $this->contribute($user, $project) && ($user->id === $file->user_id || $project->roleOf($user) === 'owner');
+    }
+
+    /** Every member gives feedback — viewers too (e.g. a supervisor reviewing the work) — while the project is active. */
+    public function discuss(User $user, Project $project): bool
+    {
+        return ! $project->isArchived() && $project->roleOf($user) !== null;
+    }
+
+    /** A thread is resolved, reopened or deleted by whoever started it, or the owner. */
+    public function manageThread(User $user, Project $project, ProjectThread $thread): bool
+    {
+        return $this->discuss($user, $project) && ($user->id === $thread->user_id || $project->roleOf($user) === 'owner');
+    }
+
+    public function deleteReply(User $user, Project $project, ProjectThreadReply $reply): bool
+    {
+        return $this->discuss($user, $project) && ($user->id === $reply->user_id || $project->roleOf($user) === 'owner');
+    }
+
+    /** A task is deleted by whoever created it, or the owner. Editing and moving need only "contribute". */
+    public function deleteTask(User $user, Project $project, ProjectTask $task): bool
+    {
+        return $this->contribute($user, $project) && ($user->id === $task->created_by || $project->roleOf($user) === 'owner');
     }
 
     /** Settings, archiving and members are the owner's. */
