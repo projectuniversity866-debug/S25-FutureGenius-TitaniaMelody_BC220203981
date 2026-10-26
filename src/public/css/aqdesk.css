@@ -1765,3 +1765,51 @@ a.aq-tag.aq-tag-lg { font-size: .8125rem; font-weight: 600; padding: .25rem .687
     background: color-mix(in srgb, var(--aq-accent-soft) 45%, var(--aq-surface));
 }
 .aq-alert-cta p { flex: 1 1 16rem; }
+
+/* "Verified expert" badge — <x-verified-badge> (2.1). Icon plus words or hidden text, never colour alone. */
+.aq-verified { display: inline-flex; align-items: center; gap: .25rem; color: var(--aq-blue-ink); font-weight: 600; vertical-align: middle; }
+.aq-verified .bi { font-size: .9em; }
+
+/* Knowledge Hub (2.2). */
+.aq-chip-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+a.aq-tag.is-active { background: var(--aq-accent-soft); border-color: var(--aq-accent-line); color: var(--aq-accent-ink); }
+.aq-article-card { transition: border-color .14s ease, box-shadow .14s ease; }
+.aq-article-card:hover { border-color: var(--aq-accent-line); box-shadow: var(--aq-shadow-lift); }
+.aq-article-card .aq-card-title a { color: var(--aq-ink); }
+.aq-border-bottom { border-bottom: 1px solid var(--aq-border); }
+.aq-article-body { font-size: 1rem; line-height: 1.75; }
+.aq-article-body h1, .aq-article-body h2, .aq-article-body h3 { font-size: 1.125rem; margin-top: 1.75rem; }
+
+/* Learning Hub (2.3). */
+.aq-progress { display: block; width: 100%; height: 8px; border: 0; border-radius: var(--aq-radius-pill); background: var(--aq-surface-3); overflow: hidden; appearance: none; }
+.aq-progress::-webkit-progress-bar { background: var(--aq-surface-3); border-radius: var(--aq-radius-pill); }
+.aq-progress::-webkit-progress-value { background: var(--aq-accent); border-radius: var(--aq-radius-pill); }
+.aq-progress::-moz-progress-bar { background: var(--aq-accent); border-radius: var(--aq-radius-pill); }
+.aq-resource-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.aq-resource { display: flex; gap: .875rem; padding: .875rem 1rem; background: var(--aq-surface); border: 1px solid var(--aq-border); border-radius: var(--aq-radius); }
+.aq-path-steps .aq-resource { padding: 0; border: 0; background: none; }
+.aq-resource-icon { flex: 0 0 38px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--aq-radius-sm); background: var(--aq-accent-soft); color: var(--aq-accent-ink); }
+.aq-resource-title { font-size: .9375rem; font-weight: 650; margin: 0 0 .125rem; }
+.aq-resource-title a { color: var(--aq-ink); text-decoration: none; }
+.aq-resource-title a:hover { color: var(--aq-accent-ink); text-decoration: underline; }
+.aq-resource-title .bi { font-size: .6875rem; }
+.aq-resource-note { margin-top: .5rem; padding: .375rem .625rem; border-radius: var(--aq-radius-sm); background: var(--aq-amber-soft); color: var(--aq-amber-ink); font-size: .8125rem; }
+.aq-path-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.aq-path-steps li.is-done { border-color: var(--aq-accent-line); }
+.aq-path-steps li.is-done .aq-pipeline-dot { background: var(--aq-accent); border-color: var(--aq-accent); color: var(--aq-on-accent); }
+.aq-step-builder { list-style: none; margin: 0; padding: 0; display: grid; gap: .625rem; }
+.aq-step-builder li { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: .5rem 0; border-bottom: 1px solid var(--aq-border); }
+
+/* Form builder (2.4). */
+.aq-form-status .card-body { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.aq-form-status a { word-break: break-all; }
+.aq-field-list { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .75rem; }
+.aq-field-list > li { padding: .75rem; border: 1px solid var(--aq-border); border-radius: var(--aq-radius-sm); background: var(--aq-surface-2); }
+.aq-field-list > li:target { border-color: var(--aq-accent); }
+.aq-field-icon { flex: 0 0 30px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--aq-surface); color: var(--aq-muted); border: 1px solid var(--aq-border); }
+.aq-form-question { padding: 1rem 0; border-bottom: 1px solid var(--aq-border); }
+.aq-form-question:last-of-type { border-bottom: 0; margin-bottom: 1rem; }
+.aq-form-question legend { font-size: .875rem; }
+.aq-rating { display: flex; flex-wrap: wrap; gap: .375rem; }
+.aq-rating .btn-check:checked + .btn { background: var(--aq-accent); border-color: var(--aq-accent); color: var(--aq-on-accent); }
+.aq-latest-answers { margin: 0; padding-left: 1.125rem; display: grid; gap: .375rem; font-size: .8125rem; color: var(--aq-ink-2); }

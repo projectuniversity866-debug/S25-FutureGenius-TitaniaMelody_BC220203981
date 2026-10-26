@@ -64,7 +64,7 @@
                                class="d-flex align-items-center gap-2 text-decoration-none">
                                 <x-avatar :user="$question->user" size="sm" />
                                 <span class="aq-text-sm">
-                                    <span class="fw-semibold d-block aq-ink">{{ $question->user->name }}</span>
+                                    <span class="fw-semibold d-block aq-ink">{{ $question->user->name }} <x-verified-badge :user="$question->user" /></span>
                                     <span class="aq-muted">{{ $question->user->roleName() }}</span>
                                 </span>
                             </a>
@@ -131,7 +131,7 @@
                                        class="d-flex align-items-center gap-2 text-decoration-none">
                                         <x-avatar :user="$answer->user" size="xs" />
                                         <span class="aq-text-sm">
-                                            <span class="fw-semibold aq-ink">{{ $answer->user->name }}</span>
+                                            <span class="fw-semibold aq-ink">{{ $answer->user->name }}</span> <x-verified-badge :user="$answer->user" />
                                             <span class="aq-muted">· {{ $answer->created_at->diffForHumans(null, true) }} ago</span>
                                         </span>
                                     </a>

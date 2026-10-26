@@ -180,6 +180,48 @@ check "sara's bell summary (JSON)" 200 "$(json sara GET /notifications/summary)"
 contains "…her job alert fired" "$WORK/last.json" "for your alert"
 check "deadline closing runs" 0 "$("$PHP" artisan careers:close-expired >/dev/null 2>&1; echo $?)"
 
+echo "Expert verification & Knowledge Hub"
+check "knowledge hub" 200 "$(get guest /knowledge)"
+contains "…lists the seeded guide" "$WORK/last.html" "evaluating a classifier properly"
+check "member cannot write yet" 403 "$(get member /knowledge/write)"
+check "member applies for verification" 302 "$(send member POST /expert-verification --data-urlencode "field=Software testing" \
+    --data-urlencode "credentials=Two years writing automated end-to-end tests for Laravel applications." | cut -d' ' -f1)"
+check "verification queue (admin)" 200 "$(get admin /admin/verifications)"
+V=$(grep -oE '/admin/verifications/[0-9]+' "$WORK/last.html" | tail -1)
+check "member cannot open the queue" 403 "$(get member /admin/verifications)"
+check "admin approves" 302 "$(send admin PUT "$V" --data-urlencode decision=approve | cut -d' ' -f1)"
+check "verified member can write now" 200 "$(get member /knowledge/write)"
+R=$(send member POST /knowledge --data-urlencode "title=Writing smoke tests that drive real forms" --data-urlencode kind=guide \
+    --data-urlencode "summary=Use real CSRF tokens and cookie jars so the test exercises the same path as a browser." \
+    --data-urlencode "body=$(printf 'Keep one cookie jar per user and read the CSRF token from the page before every form. %.0s' 1 2 3)" \
+    --data-urlencode action=publish)
+check "member publishes a guide" 302 "${R%% *}"
+check "the guide page" 200 "$(get guest "$(path_of "$R")")"
+contains "…shows the verified badge" "$WORK/last.html" "Verified expert"
+
+echo "Learning Hub & forms"
+check "learning hub" 200 "$(get guest /learn)"
+check "resource library" 200 "$(get guest /learn/resources)"
+check "a learning path" 200 "$(get guest /learn/paths/start-with-web-accessibility)"
+get sara /learn/paths/start-with-web-accessibility >/dev/null
+STEP=$(grep -oE '/learn/steps/[0-9]+/toggle' "$WORK/last.html" | head -1)
+check "sara ticks off a step" 302 "$(send sara POST "$STEP" | cut -d' ' -f1)"
+get sara /learn/mine >/dev/null
+contains "…and sees her progress" "$WORK/last.html" "1 of 4 steps"
+check "member cannot build forms" 403 "$(get sara /forms/new)"
+R=$(send expert POST /forms --data-urlencode "title=Smoke test sign-up")
+check "expert creates a form" 302 "${R%% *}"
+F=$(path_of "$R"); F=${F%/edit}
+check "expert adds a question" 302 "$(send expert POST "$F/fields" --data-urlencode type=short_text --data-urlencode "label=Your name" --data-urlencode is_required=1 | cut -d' ' -f1)"
+check "expert opens the form" 302 "$(send expert PUT "$F/status" --data-urlencode status=open | cut -d' ' -f1)"
+SLUG=${F#/forms/}
+check "public form page" 200 "$(get guest "/f/$SLUG")"
+FIELD=$(grep -oE 'name="answers\[[0-9]+\]"' "$WORK/last.html" | head -1 | grep -oE '[0-9]+')
+check "a visitor submits it" 302 "$(send guest POST "/f/$SLUG" --data-urlencode "answers[$FIELD]=Smoke Visitor" | cut -d' ' -f1)"
+check "responses page" 200 "$(get expert "$F/responses")"
+contains "…shows the answer" "$WORK/last.html" "Smoke Visitor"
+check "CSV export" 200 "$(get expert "$F/responses.csv")"
+
 echo "Administration"
 check "member blocked from admin" 403 "$(get member /admin/users)"
 for p in /admin/users /admin/questions /admin/jobs; do check "admin GET $p" 200 "$(get admin "$p")"; done

@@ -54,6 +54,8 @@
                     <i class="bi bi-person-gear me-2" aria-hidden="true"></i> Edit profile</a></li>
                 <li><a class="dropdown-item" href="{{ route('settings.show') }}">
                     <i class="bi bi-gear me-2" aria-hidden="true"></i> Account settings</a></li>
+                <li><a class="dropdown-item" href="{{ route('verification.show') }}">
+                    <i class="bi bi-patch-check me-2" aria-hidden="true"></i> Expert verification</a></li>
                 <li><a class="dropdown-item" href="{{ route('saved.index') }}">
                     <i class="bi bi-bookmark me-2" aria-hidden="true"></i> Saved</a></li>
                 <li><a class="dropdown-item" href="{{ route('applications.index') }}">

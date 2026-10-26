@@ -21,6 +21,7 @@
                     <p class="aq-text-sm aq-muted mb-2">{{ $user->profile->headline }}</p>
                 @endif
                 <span class="badge text-bg-dark">{{ $user->roleName() }}</span>
+                <x-verified-badge :user="$user" label class="d-block mt-2 aq-text-sm" />
 
                 @if (auth()->id() === $user->id)
                     <a href="{{ route('profile.edit') }}" class="btn btn-quiet btn-sm w-100 mt-3">

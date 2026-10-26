@@ -7,6 +7,8 @@ use App\Modules\Community\Database\Seeders\CategorySeeder;
 use App\Modules\Community\Database\Seeders\QuestionSeeder;
 use App\Modules\Identity\Database\Seeders\RoleSeeder;
 use App\Modules\Identity\Database\Seeders\UserSeeder;
+use App\Modules\Knowledge\Database\Seeders\KnowledgeSeeder;
+use App\Modules\Platform\Database\Seeders\FormSeeder;
 use Illuminate\Database\Seeder;
 
 /**
@@ -26,6 +28,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             QuestionSeeder::class,
             JobSeeder::class,
+            KnowledgeSeeder::class,
+            FormSeeder::class,
         ]);
     }
 }

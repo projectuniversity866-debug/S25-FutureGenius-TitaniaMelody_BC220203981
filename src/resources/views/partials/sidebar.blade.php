@@ -35,6 +35,12 @@
         <li><a class="{{ request()->routeIs('tags.*') ? 'is-active' : '' }}" href="{{ route('tags.index') }}">
             <i class="bi bi-tags" aria-hidden="true"></i> Tags
         </a></li>
+        <li><a class="{{ request()->routeIs('articles.*') ? 'is-active' : '' }}" href="{{ route('articles.index') }}">
+            <i class="bi bi-journal-richtext" aria-hidden="true"></i> Knowledge Hub
+        </a></li>
+        <li><a class="{{ request()->routeIs('learning.*') ? 'is-active' : '' }}" href="{{ route('learning.index') }}">
+            <i class="bi bi-signpost-2" aria-hidden="true"></i> Learning Hub
+        </a></li>
         <li><a class="{{ request()->routeIs('jobs.index') || request()->routeIs('jobs.show') ? 'is-active' : '' }}"
                href="{{ route('jobs.index') }}">
             <i class="bi bi-briefcase" aria-hidden="true"></i> Opportunities
@@ -56,13 +62,18 @@
                     <i class="bi bi-clipboard-check" aria-hidden="true"></i> My postings
                 </a></li>
             @endif
+            @can('forms.create')
+                <li><a class="{{ request()->routeIs('forms.*') ? 'is-active' : '' }}" href="{{ route('forms.index') }}">
+                    <i class="bi bi-ui-checks" aria-hidden="true"></i> My forms
+                </a></li>
+            @endcan
             <li><a class="{{ request()->routeIs('profile.*') ? 'is-active' : '' }}" href="{{ route('profile.show', $user) }}">
                 <i class="bi bi-person" aria-hidden="true"></i> My profile
             </a></li>
         @endauth
 
         @auth
-            @canany(['users.manage', 'content.moderate', 'activity.view'])
+            @canany(['users.manage', 'content.moderate', 'activity.view', 'experts.verify'])
                 <li class="aq-sidenav-group"><span class="aq-label">Administration</span></li>
                 @can('users.manage')
                     <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
@@ -78,6 +89,11 @@
                     </a></li>
                     <li><a class="{{ request()->routeIs('admin.jobs.*') ? 'is-active' : '' }}" href="{{ route('admin.jobs.index') }}">
                         <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate opportunities
+                    </a></li>
+                @endcan
+                @can('experts.verify')
+                    <li><a class="{{ request()->routeIs('admin.verifications.*') ? 'is-active' : '' }}" href="{{ route('admin.verifications.index') }}">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i> Expert verification
                     </a></li>
                 @endcan
                 @can('activity.view')

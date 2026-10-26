@@ -27,6 +27,8 @@ final class PermissionCatalog
             'content.moderate'      => ['name' => 'Edit, close or delete anyone’s content', 'group' => 'Community', 'roles' => [Role::ADMIN]],
             'opportunities.apply'   => ['name' => 'Apply to jobs and internships',     'group' => 'Careers',        'roles' => $everyone],
             'opportunities.publish' => ['name' => 'Publish jobs and internships',      'group' => 'Careers',        'roles' => [Role::ADMIN, Role::EXPERT]],
+            'forms.create'          => ['name' => 'Build forms and read their responses', 'group' => 'Platform', 'roles' => [Role::ADMIN, Role::EXPERT]],
+            'experts.verify'        => ['name' => 'Review expert verification requests', 'group' => 'Administration', 'roles' => [Role::ADMIN]],
             'users.manage'          => ['name' => 'Manage users, roles and permissions', 'group' => 'Administration', 'roles' => [Role::ADMIN]],
             'activity.view'         => ['name' => 'View the activity log',             'group' => 'Administration', 'roles' => [Role::ADMIN]],
         ];
