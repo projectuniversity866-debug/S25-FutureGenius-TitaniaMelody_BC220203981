@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Modules\Careers\Database\Seeders\JobSeeder;
 use App\Modules\Community\Database\Seeders\CategorySeeder;
 use App\Modules\Community\Database\Seeders\QuestionSeeder;
+use App\Modules\Governance\Database\Seeders\GovernanceSeeder;
 use App\Modules\Identity\Database\Seeders\RoleSeeder;
 use App\Modules\Identity\Database\Seeders\UserSeeder;
 use App\Modules\Knowledge\Database\Seeders\KnowledgeSeeder;
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
             JobSeeder::class,
             KnowledgeSeeder::class,
             FormSeeder::class,
+            GovernanceSeeder::class,
         ]);
     }
 }

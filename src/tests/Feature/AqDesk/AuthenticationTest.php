@@ -15,7 +15,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'New Tester',
             'email'                 => 'new.tester@aqdesk.test',
-            'role_slug'             => 'member',
+            'role_slug'             => 'member', 'terms' => '1',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
         ])->assertSessionHasNoErrors();
@@ -32,7 +32,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'Impostor',
             'email'                 => $existing->email,
-            'role_slug'             => 'member',
+            'role_slug'             => 'member', 'terms' => '1',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
         ])->assertSessionHasErrors('email');
@@ -47,7 +47,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'Short Password',
             'email'                 => 'short@aqdesk.test',
-            'role_slug'             => 'member',
+            'role_slug'             => 'member', 'terms' => '1',
             'password'              => 'abcd',
             'password_confirmation' => 'abcd',
         ])->assertSessionHasErrors('password');
@@ -61,7 +61,7 @@ class AuthenticationTest extends AqDeskTestCase
         $this->post(route('register.store'), [
             'name'                  => 'Expert Signup',
             'email'                 => 'expert.signup@aqdesk.test',
-            'role_slug'             => 'expert',
+            'role_slug'             => 'expert', 'terms' => '1',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
         ])->assertSessionHasNoErrors();

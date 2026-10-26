@@ -18,6 +18,14 @@ class RegisterRequest extends FormRequest
             'password'  => ['required', 'confirmed', Password::min(8)],
             'role_slug' => ['required', 'string', Rule::in(RegistrationService::SELF_SERVICE_ROLES)],
             'headline'  => ['nullable', 'string', 'max:255'],
+            // Consent to the terms and privacy policy (roadmap 2.6); recorded by Governance.
+            'terms'     => ['accepted'],
         ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return ['terms.accepted' => 'Please agree to the terms of use and the privacy policy to create an account.'];
     }
 }

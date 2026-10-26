@@ -33,6 +33,10 @@
 
                 <x-markdown :text="$article->body" class="aq-article-body" />
 
+                @if ($article->isPublished())
+                    <p class="mt-4 mb-0 text-end"><x-report-link :item="$article" /></p>
+                @endif
+
                 @can('update', $article)
                     <div class="d-flex flex-wrap gap-2 pt-3 mt-4 aq-border-top">
                         <a href="{{ route('articles.edit', $article) }}" class="btn btn-sm btn-quiet">

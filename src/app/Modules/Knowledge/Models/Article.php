@@ -4,6 +4,8 @@ namespace App\Modules\Knowledge\Models;
 
 use App\Modules\Community\Models\Category;
 use App\Modules\Identity\Models\User;
+use App\Modules\Knowledge\Services\ArticleService;
+use App\Modules\Platform\Contracts\Reportable;
 use App\Modules\Platform\Services\MarkdownRenderer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -14,8 +16,35 @@ use Illuminate\Support\Str;
  * An article or step-by-step guide in the Knowledge Hub (roadmap 2.2).
  * A null published_at means it is still a draft, visible only to its author.
  */
-class Article extends Model
+class Article extends Model implements Reportable
 {
+    // Reporting (Governance, roadmap 2.5)
+
+    public function reportLabel(): string
+    {
+        return $this->kindLabel().' “'.Str::limit($this->title, 80).'”';
+    }
+
+    public function reportUrl(): string
+    {
+        return route('articles.show', $this);
+    }
+
+    public function reportExcerpt(): string
+    {
+        return $this->summary;
+    }
+
+    public function reportAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function removeAsModerator(User $moderator): void
+    {
+        app(ArticleService::class)->delete($this, $moderator);
+    }
+
     public const KINDS = ['article' => 'Article', 'guide' => 'Guide'];
 
     /** Average adult reading speed, for "5 min read". */

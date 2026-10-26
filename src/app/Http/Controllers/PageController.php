@@ -76,4 +76,10 @@ class PageController extends Controller
 
         return view('coming-soon', ['module' => $modules[$module]]);
     }
+
+    /** Community guidelines, terms of use and privacy policy (roadmap 2.5 – 2.6). */
+    public function legal(string $page): View
+    {
+        return view('legal.'.$page);
+    }
 }

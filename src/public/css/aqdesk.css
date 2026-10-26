@@ -1813,3 +1813,13 @@ a.aq-tag.is-active { background: var(--aq-accent-soft); border-color: var(--aq-a
 .aq-rating { display: flex; flex-wrap: wrap; gap: .375rem; }
 .aq-rating .btn-check:checked + .btn { background: var(--aq-accent); border-color: var(--aq-accent); color: var(--aq-on-accent); }
 .aq-latest-answers { margin: 0; padding-left: 1.125rem; display: grid; gap: .375rem; font-size: .8125rem; color: var(--aq-ink-2); }
+
+/* Governance (2.5 – 2.6). */
+.aq-report-link { font-size: .8125rem; color: var(--aq-muted); text-decoration: none; white-space: nowrap; }
+.aq-report-link:hover, .aq-report-link:focus-visible { color: var(--aq-red-ink); text-decoration: underline; }
+.aq-report-link-sm { font-size: .75rem; margin-left: .5rem; }
+.aq-legal h2 { font-size: 1.0625rem; font-weight: 650; margin: 1.5rem 0 .5rem; }
+.aq-legal h2:first-child { margin-top: 0; }
+.aq-legal p, .aq-legal li { font-size: .9375rem; line-height: 1.7; color: var(--aq-ink-2); }
+.aq-card-danger { border-color: color-mix(in srgb, var(--aq-red-ink) 30%, var(--aq-border)); }
+.aq-notes li.is-plain { background: var(--aq-surface-2); }

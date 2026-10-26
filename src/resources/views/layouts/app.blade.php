@@ -57,6 +57,20 @@
                                 </form>
                             </div>
                         @endunless
+                        {{-- Consent to the current terms (Governance, roadmap 2.6). --}}
+                        @unless (request()->routeIs('terms', 'privacy', 'privacy.*') || app(\App\Modules\Governance\Services\PrivacyService::class)->hasAccepted(auth()->user()))
+                            <div class="alert alert-info d-flex flex-wrap align-items-center gap-2" role="status">
+                                <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                                <span class="flex-grow-1">
+                                    Please review our <a href="{{ route('terms') }}">terms of use</a> and
+                                    <a href="{{ route('privacy') }}">privacy policy</a> (version {{ \App\Modules\Governance\Support\LegalDocuments::VERSION }}).
+                                </span>
+                                <form method="POST" action="{{ route('privacy.accept') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-accent">I accept</button>
+                                </form>
+                            </div>
+                        @endunless
                     @endauth
                     @include('partials.alerts')
                     @yield('content')

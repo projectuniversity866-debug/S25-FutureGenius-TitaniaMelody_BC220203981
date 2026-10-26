@@ -12,6 +12,8 @@ use App\Modules\Knowledge\Policies\ArticlePolicy;
 use App\Modules\Knowledge\Policies\ExpertVerificationPolicy;
 use App\Modules\Knowledge\Policies\LearningPolicy;
 use App\Modules\ModuleServiceProvider;
+use App\Modules\Platform\Services\PrivateFiles;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Expert knowledge sharing and EdTech: expert verification (roadmap 2.1),
@@ -41,6 +43,32 @@ class KnowledgeServiceProvider extends ModuleServiceProvider
             'learning_resource'   => LearningResource::class,
             'learning_path'       => LearningPath::class,
         ];
+    }
+
+    /** Your verification requests, articles, curated items and learning progress (roadmap 2.6). */
+    protected function personalData(): array
+    {
+        return [
+            'expert_verification' => fn (User $user) => ExpertVerification::where('user_id', $user->id)
+                ->get(['field', 'credentials', 'evidence_url', 'status', 'review_note', 'created_at'])->toArray(),
+            'articles' => fn (User $user) => Article::where('user_id', $user->id)->get(['title', 'kind', 'summary', 'published_at'])->toArray(),
+            'learning_progress' => fn (User $user) => DB::table('learning_progress')
+                ->join('learning_path_steps', 'learning_path_steps.id', '=', 'learning_progress.learning_path_step_id')
+                ->join('learning_paths', 'learning_paths.id', '=', 'learning_path_steps.learning_path_id')
+                ->where('learning_progress.user_id', $user->id)
+                ->get(['learning_paths.title as path', 'learning_path_steps.position as step', 'learning_progress.completed_at'])->toArray(),
+        ];
+    }
+
+    /** Verification requests and their private documents go; published articles stay. */
+    protected function personalDataErasers(): array
+    {
+        return [function (User $user) {
+            $files = app(PrivateFiles::class);
+            ExpertVerification::where('user_id', $user->id)->get()
+                ->each(fn (ExpertVerification $v) => $files->delete($v->document_path))->each->delete();
+            DB::table('learning_progress')->where('user_id', $user->id)->delete();
+        }];
     }
 
     protected function relations(): array

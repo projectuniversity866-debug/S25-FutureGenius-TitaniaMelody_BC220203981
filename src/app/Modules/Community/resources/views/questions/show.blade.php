@@ -86,6 +86,7 @@
                                     </form>
                                 </div>
                             @endif
+                            <x-report-link :item="$question" />
                         </div>
 
                         @if ($question->revisions_count)
@@ -136,7 +137,8 @@
                                         </span>
                                     </a>
 
-                                    <div class="d-flex gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <x-report-link :item="$answer" />
                                         @if ($me?->can('update', $answer))
                                             <a href="#edit-answer-{{ $answer->id }}" class="btn btn-sm btn-quiet"
                                                onclick="document.getElementById('edit-answer-{{ $answer->id }}').open = true">

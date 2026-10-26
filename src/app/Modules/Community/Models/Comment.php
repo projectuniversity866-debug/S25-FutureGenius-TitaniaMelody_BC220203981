@@ -2,12 +2,15 @@
 
 namespace App\Modules\Community\Models;
 
+use App\Modules\Community\Services\CommentService;
 use App\Modules\Identity\Models\User;
+use App\Modules\Platform\Contracts\Reportable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Str;
 
-class Comment extends Model
+class Comment extends Model implements Reportable
 {
     public const MAX_LENGTH = 600;
 
@@ -28,5 +31,32 @@ class Comment extends Model
     public function question(): Question
     {
         return $this->commentable instanceof Answer ? $this->commentable->question : $this->commentable;
+    }
+
+    // Reporting (Governance, roadmap 2.5)
+
+    public function reportLabel(): string
+    {
+        return 'Comment on “'.Str::limit($this->question()->title, 70).'”';
+    }
+
+    public function reportUrl(): string
+    {
+        return route('questions.show', $this->question()).'#comment-'.$this->id;
+    }
+
+    public function reportExcerpt(): string
+    {
+        return $this->body;
+    }
+
+    public function reportAuthor(): ?User
+    {
+        return $this->user;
+    }
+
+    public function removeAsModerator(User $moderator): void
+    {
+        app(CommentService::class)->delete($this);
     }
 }

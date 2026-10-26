@@ -2,7 +2,9 @@
 
 namespace App\Modules\Careers\Models;
 
+use App\Modules\Careers\Services\JobPostService;
 use App\Modules\Identity\Models\User;
+use App\Modules\Platform\Contracts\Reportable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,9 +13,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class JobPost extends Model
+class JobPost extends Model implements Reportable
 {
     use HasFactory;
+
+    // Reporting (Governance, roadmap 2.5)
+
+    public function reportLabel(): string
+    {
+        return $this->typeLabel().' “'.Str::limit($this->title, 80).'”';
+    }
+
+    public function reportUrl(): string
+    {
+        return route('jobs.show', $this);
+    }
+
+    public function reportExcerpt(): string
+    {
+        return Str::limit($this->description, 240);
+    }
+
+    public function reportAuthor(): ?User
+    {
+        return $this->user;
+    }
+
+    public function removeAsModerator(User $moderator): void
+    {
+        app(JobPostService::class)->delete($this);
+    }
 
     /**
      * Opportunity types (FR5 + the "professional opportunities" vision item,

@@ -84,6 +84,8 @@
                     </p>
                 @endif
 
+                <p class="mb-3 text-end"><x-report-link :item="$job" /></p>
+
                 @if ($canManage)
                     <div class="d-flex flex-wrap gap-2 pt-3 aq-border-top">
                         <a href="{{ route('jobs.edit', $job) }}" class="btn btn-sm btn-quiet">

@@ -2,6 +2,7 @@
 
 namespace App\Modules;
 
+use App\Modules\Platform\Support\PersonalData;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -28,6 +29,11 @@ abstract class ModuleServiceProvider extends ServiceProvider
 {
     /** Folder name under app/Modules, e.g. "Community". */
     protected string $module;
+
+    public function register(): void
+    {
+        $this->app->singletonIf(PersonalData::class);
+    }
 
     public function boot(): void
     {
@@ -62,6 +68,36 @@ abstract class ModuleServiceProvider extends ServiceProvider
                 $model::resolveRelationUsing($name, $resolver);
             }
         }
+
+        $registry = $this->app->make(PersonalData::class);
+        foreach ($this->personalData() as $section => $exporter) {
+            $registry->export($section, $exporter);
+        }
+        foreach ($this->personalDataErasers() as $eraser) {
+            $registry->erase($eraser);
+        }
+    }
+
+    /**
+     * What this module stores about a member, for "Download my data"
+     * (roadmap 2.6): section name => fn (User $user) => array.
+     *
+     * @return array<string, \Closure>
+     */
+    protected function personalData(): array
+    {
+        return [];
+    }
+
+    /**
+     * How to erase this module's personal data when a member deletes their
+     * account. Public contributions may stay, shown as "Deleted user".
+     *
+     * @return array<int, \Closure>
+     */
+    protected function personalDataErasers(): array
+    {
+        return [];
     }
 
     /** View namespace, e.g. "events-media" for EventsMedia. */

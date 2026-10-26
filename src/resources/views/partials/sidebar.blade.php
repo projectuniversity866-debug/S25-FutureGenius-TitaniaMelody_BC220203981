@@ -84,6 +84,11 @@
                     </a></li>
                 @endcan
                 @can('content.moderate')
+                    @php $openReports = \App\Modules\Governance\Models\Report::where('status', 'open')->count(); @endphp
+                    <li><a class="{{ request()->routeIs('admin.reports.*', 'admin.moderation.*') ? 'is-active' : '' }}" href="{{ route('admin.reports.index') }}">
+                        <i class="bi bi-flag" aria-hidden="true"></i> Reports
+                        @if ($openReports)<span class="aq-tabs-count ms-auto">{{ $openReports }}<span class="visually-hidden"> open</span></span>@endif
+                    </a></li>
                     <li><a class="{{ request()->routeIs('admin.questions.*') ? 'is-active' : '' }}" href="{{ route('admin.questions.index') }}">
                         <i class="bi bi-shield-check" aria-hidden="true"></i> Moderate questions
                     </a></li>

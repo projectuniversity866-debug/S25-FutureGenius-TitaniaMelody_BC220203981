@@ -17,7 +17,7 @@ class AccountSecurityTest extends AqDeskTestCase
     private function register(string $email = 'fresh@aqdesk.test'): User
     {
         $this->post(route('register.store'), [
-            'name' => 'Fresh Member', 'email' => $email, 'role_slug' => 'member',
+            'name' => 'Fresh Member', 'email' => $email, 'role_slug' => 'member', 'terms' => '1',
             'password' => 'password123', 'password_confirmation' => 'password123',
         ])->assertSessionHasNoErrors();
 

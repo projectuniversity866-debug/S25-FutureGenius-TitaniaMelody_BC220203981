@@ -17,13 +17,13 @@ Results go in the progress log.
 |---|---|---|---|
 | 0 | Foundation | 11 | 11 |
 | 1 | Rebuild existing modules | 15 | 15 |
-| 2 | Missing scope | 7 | 4 |
+| 2 | Missing scope | 7 | 6 |
 | 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 0 |
 | 4 | Quality | 4 | 0 |
 | 5 | Deployment & deliverables | 6 | 0 |
-| | **Total** | **61** | **30** |
+| | **Total** | **61** | **32** |
 
-**Next steps:** 2.5 + 2.6
+**Next steps:** 2.7 + 3.1
 
 ---
 
@@ -88,8 +88,8 @@ Results go in the progress log.
 | [x] | 2.2 | Knowledge Hub: expert articles & guides by category | Expert knowledge sharing |
 | [x] | 2.3 | Learning Hub: resources & learning paths per category | EdTech integration |
 | [x] | 2.4 | Form Builder: creators build forms, respondents submit (events, consulting intake, job questions, surveys) | Forms engine |
-| [ ] | 2.5 | Governance: community guidelines, report/flag → moderation queue → decision log, admin audit trail | Digital governance |
-| [ ] | 2.6 | Privacy: terms/privacy consent, export my data, delete my account | Data rights |
+| [x] | 2.5 | Governance: community guidelines, report/flag → moderation queue → decision log, admin audit trail | Digital governance |
+| [x] | 2.6 | Privacy: terms/privacy consent, export my data, delete my account | Data rights |
 | [ ] | 2.7 | Accessibility toolbar (text size, high contrast, dyslexia font, reduced motion, line spacing) + accessibility statement | Demonstrable accessibility |
 
 ## Phase 3 — New modules
@@ -204,3 +204,7 @@ Results go in the progress log.
 | 2026-10-27 | 2.3 | Learning Hub (Knowledge, EdTech): `learning_resources` (video, course, tutorial, article, book, tool; level, provider, time, free/paid, topic), `learning_paths` with ordered `learning_path_steps` (each with a "why this step" note) and per-member `learning_progress`. `/learn`: paths by topic with your progress; `/learn/resources`: filterable library; path page: numbered steps, "Done" toggles, progress bar (native `<progress>`), estimated time, "Path complete"; `/learn/mine`: paths in progress and what you curate. Verified experts (or moderators) curate: add/edit resources, create a path (draft), add/reorder/remove steps, publish (refused while empty); drafts are hidden from everyone else. Seeded 7 real free resources and 2 paths. |
 | 2026-10-27 | 2.4 | Form Builder (Platform forms engine, for later event registration, consulting intake, job questions and surveys): `forms`, `form_fields` (short answer, paragraph, email, number, date, one choice, several choices, dropdown, rating 1–5, consent), `form_responses`, `form_answers`. Creators with the new `forms.create` permission (admins + experts; added to existing databases by migration) build forms on one page: questions with hints/required/choices, reorder, edit, delete; settings (sign-in required, one response per member, thank-you message, automatic closing time); status Draft (private preview) → Open → Closed; unguessable public link `/f/{slug}`. Respondents get accessible fields (fieldsets for choices, errors linked with aria-describedby); answers are validated against the form's own fields. Results: per-question summary (bar lists, average rating, latest text answers), individual responses table, CSV export with spreadsheet-formula injection neutralised. Seeded an open feedback survey with 3 responses. |
 | 2026-10-27 | Tests 2.3 + 2.4 | 211 PHPUnit pass on PHP 8.3 + 8.4 (16 new: L1–L7 hub/library/filters, who curates + URL/kind validation, path builder add/reorder/remove/no empty publish, drafts private, progress on/off on path/hub/My learning, completion, edit rights + resource removal cascades; B1–B9 build + permissions, draft preview/404 + no empty open, visitor submit, per-field validation, sign-in + one-response rules, closing, summary/table/CSV with formula guard + privacy, field reorder/edit/delete, seeded survey). e2e smoke 114/114 (14 new: hub, library, path, tick a step, member blocked from forms, expert builds + opens a form, visitor submits, responses + CSV). WAMP migrated and demo learning content + survey added. |
+| 2026-10-28 | Process | Work moved to a second computer (same GitHub repo, `development` branch); `CLAUDE.md` carries the working rules. Baseline there: 211 PHPUnit pass on CLI PHP 8.5 and WAMP PHP 8.3. |
+| 2026-10-28 | 2.5 | Governance (first real code in the Governance module). **Report** link on questions, answers, comments, articles and opportunities → report form (reason + details; not your own content, one open report per person) → moderators notified. **Moderation queue** (Administration → Reports, with open count): Open / Removed / Dismissed tabs, report page with the content, all reports on it and a decision — *remove* (deleted through the owning module's own service, so clean-up and logs still happen; author told the reason and note) or *keep* (report dismissed); one decision covers every open report on that content; reporters are thanked and told the outcome. **Moderation log**: every decision with content label, reason, note, moderator and report count, kept after the content is gone; also in the activity log (audit trail). **Community guidelines** page. Modules stay independent: content types implement `Platform\Contracts\Reportable`. |
+| 2026-10-28 | 2.6 | Privacy & data rights. Public **terms of use** and **privacy policy** pages (with a retention table); sign-up now requires agreeing, and the accepted version is recorded (`consents`); members who have not accepted the current version see a banner with "I accept". **Privacy & my data** page (account menu): **Download my data** — a JSON file with every module's section (account, profile, Q&A, votes, reputation, applications with history, saved items, alerts, articles, verification requests, learning progress, notifications, form responses, reports, consents); **Delete my account** (password + tick + confirm dialog) — erases name, email, profile, photo, sessions, linked sign-ins, applications and CVs, verification documents, saved items, alerts, follows, notifications and progress; public posts stay as "Deleted user"; sign-in blocked; the last administrator is protected. Each module declares its own data through new `personalData()` / `personalDataErasers()` hooks on `ModuleServiceProvider` (`Platform\Support\PersonalData` registry). |
+| 2026-10-28 | Tests 2.5 + 2.6 | 226 PHPUnit pass on PHP 8.5 + 8.3 (15 new: G1–G8 report + moderator notice, report rules, link only on others' content, remove → module delete + all reports resolved + log + author/reporter notices, dismiss + no double decision, answers/comments/articles/opportunities reportable, queue/log access, public pages; Y1–Y7 consent required + recorded, banner until accepted, export has every section and only your data, delete needs password + tick, full deletion effects incl. CV file and blocked sign-in, last admin protected, privacy page); 4 sign-up tests now tick the consent box. e2e smoke 127/127 (13 new). WAMP MySQL migrated; demo accounts marked as having accepted, one demo report added (additive). |

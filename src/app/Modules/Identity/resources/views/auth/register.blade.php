@@ -77,6 +77,17 @@
         </div>
     </div>
 
+    <div class="form-check mb-4">
+        <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" value="1"
+               @checked(old('terms')) required @error('terms') aria-describedby="termsError" @enderror>
+        <label class="form-check-label aq-text-sm" for="terms">
+            I agree to the <a href="{{ route('terms') }}" target="_blank" rel="noopener">terms of use</a>
+            and the <a href="{{ route('privacy') }}" target="_blank" rel="noopener">privacy policy</a>
+            <span class="visually-hidden">(links open in a new tab)</span>
+        </label>
+        @error('terms')<div id="termsError" class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
     <button type="submit" class="btn btn-accent w-100">Create account</button>
 </form>
 

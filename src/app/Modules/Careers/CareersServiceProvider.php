@@ -16,6 +16,7 @@ use App\Modules\Careers\Policies\JobAlertPolicy;
 use App\Modules\Careers\Policies\JobApplicationPolicy;
 use App\Modules\Careers\Policies\JobPostPolicy;
 use App\Modules\Careers\Policies\OrganizationPolicy;
+use App\Modules\Careers\Services\ApplicationService;
 use App\Modules\Identity\Models\User;
 use App\Modules\ModuleServiceProvider;
 
@@ -63,6 +64,34 @@ class CareersServiceProvider extends ModuleServiceProvider
             'job_application' => JobApplication::class,
             'organization'    => Organization::class,
         ];
+    }
+
+    /** Your applications, saved opportunities, alerts and postings (roadmap 2.6). */
+    protected function personalData(): array
+    {
+        return [
+            'applications' => fn (User $user) => $user->jobApplications()->with('jobPost:id,title,company', 'statusChanges')->get()
+                ->map(fn (JobApplication $a) => [
+                    'opportunity' => $a->jobPost?->title, 'organization' => $a->jobPost?->company, 'status' => $a->status,
+                    'cover_letter' => $a->cover_letter, 'cv_uploaded' => (bool) $a->resume_path, 'applied_at' => $a->created_at,
+                    'history' => $a->statusChanges->map(fn ($c) => ['to' => $c->to_status, 'message' => $c->message, 'at' => $c->created_at])->all(),
+                ])->all(),
+            'saved_opportunities' => fn (User $user) => $user->savedOpportunities()->pluck('title')->all(),
+            'job_alerts'          => fn (User $user) => JobAlert::ownedBy($user)->get()->map->describe()->all(),
+            'opportunities_published' => fn (User $user) => $user->jobPosts()->get(['title', 'company', 'type', 'created_at'])->toArray(),
+            'organizations'       => fn (User $user) => $user->organizations()->pluck('name')->all(),
+        ];
+    }
+
+    /** Applications are withdrawn (CVs deleted); saved items and alerts go. Postings stay. */
+    protected function personalDataErasers(): array
+    {
+        return [function (User $user) {
+            $applications = app(ApplicationService::class);
+            $user->jobApplications()->get()->each(fn (JobApplication $a) => $applications->withdraw($a));
+            $user->savedOpportunities()->detach();
+            JobAlert::ownedBy($user)->delete();
+        }];
     }
 
     protected function relations(): array

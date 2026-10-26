@@ -144,6 +144,8 @@ features, so they live outside the module folders.
 | **File storage** — public and private disks, signed download URLs, MIME and size validation | Identity (avatars), Careers (CVs), Projects (files), Media (audio) |
 | **Search** — MySQL FULLTEXT across questions, articles, opportunities, events | Global search bar |
 | **Activity log** — user-facing activity feed | Dashboard, profile |
+| **Reportable contract** — content describes itself to moderators and removes itself through its own module's service | Community, Knowledge, Careers → Governance |
+| **Personal-data registry** — each module provider declares `personalData()` (export) and `personalDataErasers()` (account deletion) | Every module → Governance "Download my data" / "Delete my account" |
 | **Accessibility preferences** — text size, contrast, font, motion | Every page |
 
 ```mermaid

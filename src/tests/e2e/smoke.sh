@@ -222,6 +222,21 @@ check "responses page" 200 "$(get expert "$F/responses")"
 contains "…shows the answer" "$WORK/last.html" "Smoke Visitor"
 check "CSV export" 200 "$(get expert "$F/responses.csv")"
 
+echo "Governance & privacy"
+for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done
+QID=$(grep -oE '/report/question/[0-9]+' <(curl -s -b "$(jar sara)" "$B$Q") | head -1)
+check "sara reports the member's question" 302 "$(send sara POST "$QID" --data-urlencode reason=off_topic | cut -d' ' -f1)"
+check "moderation queue (admin)" 200 "$(get admin /admin/reports)"
+RID=$(grep -oE '/admin/reports/[0-9]+' "$WORK/last.html" | tail -1)
+check "member cannot open the queue" 403 "$(get member /admin/reports)"
+check "admin dismisses the report" 302 "$(send admin PUT "$RID" --data-urlencode decision=dismiss | cut -d' ' -f1)"
+check "moderation log" 200 "$(get admin /admin/moderation-log)"
+check "privacy & my data page" 200 "$(get sara /privacy/my-data)"
+check "download my data" 200 "$(get sara /privacy/my-data/download)"
+contains "…is sara's own data" "$WORK/last.html" '"email": "sara@aqdesk.test"'
+check "sara deletes her account" 302 "$(send sara DELETE /privacy/account --data-urlencode password=password --data-urlencode confirm=1 | cut -d' ' -f1)"
+check "…and is signed out" 302 "$(get sara /dashboard)"
+
 echo "Administration"
 check "member blocked from admin" 403 "$(get member /admin/users)"
 for p in /admin/users /admin/questions /admin/jobs; do check "admin GET $p" 200 "$(get admin "$p")"; done

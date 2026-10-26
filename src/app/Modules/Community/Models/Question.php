@@ -2,6 +2,8 @@
 
 namespace App\Modules\Community\Models;
 
+use App\Modules\Community\Services\QuestionService;
+use App\Modules\Platform\Contracts\Reportable;
 use App\Modules\Platform\Services\MarkdownRenderer;
 use App\Modules\Identity\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,9 +15,38 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
-class Question extends Model
+class Question extends Model implements Reportable
 {
     use HasFactory;
+
+    // ------------------------------------------------------------------
+    // Reporting (Governance, roadmap 2.5)
+    // ------------------------------------------------------------------
+
+    public function reportLabel(): string
+    {
+        return 'Question “'.Str::limit($this->title, 80).'”';
+    }
+
+    public function reportUrl(): string
+    {
+        return route('questions.show', $this);
+    }
+
+    public function reportExcerpt(): string
+    {
+        return $this->excerpt(40);
+    }
+
+    public function reportAuthor(): ?User
+    {
+        return $this->user;
+    }
+
+    public function removeAsModerator(User $moderator): void
+    {
+        app(QuestionService::class)->delete($this);
+    }
 
     protected $fillable = [
         'user_id', 'category_id', 'title', 'slug', 'body', 'views_count', 'is_closed',

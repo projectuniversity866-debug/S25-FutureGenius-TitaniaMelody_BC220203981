@@ -24,6 +24,7 @@
                             <button type="submit" class="aq-comment-delete">Delete<span class="visually-hidden"> comment by {{ $comment->user->name }}</span></button>
                         </form>
                     @endif
+                    <x-report-link :item="$comment" class="aq-report-link-sm" />
                 </li>
             @endforeach
         </ul>
