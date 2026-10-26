@@ -1653,6 +1653,54 @@ a.aq-tag.aq-tag-lg { font-size: .8125rem; font-weight: 600; padding: .25rem .687
 .aq-org-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .625rem; }
 .aq-org-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
 
+/* Application pipeline — careers::applications.show. State is also in the
+   text (✓ / number, and hidden words), never colour alone. */
+.aq-pipeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+.aq-pipeline li { position: relative; display: grid; justify-items: center; gap: .375rem; text-align: center; font-size: .8125rem; color: var(--aq-muted); }
+.aq-pipeline li + li::before {
+    content: "";
+    position: absolute;
+    top: 15px;
+    right: calc(50% + 20px);
+    width: calc(100% - 32px);
+    height: 2px;
+    background: var(--aq-border);
+}
+.aq-pipeline li.is-done + li::before { background: var(--aq-accent); }
+.aq-pipeline-dot {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--aq-border-strong);
+    background: var(--aq-surface);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .8125rem;
+    font-weight: 600;
+}
+.aq-pipeline li.is-done .aq-pipeline-dot { background: var(--aq-accent); border-color: var(--aq-accent); color: var(--aq-on-accent); }
+.aq-pipeline li.is-current { color: var(--aq-ink); font-weight: 600; }
+.aq-pipeline li.is-current .aq-pipeline-dot { border-color: var(--aq-accent); color: var(--aq-accent-ink); box-shadow: 0 0 0 4px var(--aq-accent-soft); }
+.aq-pipeline li.is-skipped { opacity: .55; }
+
+.aq-timeline { list-style: none; margin: 0; padding: 0 0 0 1.125rem; border-left: 2px solid var(--aq-border); display: grid; gap: 1rem; }
+.aq-timeline li { position: relative; }
+.aq-timeline li::before {
+    content: "";
+    position: absolute;
+    left: calc(-1.125rem - 6px);
+    top: .375rem;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--aq-surface);
+    border: 2px solid var(--aq-accent);
+}
+.aq-timeline-message { margin: .375rem 0; padding: .5rem .75rem; border-left: 3px solid var(--aq-accent-line); background: var(--aq-surface-2); border-radius: 0 var(--aq-radius-sm) var(--aq-radius-sm) 0; font-size: .8125rem; color: var(--aq-ink-2); white-space: pre-wrap; }
+
+.aq-notes { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.aq-notes li { padding: .625rem .75rem; border: 1px solid var(--aq-border); border-radius: var(--aq-radius-sm); background: var(--aq-amber-soft); }
+.aq-notes li .prose { color: var(--aq-ink); }
+.aq-notes li.is-empty { padding: 0; border: 0; background: none; }
+
 /* Numbered steps ("How AQDesk works"). */
 .aq-steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: .875rem; }
 .aq-steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; column-gap: .75rem; font-size: .8125rem; }
@@ -1703,3 +1751,17 @@ a.aq-tag.aq-tag-lg { font-size: .8125rem; font-weight: 600; padding: .25rem .687
     .aq-sidebar, .aq-topbar, .aq-footer { display: none !important; }
     .aq-content { padding: 0; }
 }
+
+/* "Create job alert" strip under the opportunities filter (1.15). */
+.aq-alert-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem .875rem;
+    margin: -.25rem 0 1.25rem;
+    padding: .625rem .875rem;
+    border: 1px dashed var(--aq-accent-line);
+    border-radius: var(--aq-radius-sm);
+    background: color-mix(in srgb, var(--aq-accent-soft) 45%, var(--aq-surface));
+}
+.aq-alert-cta p { flex: 1 1 16rem; }

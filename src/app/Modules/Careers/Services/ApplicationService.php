@@ -4,12 +4,14 @@ namespace App\Modules\Careers\Services;
 
 use App\Modules\Careers\Events\ApplicationStatusChanged;
 use App\Modules\Careers\Events\ApplicationSubmitted;
+use App\Modules\Careers\Models\ApplicationNote;
 use App\Modules\Careers\Models\JobApplication;
 use App\Modules\Careers\Models\JobPost;
 use App\Modules\Identity\Models\User;
 use App\Modules\Platform\Services\ActivityLogger;
 use App\Modules\Platform\Services\PrivateFiles;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -41,20 +43,31 @@ class ApplicationService
     {
         $this->ensureNotAlreadyApplied($applicant, $job);
 
-        $application = JobApplication::create([
-            'job_post_id'  => $job->id,
-            'user_id'      => $applicant->id,
-            'cover_letter' => $coverLetter,
-            'resume_path'  => $resume ? $this->files->store($resume, 'resumes') : null,
-            'status'       => 'pending',
-        ]);
+        $application = DB::transaction(function () use ($applicant, $job, $coverLetter, $resume) {
+            $application = JobApplication::create([
+                'job_post_id'  => $job->id,
+                'user_id'      => $applicant->id,
+                'cover_letter' => $coverLetter,
+                'resume_path'  => $resume ? $this->files->store($resume, 'resumes') : null,
+                'status'       => 'pending',
+            ]);
+
+            // The first line of the history: submitted by the applicant.
+            $application->statusChanges()->create(['user_id' => $applicant->id, 'to_status' => 'pending']);
+
+            return $application;
+        });
 
         ApplicationSubmitted::dispatch($application);
 
         return $application;
     }
 
-    public function changeStatus(JobApplication $application, string $status): JobApplication
+    /**
+     * Move an application to another status, keeping the step in its history
+     * with who made it and an optional message for the applicant.
+     */
+    public function changeStatus(JobApplication $application, string $status, ?User $reviewer = null, ?string $message = null): JobApplication
     {
         $from = $application->status;
 
@@ -62,15 +75,31 @@ class ApplicationService
             return $application;
         }
 
-        $application->update(['status' => $status]);
+        DB::transaction(function () use ($application, $status, $from, $reviewer, $message) {
+            $application->update(['status' => $status]);
+            $application->statusChanges()->create([
+                'user_id' => $reviewer?->id, 'from_status' => $from, 'to_status' => $status, 'message' => $message,
+            ]);
+        });
 
         $this->activity->record('application.status_changed', $application,
             'Moved '.$application->user->name.'’s application for “'.$application->jobPost->title.'” from '.$from.' to '.$status,
             ['from' => $from, 'to' => $status]);
 
-        ApplicationStatusChanged::dispatch($application, $from);
+        ApplicationStatusChanged::dispatch($application, $from, $message);
 
         return $application;
+    }
+
+    /** A private reviewer note; the applicant never sees these. */
+    public function addNote(JobApplication $application, User $reviewer, string $body): ApplicationNote
+    {
+        return $application->notes()->create(['user_id' => $reviewer->id, 'body' => $body]);
+    }
+
+    public function deleteNote(ApplicationNote $note): void
+    {
+        $note->delete();
     }
 
     /** The applicant withdraws; their uploaded CV is deleted with it. */

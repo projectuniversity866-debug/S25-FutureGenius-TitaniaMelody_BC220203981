@@ -37,7 +37,11 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <a href="{{ route('applications.show', $application) }}" class="btn btn-sm btn-soft">
+                        <i class="bi bi-kanban me-1" aria-hidden="true"></i> Review<span class="visually-hidden"> {{ $application->user->name }}’s application</span>
+                        @if ($application->notes_count)<span class="aq-tabs-count ms-1">{{ $application->notes_count }}<span class="visually-hidden"> {{ \Illuminate\Support\Str::plural('note', $application->notes_count) }}</span></span>@endif
+                    </a>
                     @if ($application->resume_path)
                         <a href="{{ route('applications.resume', $application) }}" class="btn btn-sm btn-quiet">
                             <i class="bi bi-download me-1" aria-hidden="true"></i> CV<span class="visually-hidden"> of {{ $application->user->name }}</span>

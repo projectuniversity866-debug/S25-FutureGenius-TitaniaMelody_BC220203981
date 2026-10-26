@@ -9,5 +9,6 @@ class ApplicationStatusChanged
 {
     use Dispatchable;
 
-    public function __construct(public JobApplication $application, public string $from) {}
+    /** $message is the reviewer's optional note to the applicant. */
+    public function __construct(public JobApplication $application, public string $from, public ?string $message = null) {}
 }

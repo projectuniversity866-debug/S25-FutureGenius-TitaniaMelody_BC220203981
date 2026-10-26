@@ -1,10 +1,12 @@
 <script setup>
 /*
- * Save-for-later toggle for a question, without a page reload (roadmap
- * 1.11). Replaces the plain form in community::partials.bookmark.
+ * Save-for-later toggle for a question (roadmap 1.11) or an opportunity
+ * (1.15), without a page reload. Replaces the plain form in
+ * community::partials.bookmark and on the opportunity page.
  *
- * A toggle button: its name stays "Save this question" and aria-pressed
- * tells whether it is saved. POST saves and DELETE removes, on the same URL.
+ * A toggle button: its name stays the same ("Save this question") and
+ * aria-pressed tells whether it is saved. POST saves and DELETE removes, on
+ * the same URL.
  */
 import { ref } from 'vue';
 import { showToast } from '../feedback.js';
@@ -14,6 +16,7 @@ const props = defineProps({
     url: { type: String, required: true },
     saved: { type: Boolean, default: false },
     count: { type: Number, default: 0 },
+    label: { type: String, default: 'Save this question' }, // also "Save this opportunity"
 });
 
 const saved = ref(props.saved);
@@ -46,7 +49,7 @@ async function toggle() {
 
 <template>
     <button type="button" class="aq-bookmark-btn" :class="{ 'is-active': saved }"
-            aria-label="Save this question" :aria-pressed="saved ? 'true' : 'false'" title="Save this question"
+            :aria-label="label" :aria-pressed="saved ? 'true' : 'false'" :title="label"
             :aria-disabled="busy ? 'true' : null" @click="toggle">
         <i :class="saved ? 'bi bi-bookmark-fill' : 'bi bi-bookmark'" aria-hidden="true"></i>
     </button>

@@ -182,7 +182,7 @@ class DiscoveryTest extends AqDeskTestCase
             ->assertSee('Remove');
         $this->actingAs($reader)->get(route('questions.show', $first))->assertSee('aria-pressed="true"', false);
 
-        $this->actingAs($this->otherMember())->get(route('saved.index'))->assertOk()->assertSee('Nothing saved yet');
+        $this->actingAs($this->otherMember())->get(route('saved.index'))->assertOk()->assertSee('No saved questions');
 
         $this->actingAs($reader)->delete(route('bookmarks.destroy', $first))->assertRedirect();
         $this->actingAs($reader)->get(route('saved.index'))->assertDontSee('Saved first: queue workers');

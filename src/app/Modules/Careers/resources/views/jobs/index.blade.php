@@ -54,6 +54,30 @@
     </div>
 </x-filter-panel>
 
+@auth
+    {{-- Job alert for exactly what is on screen (1.15). --}}
+    @php
+        $alertCriteria = array_filter([
+            'keywords'  => is_string(request('q')) ? request('q') : null,
+            'type'      => $type,
+            'work_mode' => in_array(request('mode'), ['onsite', 'remote', 'hybrid'], true) ? request('mode') : null,
+        ]);
+    @endphp
+    <form method="POST" action="{{ route('alerts.store') }}" class="aq-alert-cta">
+        @csrf
+        @foreach ($alertCriteria as $name => $value)
+            <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+        @endforeach
+        <i class="bi bi-bell aq-accent" aria-hidden="true"></i>
+        <p class="mb-0 aq-text-sm">
+            Get notified when a new opportunity matches {{ $alertCriteria ? 'this search' : 'any search — or filter first' }}.
+        </p>
+        <button type="submit" class="btn btn-sm btn-soft">Create job alert</button>
+        <a href="{{ route('alerts.index') }}" class="aq-text-sm">My alerts</a>
+    </form>
+    @error('alert')<div class="alert alert-danger py-2 aq-text-sm" role="alert">{{ $message }}</div>@enderror
+@endauth
+
 <div class="row g-3">
     @forelse ($jobs as $job)
         @include('careers::partials.job-card', ['job' => $job])

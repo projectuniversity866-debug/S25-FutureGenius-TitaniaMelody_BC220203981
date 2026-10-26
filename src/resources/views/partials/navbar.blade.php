@@ -58,6 +58,8 @@
                     <i class="bi bi-bookmark me-2" aria-hidden="true"></i> Saved</a></li>
                 <li><a class="dropdown-item" href="{{ route('applications.index') }}">
                     <i class="bi bi-send me-2" aria-hidden="true"></i> My applications</a></li>
+                <li><a class="dropdown-item" href="{{ route('alerts.index') }}">
+                    <i class="bi bi-bell me-2" aria-hidden="true"></i> Job alerts</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">

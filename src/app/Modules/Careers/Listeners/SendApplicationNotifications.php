@@ -20,6 +20,6 @@ class SendApplicationNotifications
     {
         $application = $event->application->loadMissing('jobPost', 'user');
 
-        $application->user->notify(new ApplicationStatusUpdated($application));
+        $application->user->notify(new ApplicationStatusUpdated($application, $event->message));
     }
 }

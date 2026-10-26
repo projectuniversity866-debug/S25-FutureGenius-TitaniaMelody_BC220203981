@@ -21,7 +21,7 @@
             <div class="card-body p-4">
                 <div class="d-flex align-items-start gap-3 mb-3">
                     <x-org-mark :name="$job->company" size="lg" />
-                    <div class="min-w-0">
+                    <div class="min-w-0 flex-grow-1">
                         <h1 class="aq-h1">{{ $job->title }}</h1>
                         <p class="mb-0 aq-text aq-muted">
                             @if ($job->organization)
@@ -33,6 +33,20 @@
                             · posted {{ $job->created_at->diffForHumans() }}
                         </p>
                     </div>
+                    @auth
+                        {{-- Save for later (1.15): the Vue toggle, with the plain form as fallback. --}}
+                        <x-vue name="BookmarkButton" class="aq-bookmark"
+                               :props="['url' => route('jobs.save', $job), 'saved' => $saved, 'count' => $job->saved_by_count, 'label' => 'Save this opportunity']">
+                            <form method="POST" action="{{ route($saved ? 'jobs.unsave' : 'jobs.save', $job) }}">
+                                @csrf
+                                @if ($saved) @method('DELETE') @endif
+                                <button type="submit" @class(['aq-bookmark-btn', 'is-active' => $saved])
+                                        aria-label="Save this opportunity" aria-pressed="{{ $saved ? 'true' : 'false' }}" title="Save this opportunity">
+                                    <i class="bi bi-bookmark{{ $saved ? '-fill' : '' }}" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </x-vue>
+                    @endauth
                 </div>
 
                 <div class="d-flex flex-wrap gap-2 mb-4">

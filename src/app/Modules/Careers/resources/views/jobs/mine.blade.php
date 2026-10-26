@@ -62,7 +62,7 @@
                             <span><span class="badge {{ $job->typeBadge() }}">{{ $job->typeLabel() }}</span></span>
                         </td>
                         <td data-label="Status">
-                            <span><x-status :value="$job->isOpen() ? 'open' : ($job->is_active ? 'expired' : 'unpublished')" /></span>
+                            <span><x-status :value="$job->isOpen() ? 'open' : ($job->closed_at ? 'closed' : ($job->is_active ? 'expired' : 'unpublished'))" /></span>
                         </td>
                         <td data-label="Applicants"><span class="aq-num">{{ $job->applications_count }}</span></td>
                         <td data-label="Actions" class="aq-cell-actions">

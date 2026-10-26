@@ -235,6 +235,18 @@ class JobSeeder extends Seeder
 
                 $application->created_at = $job->created_at->copy()->addDays(1);
                 $application->save();
+
+                // Its history (roadmap 1.14): submitted, then reviewed by the poster.
+                if ($application->statusChanges()->doesntExist()) {
+                    $application->statusChanges()->create(['user_id' => $application->user_id, 'to_status' => 'pending'])
+                        ->forceFill(['created_at' => $application->created_at])->save();
+                    if ($application->status !== 'pending') {
+                        $application->statusChanges()->create([
+                            'user_id' => $job->user_id, 'from_status' => 'pending', 'to_status' => $application->status,
+                            'message' => 'Thanks for applying. We are reading every application and will reply within two weeks.',
+                        ]);
+                    }
+                }
             }
         }
     }

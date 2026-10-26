@@ -28,6 +28,11 @@
                    @checked($user->wantsEmailFor('applications'))>
             <label class="form-check-label" for="email_applications">New applicants and changes to my applications</label>
         </div>
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="email_alerts" name="email_alerts" value="1"
+                   @checked($user->wantsEmailFor('alerts'))>
+            <label class="form-check-label" for="email_alerts">New opportunities matching my job alerts</label>
+        </div>
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="email_follows" name="email_follows" value="1"
                    aria-describedby="email_follows_hint" @checked($user->wantsEmailFor('follows'))>

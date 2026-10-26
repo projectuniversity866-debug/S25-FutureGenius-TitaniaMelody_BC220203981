@@ -2,6 +2,7 @@
 
 namespace App\Modules\Careers\Services;
 
+use App\Modules\Careers\Events\OpportunityPublished;
 use App\Modules\Careers\Models\JobPost;
 use App\Modules\Careers\Models\Organization;
 use App\Modules\Identity\Models\User;
@@ -14,10 +15,15 @@ class JobPostService
     /** @param  array<string, mixed>  $data  validated JobPostRequest data */
     public function publish(User $poster, array $data): JobPost
     {
-        return JobPost::create($this->withOrganizationName($data) + [
+        $job = JobPost::create($this->withOrganizationName($data) + [
             'user_id' => $poster->id,
             'slug'    => JobPost::makeSlug($data['title']),
         ]);
+
+        // Job alerts (roadmap 1.15) are checked once, when it first goes live.
+        OpportunityPublished::dispatch($job->refresh());
+
+        return $job;
     }
 
     /** @param  array<string, mixed>  $data  validated JobPostRequest data */
@@ -26,6 +32,8 @@ class JobPostService
         $job->update($this->withOrganizationName($data) + [
             'slug'      => JobPost::makeSlug($data['title'], $job->id),
             'is_active' => $isActive,
+            // Re-publishing (with a new deadline) re-opens a closed opportunity.
+            'closed_at' => $isActive ? null : $job->closed_at,
         ]);
 
         return $job;

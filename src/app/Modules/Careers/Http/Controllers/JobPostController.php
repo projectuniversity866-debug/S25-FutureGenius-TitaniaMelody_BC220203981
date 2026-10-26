@@ -43,11 +43,12 @@ class JobPostController extends Controller
 
     public function show(Request $request, JobPost $job): View
     {
-        $job->load('user.profile', 'organization')->loadCount('applications');
+        $job->load('user.profile', 'organization')->loadCount(['applications', 'savedBy']);
 
         $hasApplied = $job->hasApplicationFrom($request->user());
+        $saved = $job->isSavedBy($request->user());
 
-        return view('careers::jobs.show', compact('job', 'hasApplied'));
+        return view('careers::jobs.show', compact('job', 'hasApplied', 'saved'));
     }
 
     public function create(Request $request): View
@@ -118,6 +119,7 @@ class JobPostController extends Controller
 
         $applications = $job->applications()
             ->with('user.profile')
+            ->withCount('notes')
             ->when($status, fn ($query) => $query->where('status', $status))
             ->latest()
             ->paginate(15)

@@ -56,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_answers'      => true,        // answers to my questions, accepted answers
         'email_applications' => true,        // applicants, application status changes
         'email_follows'      => false,       // new questions in tags I follow (opt-in: can be many)
+        'email_alerts'       => true,        // opportunities matching my job alerts (I asked for them)
     ];
 
     protected function casts(): array

@@ -20,3 +20,7 @@ Schedule::command('model:prune', ['--model' => ActivityLog::class])->daily();
 
 // Remove failed queue jobs older than a week.
 Schedule::command('queue:prune-failed', ['--hours' => 168])->daily();
+
+// Take opportunities off the board once their deadline has passed, and tell
+// their posters (roadmap 1.15).
+Schedule::command('careers:close-expired')->dailyAt('00:15');

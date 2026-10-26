@@ -16,14 +16,14 @@ Results go in the progress log.
 | Phase | Title | Steps | Done |
 |---|---|---|---|
 | 0 | Foundation | 11 | 11 |
-| 1 | Rebuild existing modules | 15 | 13 |
+| 1 | Rebuild existing modules | 15 | 15 |
 | 2 | Missing scope | 7 | 0 |
 | 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 0 |
 | 4 | Quality | 4 | 0 |
 | 5 | Deployment & deliverables | 6 | 0 |
-| | **Total** | **61** | **24** |
+| | **Total** | **61** | **26** |
 
-**Next steps:** 1.14 + 1.15
+**Next steps:** 2.1 + 2.2
 
 ---
 
@@ -77,8 +77,8 @@ Results go in the progress log.
 |---|---|---|---|
 | [x] | 1.12 | Organization (employer) profiles | Employer pages |
 | [x] | 1.13 | Professional Opportunities type: scholarships, fellowships, grants, hackathons, calls for papers | Vision requirement covered |
-| [ ] | 1.14 | Application pipeline with status history & reviewer notes; move CVs to a private disk | Secure ATS-style flow |
-| [ ] | 1.15 | Saved jobs, automatic deadline closing (scheduler), job alerts | Career tools |
+| [x] | 1.14 | Application pipeline with status history & reviewer notes; move CVs to a private disk | Secure ATS-style flow |
+| [x] | 1.15 | Saved jobs, automatic deadline closing (scheduler), job alerts | Career tools |
 
 ## Phase 2 — Missing scope
 
@@ -194,3 +194,7 @@ Results go in the progress log.
 | 2026-10-26 | 1.12 | Organization (employer) profiles in Careers: `organizations` table (owner, name, tagline, about, website, location, industry, size), `job_posts.organization_id`. Public directory `/organizations` (search, open-opportunity counts) and profile page (header with monogram, facts and website, open opportunities, About, at a glance). Experts/admins create profiles (`OrganizationPolicy`: owner or moderator edits/deletes); the post form offers only the poster's own organizations (validated), and a post under a profile carries its name — renaming the profile renames its posts; deleting a profile keeps the posts and is logged. "My organizations" card on My postings; Organizations in the sidebar. Migration gave every existing post a profile (on WAMP: CodeCraft Solutions, National University of Sciences, Insight Analytics). |
 | 2026-10-26 | 1.13 | Professional opportunity types: scholarship, fellowship, grant, hackathon, call for papers (besides job and internship), defined once in `JobPost::TYPES` (label, board section, icon, badge, what the money field means: Salary / Stipend / Award / Funding / Prize pool / none). `type` column changed from a fixed enum to a validated string; new optional fields: eligibility ("Who can apply"), event/programme dates, link to the organizer's page (http/https only, opens safely in a new tab). Board tabs for every type with counts from one query; form groups the types; cards show dates for events; seeded one demo of each new type. Search box no longer breaks on `?q[]=`. |
 | 2026-10-26 | Tests 1.12 + 1.13 | 177 PHPUnit pass on PHP 8.3 + 8.4 (9 new O1–O9: profile lists only open posts, who may manage, name carried and renamed, someone else's organization refused, delete keeps posts + log, seeded posts linked + type tabs, scholarship shows Award/eligibility/dates/safe link, invalid type/dates/links rejected, form offers only your organizations). e2e smoke 75/75 (8 new: directory, member refused, expert creates organization and posts a hackathon under it, profile and hackathon tab list it). WAMP MySQL migrated (`type` now varchar(32)); new pages 200. |
+| 2026-10-26 | Commit | `ad9c36b` pushed to `development` (steps 1.6–1.13). |
+| 2026-10-26 | 1.14 | Application pipeline: `application_status_changes` (every step with who, when, optional message to the applicant) and `application_notes` (reviewers' private notes); history reconstructed for existing applications. New application page (`/applications/{id}`): progress bar Pending → Reviewed → Shortlisted → Accepted (rejection shown where it happened), cover letter, CV, history timeline with messages; reviewers also get "Update status" with a message and private notes (add/delete; author or moderator deletes). The applicant sees their progress and messages but never the notes (`JobApplicationPolicy::view/review`). Status notifications include the message and link to the page. "Review" button on Applicants, "Progress" on My applications. (Private CVs were done in 0.7.) |
+| 2026-10-26 | 1.15 | Career tools. **Saved opportunities** (`saved_opportunities`): bookmark on the opportunity page (same Vue toggle as questions), Saved page now has Questions / Opportunities tabs. **Deadline closing**: `careers:close-expired`, scheduled daily 00:15 — takes past-deadline opportunities off the board (`closed_at`), logs it, tells the poster how many applications wait; re-publishing with a new deadline reopens. **Job alerts** (`job_alerts`): create from the board's current search ("Create job alert") or the Job alerts page (keywords, type, work mode; max 10, no duplicates); a newly published match notifies each member once (never the poster), email on by default with a switch in Account settings. |
+| 2026-10-26 | Tests 1.14 + 1.15 | 186 PHPUnit pass on PHP 8.3 + 8.4 (9 new W1–W9: history with reviewer and message, who sees notes, note permissions, save via form/JSON + private Saved tab, deadline closing + log + poster notice + reopen, alerts notify once/not poster/not non-matches, alert duplicates/limit/email/owner-only delete, alert from board + validation, seeded history). e2e smoke 89/89 (14 new). WAMP migrated; running the closing command there closed the 5 August demo jobs (deadlines long past). |

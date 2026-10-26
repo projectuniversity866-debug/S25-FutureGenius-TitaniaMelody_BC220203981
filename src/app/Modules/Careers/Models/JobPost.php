@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -32,7 +33,7 @@ class JobPost extends Model
     protected $fillable = [
         'user_id', 'organization_id', 'title', 'slug', 'company', 'type', 'work_mode', 'location',
         'description', 'requirements', 'eligibility', 'salary_min', 'salary_max', 'deadline',
-        'starts_on', 'ends_on', 'external_url', 'is_active',
+        'starts_on', 'ends_on', 'external_url', 'is_active', 'closed_at',
     ];
 
     protected function casts(): array
@@ -41,6 +42,7 @@ class JobPost extends Model
             'deadline'   => 'date',
             'starts_on'  => 'date',
             'ends_on'    => 'date',
+            'closed_at'  => 'datetime',
             'is_active'  => 'boolean',
             'salary_min' => 'decimal:2',
             'salary_max' => 'decimal:2',
@@ -65,6 +67,17 @@ class JobPost extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(JobApplication::class);
+    }
+
+    /** Members who saved it for later (roadmap 1.15). */
+    public function savedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'saved_opportunities')->withTimestamps();
+    }
+
+    public function isSavedBy(?User $user): bool
+    {
+        return $user !== null && $this->savedBy()->whereKey($user->id)->exists();
     }
 
     /** The organization profile it was published under, if any. */

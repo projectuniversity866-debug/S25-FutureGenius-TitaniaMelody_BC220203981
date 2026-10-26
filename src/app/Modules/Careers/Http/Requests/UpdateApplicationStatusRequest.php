@@ -17,7 +17,8 @@ class UpdateApplicationStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in(JobApplication::STATUSES)],
+            'status'  => ['required', Rule::in(JobApplication::STATUSES)],
+            'message' => ['nullable', 'string', 'max:1000'], // shown to the applicant
         ];
     }
 }

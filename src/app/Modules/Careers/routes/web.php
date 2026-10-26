@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Careers\Http\Controllers\Admin\OpportunityModerationController;
+use App\Modules\Careers\Http\Controllers\CareerToolsController;
 use App\Modules\Careers\Http\Controllers\JobApplicationController;
 use App\Modules\Careers\Http\Controllers\JobPostController;
 use App\Modules\Careers\Http\Controllers\OrganizationController;
@@ -21,6 +22,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/applications/{application}', [JobApplicationController::class, 'destroy'])->name('applications.destroy');
     Route::put('/applications/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('applications.status');
     Route::get('/applications/{application}/resume', [JobApplicationController::class, 'resume'])->name('applications.resume');
+    Route::get('/applications/{application}', [JobApplicationController::class, 'show'])->name('applications.show');
+    Route::post('/applications/{application}/notes', [JobApplicationController::class, 'storeNote'])->name('applications.notes.store');
+    Route::delete('/application-notes/{note}', [JobApplicationController::class, 'destroyNote'])->name('applications.notes.destroy');
+
+    // Career tools (1.15): saved opportunities and job alerts.
+    Route::middleware('throttle:60,1,saves')->group(function () {
+        Route::post('/jobs/{job}/save', [CareerToolsController::class, 'save'])->name('jobs.save');
+        Route::delete('/jobs/{job}/save', [CareerToolsController::class, 'unsave'])->name('jobs.unsave');
+    });
+    Route::get('/job-alerts', [CareerToolsController::class, 'alerts'])->name('alerts.index');
+    Route::post('/job-alerts', [CareerToolsController::class, 'storeAlert'])->name('alerts.store');
+    Route::delete('/job-alerts/{alert}', [CareerToolsController::class, 'destroyAlert'])->name('alerts.destroy');
 
     Route::get('/jobs/{job}/apply', [JobApplicationController::class, 'create'])->name('jobs.apply');
     Route::post('/jobs/{job}/apply', [JobApplicationController::class, 'store'])->name('jobs.apply.store');

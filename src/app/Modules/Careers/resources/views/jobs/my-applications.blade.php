@@ -38,17 +38,21 @@
                         </td>
                         <td data-label="Status"><span><x-status :value="$application->status" /></span></td>
                         <td data-label="Action" class="aq-cell-actions">
-                            <form method="POST" action="{{ route('applications.destroy', $application) }}"
-                                  class="aq-actions"
-                                  data-confirm-title="Withdraw your application?"
-                                  data-confirm="Your application to “{{ $title }}” and any uploaded CV are deleted. You can apply again while the opportunity is open."
-                                  data-confirm-button="Withdraw application">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    Withdraw<span class="visually-hidden"> application to “{{ $title }}”</span>
-                                </button>
-                            </form>
+                            <div class="aq-actions">
+                                <a href="{{ route('applications.show', $application) }}" class="btn btn-sm btn-quiet">
+                                    Progress<span class="visually-hidden"> of your application to “{{ $title }}”</span>
+                                </a>
+                                <form method="POST" action="{{ route('applications.destroy', $application) }}"
+                                      data-confirm-title="Withdraw your application?"
+                                      data-confirm="Your application to “{{ $title }}” and any uploaded CV are deleted. You can apply again while the opportunity is open."
+                                      data-confirm-button="Withdraw application">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Withdraw<span class="visually-hidden"> application to “{{ $title }}”</span>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty
