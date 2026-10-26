@@ -3,6 +3,7 @@
 namespace App\Modules\Platform\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -11,12 +12,17 @@ use Illuminate\Notifications\Notification;
  * this class delivers it in-app (database → the bell in the top bar) and by
  * email, with the same wording and link in both.
  *
- * Sent synchronously for now. Adding "implements ShouldQueue" moves delivery
- * to the queue worker once production runs one (roadmap 5.1).
+ * Delivered by the queue worker, only after the database transaction that
+ * raised it commits, so a slow mail server never slows the page and nobody
+ * is told about a change that was rolled back (roadmap 5.1). With
+ * QUEUE_CONNECTION=sync (local, tests) it is sent at once.
  */
-abstract class AppNotification extends Notification
+abstract class AppNotification extends Notification implements ShouldQueueAfterCommit
 {
     use Queueable;
+
+    /** Attempts before the job lands in failed_jobs (pruned weekly). */
+    public int $tries = 3;
 
     /** Short headline, e.g. "New answer to your question". */
     abstract protected function title(): string;

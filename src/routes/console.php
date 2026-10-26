@@ -28,3 +28,10 @@ Schedule::command('careers:close-expired')->dailyAt('00:15');
 // Event reminders: the day before and an hour before, plus the organizer's
 // head count (roadmap 3.9). Each reminder is sent once, so overlap is safe.
 Schedule::command('events:send-reminders')->everyFifteenMinutes()->withoutOverlapping();
+
+// Queue worker for hosts without Supervisor, e.g. cPanel (roadmap 5.1).
+// QUEUE_WORKER_IN_SCHEDULER=true turns it on; see docs/DEPLOYMENT.md.
+Schedule::command('queue:work', ['--stop-when-empty', '--max-time' => 50, '--tries' => 3])
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->when(fn () => config('queue.worker_in_scheduler'));
