@@ -42,27 +42,6 @@ class PageController extends Controller
     public function comingSoon(string $module): View
     {
         $modules = [
-            'projects' => [
-                'title'    => 'Project Collaboration',
-                'icon'     => 'kanban',
-                'source'   => 'FR3 — Main Requirement File',
-                'summary'  => 'Shared project spaces where members collaborate on work.',
-                'features' => ['Create project spaces', 'Invite collaborators', 'Share files', 'Provide feedback'],
-            ],
-            'podcasts' => [
-                'title'    => 'Podcasts',
-                'icon'     => 'mic',
-                'source'   => 'FR4 — Main Requirement File',
-                'summary'  => 'Community podcast series with episodes and transcripts.',
-                'features' => ['Podcast series', 'Episodes with audio', 'Transcripts', 'Podcast publishing'],
-            ],
-            'consulting' => [
-                'title'    => 'Consulting Management',
-                'icon'     => 'briefcase',
-                'source'   => 'FR6 — Main Requirement File',
-                'summary'  => 'Booking and tracking of professional consulting services.',
-                'features' => ['Client management', 'Consultation booking', 'Proposal tracking'],
-            ],
             'newsletter' => [
                 'title'    => 'Newsletter & Announcements',
                 'icon'     => 'envelope-paper',

@@ -4,6 +4,7 @@ namespace App\Modules\Platform\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -30,6 +31,18 @@ class PrivateFiles
     public function exists(?string $path): bool
     {
         return $path !== null && Storage::disk(self::DISK)->exists($path);
+    }
+
+    /**
+     * Play the file in the browser (audio, roadmap 3.10). A file response
+     * answers HTTP Range requests, so players can seek. Authorise first.
+     */
+    public function stream(string $path, ?string $mime): BinaryFileResponse
+    {
+        return response()->file(Storage::disk(self::DISK)->path($path), array_filter([
+            'Content-Type'  => $mime,
+            'Cache-Control' => 'private, max-age=3600',
+        ]));
     }
 
     /** Send the file as a download with a friendly name; call only after authorising. */

@@ -68,7 +68,7 @@ login() {      # login who email
 path_of() { echo "${1#* }" | sed "s#^$B##"; }
 
 echo "Guest"
-for p in / /questions /jobs /login /register /modules/podcasts /accessibility /events; do check "GET $p" 200 "$(get guest "$p")"; done
+for p in / /questions /jobs /login /register /modules/newsletter /accessibility /events /podcasts /consultants; do check "GET $p" 200 "$(get guest "$p")"; done
 check "dashboard needs sign-in" 302 "$(get guest /dashboard)"
 check "unknown module is 404" 404 "$(get guest /modules/nope)"
 
@@ -331,6 +331,45 @@ REM=$("$PHP" artisan events:send-reminders 2>&1)
 case "$REM" in *"Sent 0 attendee and 0 organizer"*) check "…and never twice" yes yes ;; *) check "…and never twice ($REM)" yes no ;; esac
 get member /notifications >/dev/null
 contains "…member sees it under the bell" "$WORK/last.html" "Reminder: Smoke test webinar"
+
+echo "Podcasts"
+PS=/podcasts/final-year-voices
+check "demo podcast" 200 "$(get guest "$PS")"
+EP=$(grep -oE "$PS/[a-z0-9-]+" "$WORK/last.html" | grep -v -E '/(edit|feed|episodes)' | head -1)
+check "episode page" 200 "$(get guest "$EP")"
+contains "…has a transcript" "$WORK/last.html" "<strong>Sara:</strong>"
+check "audio streams" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$B$EP/audio")"
+check "…and can seek (HTTP Range)" 206 "$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=0-99' "$B$EP/audio")"
+check "RSS feed" 200 "$(get guest "$PS/feed.xml")"
+contains "…has an audio enclosure" "$WORK/last.html" "<enclosure url="
+check "sara cannot start a series" 403 "$(get sara /podcasts/new)"
+R=$(send member POST /podcasts --data-urlencode "title=Smoke Cast" --data-urlencode "summary=A podcast made by the smoke test.")
+check "member (now an expert) starts a series" 302 "${R%% *}"
+SC=$(path_of "$R")
+"$PHP" -r '$s=str_repeat(chr(128),8000);echo "RIFF".pack("V",36+strlen($s))."WAVEfmt ".pack("VvvVVvv",16,1,1,8000,8000,1,8)."data".pack("V",strlen($s)).$s;' > "$WORK/ep.wav"
+R=$(upload member "$SC/episodes" -F "title=Pilot episode" -F "summary=The very first smoke test episode." -F "audio=@$WORK/ep.wav;type=audio/wav")
+check "uploads an episode with audio" 302 "${R%% *}"
+SE=$(path_of "$R")
+check "…publishing without a transcript is refused" 302 "$(send member PUT "$SE/publish" | cut -d' ' -f1)"
+check "a guest cannot see the draft" 404 "$(get guest "$SE")"
+check "adds the transcript" 302 "$(send member PUT "$SE" --data-urlencode "title=Pilot episode" --data-urlencode "summary=The very first smoke test episode." --data-urlencode "transcript=Host: Hello and welcome." | cut -d' ' -f1)"
+check "publishes" 302 "$(send member PUT "$SE/publish" | cut -d' ' -f1)"
+check "a guest hears the episode" 200 "$(get guest "$SE")"
+contains "…with the player" "$WORK/last.html" "<audio controls"
+
+echo "Consultants"
+check "consultant directory" 200 "$(get guest /consultants)"
+contains "…lists the demo consultant" "$WORK/last.html" "Final-year project reviews"
+check "sara cannot offer consulting" 403 "$(get sara /consulting/profile)"
+check "member (now an expert) creates a consultant profile" 302 "$(send member PUT /consulting/profile --data-urlencode "headline=Smoke testing advice for student projects" \
+    --data-urlencode "expertise=Testing, Bash" --data-urlencode session_minutes=30 --data-urlencode timezone=UTC --data-urlencode notice_hours=0 \
+    --data-urlencode window_days=14 --data-urlencode is_accepting=1 | cut -d' ' -f1)"
+for wd in 1 2 3 4 5 6 7; do send member POST /consulting/availability/hours --data-urlencode weekday=$wd --data-urlencode starts=00:00 --data-urlencode ends=23:30 >/dev/null; done
+check "availability page" 200 "$(get member /consulting/availability)"
+contains "…shows the hours" "$WORK/last.html" "00:00–23:30"
+check "overlapping hours are refused" 302 "$(send member POST /consulting/availability/hours --data-urlencode weekday=1 --data-urlencode starts=10:00 --data-urlencode ends=11:00 | cut -d' ' -f1)"
+get guest "/consultants?q=Bash" >/dev/null
+contains "…guests find the consultant with free times" "$WORK/last.html" "Next free:"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done

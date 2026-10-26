@@ -51,6 +51,12 @@
         <li><a class="{{ request()->routeIs('events.*') ? 'is-active' : '' }}" href="{{ route('events.index') }}">
             <i class="bi bi-calendar-event" aria-hidden="true"></i> Events
         </a></li>
+        <li><a class="{{ request()->routeIs('podcasts.*') ? 'is-active' : '' }}" href="{{ route('podcasts.index') }}">
+            <i class="bi bi-mic" aria-hidden="true"></i> Podcasts
+        </a></li>
+        <li><a class="{{ request()->routeIs('consultants.*', 'consulting.*') ? 'is-active' : '' }}" href="{{ route('consultants.index') }}">
+            <i class="bi bi-person-video3" aria-hidden="true"></i> Consultants
+        </a></li>
 
         @auth
             <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
@@ -118,12 +124,6 @@
         {{-- Modules still being built. Each link is removed from this group
              as its module goes live. --}}
         <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'podcasts') }}">
-            <i class="bi bi-mic" aria-hidden="true"></i> Podcasts
-        </a></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'consulting') }}">
-            <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting
-        </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'newsletter') }}">
             <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
         </a></li>

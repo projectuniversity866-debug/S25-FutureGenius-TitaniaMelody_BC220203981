@@ -32,6 +32,7 @@
     {{-- Vue components (resources/js). Built into public/build by `npm run build`;
          the build is committed, so running the app needs no Node.js. --}}
     @vite('resources/js/app.js')
+    @stack('head')
 </head>
 <body>
 
