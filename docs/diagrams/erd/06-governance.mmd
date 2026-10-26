@@ -1,0 +1,40 @@
+---
+title: AQDesk — Governance module
+---
+erDiagram
+    users ||--o{ consents : "user_id"
+    users |o--o{ moderation_actions : "moderator_id"
+    users |o--o{ reports : "moderator_id"
+    users |o--o{ reports : "user_id"
+    consents {
+        bigint id PK
+        bigint user_id FK
+        varchar version
+        timestamp accepted_at
+    }
+    moderation_actions {
+        bigint id PK
+        bigint moderator_id FK "nullable"
+        varchar subject_type
+        bigint subject_id
+        varchar subject_label
+        varchar action
+        varchar reason "nullable"
+        text note "nullable"
+        smallint reports_count
+        timestamp created_at
+    }
+    reports {
+        bigint id PK
+        bigint user_id FK "nullable"
+        varchar reportable_type
+        bigint reportable_id
+        varchar reason
+        text details "nullable"
+        varchar status
+        bigint moderator_id FK "nullable"
+        text decision_note "nullable"
+        timestamp decided_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

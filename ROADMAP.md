@@ -20,10 +20,10 @@ Results go in the progress log.
 | 2 | Missing scope | 7 | 7 |
 | 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 13 |
 | 4 | Quality | 4 | 0 |
-| 5 | Deployment & deliverables | 6 | 0 |
-| | **Total** | **61** | **46** |
+| 5 | Deployment & deliverables | 6 | 2 |
+| | **Total** | **61** | **48** |
 
-**Next steps:** 5.3 + 5.4 (then 5.5; 5.6 video and the live URL need the student; then back to 3.14)
+**Next steps:** 5.5 + 3.14 (5.6 video and the 5.1 live URL need the student)
 
 ---
 
@@ -147,8 +147,8 @@ Results go in the progress log.
 |---|---|---|---|
 | [~] | 5.1 | Cloud deployment (cPanel / DigitalOcean / AWS), SMTP, HTTPS, cron, queue worker | Live demo URL |
 | [~] | 5.2 | Final Report (analysis, design, implementation, evaluation) | Report |
-| [ ] | 5.3 | User Manual (incl. form creators & respondents) | Manual |
-| [ ] | 5.4 | Updated ERD, diagrams, `/schema` SQL | Design artefacts |
+| [x] | 5.3 | User Manual (incl. form creators & respondents) | Manual |
+| [x] | 5.4 | Updated ERD, diagrams, `/schema` SQL | Design artefacts |
 | [ ] | 5.5 | README (overview, setup, features, reflection, future work) | Repo docs |
 | [ ] | 5.6 | Demo video showing accessibility features | Presentation |
 
@@ -234,3 +234,6 @@ Results go in the progress log.
 | 2026-10-28 | Tests 3.12 + 3.13 | 312 PHPUnit pass on PHP 8.5 + 8.3 (12 new: BK1–BK8 booking takes the slot + UTC times + Jitsi room + both notified + client filed, no double booking (service and database), no client overlap across consultants, only real free slots (off-grid, outside hours, past, day off, bad input), no self / guest / paused booking, upcoming limit, cancel by either side frees the slot + reason + 404 for outsiders + no cancelling after the start, both sides' lists + join window + completion rules; CR1–CR4 automatic and manual clients + member linking + lead → active + validation, notes private from client / other consultants / moderators, status tabs + search + member fields locked + removal keeps sessions, exports + deletion on either side). e2e smoke 229/229 (12 new: sara books a free time, private room, the same time refused for the admin, consultant's client list + private note (404 for sara) + manual client, sara cancels and the consultant is told). WAMP MySQL migrated; demo booking by the demo member and a hand-added lead with a note (additive). |
 | 2026-10-27 | 5.1 `[~]` | Deployment-ready: notifications now queued after commit (`ConsultationUpdate` keeps text, not the model, so it survives account deletion); `config/trustedproxy.php` (`TRUSTED_PROXIES`) for HTTPS behind a proxy; cPanel queue worker in the scheduler (`QUEUE_WORKER_IN_SCHEDULER`); `.env.production.example`, `src/deploy.sh`, `docs/DEPLOYMENT.md` (DigitalOcean + cPanel: HTTPS, SMTP, cron, Supervisor). Local `.env.example`/`.env` → `QUEUE_CONNECTION=sync`. Tests DP1–DP5 + 5 smoke checks. **Live URL waits for a hosting account.** |
 | 2026-10-27 | 5.2 `[~]` | `docs/report/FINAL-REPORT.md` draft 1 (intro, requirements, design, implementation, testing, deployment, reflection, future work); ⏳ parts filled after 3.14–3.18 and 4.3–4.4. 317 PHPUnit pass (PHP 8.5), e2e smoke 234/234. |
+| 2026-10-27 | Commit | `800315d` pushed to `development` (steps 5.1–5.2, in progress). |
+| 2026-10-27 | 5.3 | `docs/USER-MANUAL.md`: Part A per module (labels taken from the screens), Part B Form Builder guide for creators (10 field types, settings, open/close, responses, CSV, event registration) and respondents. Report appendix linked. |
+| 2026-10-27 | 5.4 | `php artisan docs:schema` writes Mermaid ERDs (overview + 9 modules, `docs/diagrams/erd/`) and `schema/aqdesk_schema.sql` (65 tables, 90 FKs) from a migrated DB; generated from a temporary fresh MySQL DB. Final use-case and architecture diagrams + `docs/diagrams/README.md` (prototype diagrams kept). **Found: WAMP MySQL defaults to MyISAM — 21 tables had no FKs, transactions or row locks**; `config/database.php` now forces InnoDB, new migration converts MyISAM tables (FKs return only with `migrate:fresh --seed`). Tests DC1–DC5 + 7 smoke checks; 322 PHPUnit pass (PHP 8.5), e2e smoke 241/241. |

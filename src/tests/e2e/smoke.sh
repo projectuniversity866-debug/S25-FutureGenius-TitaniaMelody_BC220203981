@@ -423,6 +423,11 @@ check "health check /up" 200 "$(get guest /up)"
 check ".env is never served" 404 "$(get guest /.env)"
 check "routes and views cache for production" ok "$("$PHP" artisan route:cache -q && "$PHP" artisan view:cache -q && echo ok; "$PHP" artisan route:clear -q; "$PHP" artisan view:clear -q)"
 check "deploy.sh is valid bash" ok "$(bash -n deploy.sh && echo ok)"
+echo "Deliverables"
+login member member@aqdesk.test >/dev/null
+for p in /accessibility /guidelines /settings /expert-verification /privacy/my-data /forms; do check "manual page $p" 200 "$(get member "$p")"; done
+check "docs:schema writes the ERDs and schema SQL" ok "$("$PHP" artisan docs:schema --diagrams="$WORK/erd" --sql="$WORK/schema.sql" -q && [ -s "$WORK/erd/00-overview.mmd" ] && grep -q 'CREATE TABLE "consultations"' "$WORK/schema.sql" && echo ok)"
+
 SCHED=$("$PHP" artisan schedule:list 2>&1)
 check "scheduler has reminders and the cPanel queue worker" yes "$(grep -q 'events:send-reminders' <<<"$SCHED" && grep -q 'queue:work' <<<"$SCHED" && echo yes || echo no)"
 

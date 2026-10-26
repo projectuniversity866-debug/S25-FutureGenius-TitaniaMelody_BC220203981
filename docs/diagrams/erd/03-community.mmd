@@ -1,0 +1,119 @@
+---
+title: AQDesk — Community module
+---
+erDiagram
+    questions ||--o{ answers : "question_id"
+    users ||--o{ answers : "user_id"
+    users ||--o{ bookmarks : "user_id"
+    users ||--o{ comments : "user_id"
+    questions ||--o{ question_tag : "question_id"
+    tags ||--o{ question_tag : "tag_id"
+    categories |o--o{ questions : "category_id"
+    users ||--o{ questions : "user_id"
+    users |o--o{ reputation_events : "actor_id"
+    users ||--o{ reputation_events : "user_id"
+    users |o--o{ revisions : "user_id"
+    tags ||--o{ tag_follows : "tag_id"
+    users ||--o{ tag_follows : "user_id"
+    users ||--o{ user_badges : "user_id"
+    users ||--o{ votes : "user_id"
+    answers {
+        bigint id PK
+        bigint question_id FK
+        bigint user_id FK
+        text body
+        tinyint is_accepted
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    bookmarks {
+        bigint id PK
+        bigint user_id FK
+        varchar bookmarkable_type
+        bigint bookmarkable_id
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    categories {
+        bigint id PK
+        varchar name
+        varchar slug UK
+        varchar description "nullable"
+        varchar icon "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    comments {
+        bigint id PK
+        bigint user_id FK
+        varchar commentable_type
+        bigint commentable_id
+        varchar body
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    question_tag {
+        bigint id PK
+        bigint question_id FK
+        bigint tag_id FK
+    }
+    questions {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK "nullable"
+        varchar title
+        varchar slug UK
+        text body
+        int views_count
+        tinyint is_closed
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    reputation_events {
+        bigint id PK
+        bigint user_id FK
+        bigint actor_id FK "nullable"
+        varchar type
+        int points
+        varchar subject_type "nullable"
+        bigint subject_id "nullable"
+        timestamp created_at
+    }
+    revisions {
+        bigint id PK
+        varchar revisable_type
+        bigint revisable_id
+        bigint user_id FK "nullable"
+        varchar title "nullable"
+        text body
+        timestamp created_at
+    }
+    tag_follows {
+        bigint id PK
+        bigint tag_id FK
+        bigint user_id FK
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    tags {
+        bigint id PK
+        varchar name
+        varchar slug UK
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    user_badges {
+        bigint id PK
+        bigint user_id FK
+        varchar badge
+        timestamp awarded_at
+    }
+    votes {
+        bigint id PK
+        bigint user_id FK
+        varchar votable_type
+        bigint votable_id
+        tinyint value
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

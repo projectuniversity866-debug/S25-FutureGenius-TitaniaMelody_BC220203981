@@ -1,0 +1,85 @@
+---
+title: AQDesk — Consulting module
+---
+erDiagram
+    consultant_profiles ||--o{ availability_exceptions : "consultant_profile_id"
+    consultant_profiles ||--o{ availability_rules : "consultant_profile_id"
+    users ||--o| consultant_profiles : "user_id"
+    users |o--o{ consultations : "cancelled_by"
+    users |o--o{ consultations : "client_id"
+    consultant_profiles ||--o{ consultations : "consultant_profile_id"
+    consulting_clients |o--o{ consultations : "consulting_client_id"
+    consulting_clients ||--o{ consulting_client_notes : "consulting_client_id"
+    consultant_profiles ||--o{ consulting_clients : "consultant_profile_id"
+    users |o--o{ consulting_clients : "user_id"
+    availability_exceptions {
+        bigint id PK
+        bigint consultant_profile_id FK
+        date date
+        varchar reason "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    availability_rules {
+        bigint id PK
+        bigint consultant_profile_id FK
+        tinyint weekday
+        varchar starts
+        varchar ends
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    consultant_profiles {
+        bigint id PK
+        bigint user_id FK, UK
+        varchar slug UK
+        varchar headline
+        text bio "nullable"
+        json expertise "nullable"
+        smallint session_minutes
+        int price_pkr "nullable"
+        varchar timezone
+        smallint notice_hours
+        smallint window_days
+        tinyint is_accepting
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    consultations {
+        bigint id PK
+        bigint consultant_profile_id FK
+        bigint client_id FK "nullable"
+        bigint consulting_client_id FK "nullable"
+        timestamp starts_at
+        timestamp ends_at
+        varchar topic
+        text message "nullable"
+        varchar meeting_url "nullable"
+        varchar status
+        varchar slot_key UK "nullable"
+        bigint cancelled_by FK "nullable"
+        varchar cancel_reason "nullable"
+        timestamp cancelled_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    consulting_client_notes {
+        bigint id PK
+        bigint consulting_client_id FK
+        text body
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    consulting_clients {
+        bigint id PK
+        bigint consultant_profile_id FK
+        bigint user_id FK "nullable"
+        varchar name
+        varchar email "nullable"
+        varchar phone "nullable"
+        varchar organization "nullable"
+        varchar status
+        varchar source
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

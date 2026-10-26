@@ -1,0 +1,77 @@
+---
+title: AQDesk — EventsMedia module
+---
+erDiagram
+    events ||--o{ event_registrations : "event_id"
+    form_responses |o--o{ event_registrations : "form_response_id"
+    users ||--o{ event_registrations : "user_id"
+    forms |o--o{ events : "form_id"
+    users |o--o{ events : "user_id"
+    podcast_series ||--o{ podcast_episodes : "podcast_series_id"
+    users |o--o{ podcast_series : "user_id"
+    event_registrations {
+        bigint id PK
+        bigint event_id FK
+        bigint user_id FK
+        bigint form_response_id FK "nullable"
+        varchar status
+        timestamp queued_at
+        timestamp promoted_at "nullable"
+        timestamp cancelled_at "nullable"
+        timestamp reminded_day_at "nullable"
+        timestamp reminded_hour_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    events {
+        bigint id PK
+        bigint user_id FK "nullable"
+        bigint form_id FK "nullable"
+        varchar title
+        varchar slug UK
+        varchar summary
+        text description "nullable"
+        varchar format
+        varchar venue "nullable"
+        varchar meeting_url "nullable"
+        varchar meeting_notes "nullable"
+        timestamp starts_at
+        timestamp ends_at
+        varchar timezone
+        int capacity "nullable"
+        timestamp registration_closes_at "nullable"
+        varchar status
+        varchar cancel_reason "nullable"
+        timestamp organizer_reminded_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    podcast_episodes {
+        bigint id PK
+        bigint podcast_series_id FK
+        int number
+        varchar title
+        varchar slug
+        varchar summary
+        text show_notes "nullable"
+        longtext transcript "nullable"
+        varchar audio_path "nullable"
+        varchar audio_mime "nullable"
+        bigint audio_size "nullable"
+        varchar audio_url "nullable"
+        int duration_seconds "nullable"
+        varchar status
+        timestamp published_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    podcast_series {
+        bigint id PK
+        bigint user_id FK "nullable"
+        varchar title
+        varchar slug UK
+        varchar summary
+        text description "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

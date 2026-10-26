@@ -1,0 +1,112 @@
+---
+title: AQDesk — Projects module
+---
+erDiagram
+    project_files ||--o{ project_file_versions : "project_file_id"
+    users |o--o{ project_file_versions : "user_id"
+    projects ||--o{ project_files : "project_id"
+    users |o--o{ project_files : "user_id"
+    users |o--o{ project_invitations : "invited_by"
+    projects ||--o{ project_invitations : "project_id"
+    projects ||--o{ project_members : "project_id"
+    users ||--o{ project_members : "user_id"
+    users |o--o{ project_tasks : "assignee_id"
+    users |o--o{ project_tasks : "created_by"
+    projects ||--o{ project_tasks : "project_id"
+    project_threads ||--o{ project_thread_replies : "project_thread_id"
+    users |o--o{ project_thread_replies : "user_id"
+    project_files |o--o{ project_threads : "project_file_id"
+    projects ||--o{ project_threads : "project_id"
+    users |o--o{ project_threads : "resolved_by"
+    users |o--o{ project_threads : "user_id"
+    users ||--o{ projects : "user_id"
+    project_file_versions {
+        bigint id PK
+        bigint project_file_id FK
+        bigint user_id FK "nullable"
+        smallint number
+        varchar path
+        varchar original_name
+        varchar mime_type "nullable"
+        bigint size
+        varchar note "nullable"
+        timestamp created_at
+    }
+    project_files {
+        bigint id PK
+        bigint project_id FK
+        bigint user_id FK "nullable"
+        varchar name
+        smallint versions_count
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    project_invitations {
+        bigint id PK
+        bigint project_id FK
+        bigint invited_by FK "nullable"
+        varchar email
+        varchar role
+        varchar token_hash UK
+        varchar status
+        timestamp expires_at
+        timestamp responded_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    project_members {
+        bigint id PK
+        bigint project_id FK
+        bigint user_id FK
+        varchar role
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    project_tasks {
+        bigint id PK
+        bigint project_id FK
+        bigint created_by FK "nullable"
+        bigint assignee_id FK "nullable"
+        varchar title
+        text description "nullable"
+        varchar status
+        varchar priority
+        date due_on "nullable"
+        timestamp completed_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    project_thread_replies {
+        bigint id PK
+        bigint project_thread_id FK
+        bigint user_id FK "nullable"
+        text body
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    project_threads {
+        bigint id PK
+        bigint project_id FK
+        bigint user_id FK "nullable"
+        bigint project_file_id FK "nullable"
+        varchar title
+        text body
+        varchar status
+        bigint resolved_by FK "nullable"
+        timestamp resolved_at "nullable"
+        int replies_count
+        timestamp last_activity_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    projects {
+        bigint id PK
+        bigint user_id FK
+        varchar name
+        varchar slug UK
+        text description "nullable"
+        varchar visibility
+        varchar status
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

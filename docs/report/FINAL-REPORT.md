@@ -121,9 +121,9 @@ than a separate role.
 
 ### 2.4 Use cases
 
-The main use cases are summarised in `docs/diagrams/03-use-case.svg` and
-the user journeys in `docs/diagrams/05-user-flow.svg`. ⏳ Both are refreshed
-in step 5.4 for the modules added after the prototype.
+The use cases of every module and role are in
+`docs/diagrams/10-use-case-final.mmd` (drawn in `docs/diagrams/README.md`);
+the prototype's user journeys remain in `docs/diagrams/05-user-flow.svg`.
 
 ---
 
@@ -190,8 +190,11 @@ module migrations. Key decisions:
 - **UTC storage** for every time, with each event or consultant's own time
   zone stored beside it for display.
 
-The ERD is `docs/diagrams/01-erd.svg` and the schema export
-`schema/aqdesk_schema.sql`. ⏳ Both are regenerated in step 5.4.
+The ERDs (an overview and one per module, `docs/diagrams/erd/`) and the
+schema export (`schema/aqdesk_schema.sql`, 65 tables, 90 foreign keys) are
+generated from a migrated MySQL database by `php artisan docs:schema`, so
+they always match the migrations. Every table uses InnoDB, which the
+booking and waitlist row locks depend on.
 
 ### 3.4 Security design
 
@@ -401,4 +404,4 @@ project vision, with every feature covered by automated tests.
 - D. Deployment guide — `docs/DEPLOYMENT.md`
 - E. Diagrams — `docs/diagrams/`
 - F. Database schema — `schema/aqdesk_schema.sql`
-- G. User Manual — ⏳ step 5.3
+- G. User Manual (incl. form creators and respondents) — `docs/USER-MANUAL.md`

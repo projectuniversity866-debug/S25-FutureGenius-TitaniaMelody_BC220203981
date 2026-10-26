@@ -1,0 +1,98 @@
+---
+title: AQDesk — Careers module
+---
+erDiagram
+    job_applications ||--o{ application_notes : "job_application_id"
+    users |o--o{ application_notes : "user_id"
+    job_applications ||--o{ application_status_changes : "job_application_id"
+    users |o--o{ application_status_changes : "user_id"
+    users ||--o{ job_alerts : "user_id"
+    job_posts ||--o{ job_applications : "job_post_id"
+    users ||--o{ job_applications : "user_id"
+    organizations |o--o{ job_posts : "organization_id"
+    users ||--o{ job_posts : "user_id"
+    users ||--o{ organizations : "user_id"
+    job_posts ||--o{ saved_opportunities : "job_post_id"
+    users ||--o{ saved_opportunities : "user_id"
+    application_notes {
+        bigint id PK
+        bigint job_application_id FK
+        bigint user_id FK "nullable"
+        text body
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    application_status_changes {
+        bigint id PK
+        bigint job_application_id FK
+        bigint user_id FK "nullable"
+        varchar from_status "nullable"
+        varchar to_status
+        text message "nullable"
+        timestamp created_at
+    }
+    job_alerts {
+        bigint id PK
+        bigint user_id FK
+        varchar keywords "nullable"
+        varchar type "nullable"
+        varchar work_mode "nullable"
+        timestamp last_sent_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    job_applications {
+        bigint id PK
+        bigint job_post_id FK
+        bigint user_id FK
+        text cover_letter "nullable"
+        varchar resume_path "nullable"
+        enum status
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    job_posts {
+        bigint id PK
+        bigint user_id FK
+        bigint organization_id FK "nullable"
+        varchar title
+        varchar slug UK
+        varchar company
+        varchar type
+        enum work_mode
+        varchar location "nullable"
+        text description
+        text requirements "nullable"
+        text eligibility "nullable"
+        decimal salary_min "nullable"
+        decimal salary_max "nullable"
+        date deadline "nullable"
+        date starts_on "nullable"
+        date ends_on "nullable"
+        varchar external_url "nullable"
+        tinyint is_active
+        timestamp closed_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    organizations {
+        bigint id PK
+        bigint user_id FK
+        varchar name
+        varchar slug UK
+        varchar tagline "nullable"
+        text about "nullable"
+        varchar website "nullable"
+        varchar location "nullable"
+        varchar industry "nullable"
+        varchar size "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    saved_opportunities {
+        bigint id PK
+        bigint user_id FK
+        bigint job_post_id FK
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
