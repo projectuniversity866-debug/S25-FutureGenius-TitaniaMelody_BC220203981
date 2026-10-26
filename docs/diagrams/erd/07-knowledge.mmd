@@ -1,0 +1,87 @@
+---
+title: AQDesk — Knowledge module
+---
+erDiagram
+    categories |o--o{ articles : "category_id"
+    users ||--o{ articles : "user_id"
+    users |o--o{ expert_verifications : "reviewer_id"
+    users ||--o{ expert_verifications : "user_id"
+    learning_paths ||--o{ learning_path_steps : "learning_path_id"
+    learning_resources ||--o{ learning_path_steps : "learning_resource_id"
+    categories |o--o{ learning_paths : "category_id"
+    users ||--o{ learning_paths : "user_id"
+    learning_path_steps ||--o{ learning_progress : "learning_path_step_id"
+    users ||--o{ learning_progress : "user_id"
+    categories |o--o{ learning_resources : "category_id"
+    users ||--o{ learning_resources : "user_id"
+    articles {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK "nullable"
+        varchar kind
+        varchar title
+        varchar slug UK
+        varchar summary
+        longtext body
+        smallint reading_minutes
+        int views_count
+        timestamp published_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    expert_verifications {
+        bigint id PK
+        bigint user_id FK
+        varchar field
+        text credentials
+        varchar evidence_url "nullable"
+        varchar document_path "nullable"
+        varchar status
+        bigint reviewer_id FK "nullable"
+        text review_note "nullable"
+        timestamp reviewed_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    learning_path_steps {
+        bigint id PK
+        bigint learning_path_id FK
+        bigint learning_resource_id FK
+        smallint position
+        varchar note "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    learning_paths {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK "nullable"
+        varchar title
+        varchar slug UK
+        varchar summary
+        varchar level
+        timestamp published_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    learning_progress {
+        bigint id PK
+        bigint user_id FK
+        bigint learning_path_step_id FK
+        timestamp completed_at
+    }
+    learning_resources {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK "nullable"
+        varchar title
+        varchar kind
+        varchar level
+        varchar url
+        varchar provider "nullable"
+        text description
+        smallint minutes "nullable"
+        tinyint is_free
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

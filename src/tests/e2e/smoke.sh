@@ -68,7 +68,7 @@ login() {      # login who email
 path_of() { echo "${1#* }" | sed "s#^$B##"; }
 
 echo "Guest"
-for p in / /questions /jobs /login /register /modules/events /accessibility; do check "GET $p" 200 "$(get guest "$p")"; done
+for p in / /questions /jobs /login /register /modules/newsletter /accessibility /events /podcasts /consultants; do check "GET $p" 200 "$(get guest "$p")"; done
 check "dashboard needs sign-in" 302 "$(get guest /dashboard)"
 check "unknown module is 404" 404 "$(get guest /modules/nope)"
 
@@ -255,8 +255,143 @@ V1=$(grep -oE "$PF/versions/[0-9]+" "$WORK/last.html" | tail -1)
 check "download version 1" 200 "$(get sara "$V1")"
 contains "…is the first draft" "$WORK/last.html" "first draft"
 check "an outsider cannot download" 404 "$(get expert "$V1")"
+R=$(send sara POST "$P/feedback" --data-urlencode "title=Review of the smoke plan" --data-urlencode "body=Please add the **file upload** steps.")
+check "sara starts a feedback thread" 302 "${R%% *}"
+T=$(path_of "$R")
+check "owner opens the thread" 200 "$(get member "$T")"
+contains "…Markdown is rendered" "$WORK/last.html" "<strong>file upload</strong>"
+check "owner replies" 302 "$(send member POST "$T/replies" --data-urlencode "body=Added, thanks." | cut -d' ' -f1)"
+check "sara marks it resolved" 302 "$(send sara PUT "$T/resolve" --data-urlencode resolved=1 | cut -d' ' -f1)"
+check "feedback list (resolved)" 200 "$(get member "$P/feedback?tab=resolved")"
+contains "…lists the thread" "$WORK/last.html" "Review of the smoke plan"
+check "task board" 200 "$(get member "$P/tasks")"
+SARA_ID=$(grep -oE '<option value="[0-9]+"[^>]*>Sara Malik' "$WORK/last.html" | head -1 | grep -oE '[0-9]+')
+R=$(send member POST "$P/tasks" --data-urlencode "title=Run the smoke test" --data-urlencode priority=high --data-urlencode "assignee_id=$SARA_ID")
+check "owner adds a task for sara" 302 "${R%% *}"
+TASK=$(get member "$P/tasks" >/dev/null; grep -oE "$P/tasks/[0-9]+/move" "$WORK/last.html" | head -1)
+check "sara starts the task" 302 "$(send sara PUT "$TASK" --data-urlencode status=doing | cut -d' ' -f1)"
+check "sara finishes it" 302 "$(send sara PUT "$TASK" --data-urlencode status=done | cut -d' ' -f1)"
+get sara "$P/tasks?show=mine" >/dev/null
+contains "…shows on her board as finished" "$WORK/last.html" "Finished"
+check "an outsider gets 404 on the board" 404 "$(get expert "$P/tasks")"
 check "an outsider gets 404" 404 "$(get expert "$P")"
 check "sara leaves" 302 "$(send sara DELETE "$P/leave" | cut -d' ' -f1)"
+
+echo "Events"
+check "a member (sara) cannot create events" 403 "$(get sara /events/new)"
+R=$(send expert POST /events --data-urlencode "title=Smoke test workshop" --data-urlencode "summary=A one-seat workshop to test the waitlist." \
+    --data-urlencode format=in_person --data-urlencode "venue=Lab 1" --data-urlencode timezone=Asia/Karachi --data-urlencode capacity=1 \
+    --data-urlencode "starts_at=$(date -d '+7 days' +%Y-%m-%dT10:00)" --data-urlencode "ends_at=$(date -d '+7 days' +%Y-%m-%dT12:00)")
+check "expert saves a draft event" 302 "${R%% *}"
+EV=$(path_of "$R")
+check "a guest cannot see the draft" 404 "$(get guest "$EV")"
+check "expert publishes it" 302 "$(send expert PUT "$EV/publish" | cut -d' ' -f1)"
+check "guest sees the event" 200 "$(get guest "$EV")"
+check "member registers (the only seat)" 302 "$(send member POST "$EV/register" | cut -d' ' -f1)"
+check "sara registers" 302 "$(send sara POST "$EV/register" | cut -d' ' -f1)"
+get sara "$EV" >/dev/null
+contains "…and is first on the waitlist" "$WORK/last.html" "You are number 1 on the waitlist"
+check "member gives up the seat" 302 "$(send member DELETE "$EV/register" | cut -d' ' -f1)"
+get sara "$EV" >/dev/null
+contains "…sara moves up" "$WORK/last.html" "You have a seat."
+check "attendee list (organizer)" 200 "$(get expert "$EV/attendees")"
+contains "…lists sara" "$WORK/last.html" "sara@aqdesk.test"
+check "member cannot see attendees" 403 "$(get member "$EV/attendees")"
+check "attendee CSV" 200 "$(get expert "$EV/attendees.csv")"
+WEB=/events/your-first-machine-learning-model-live-webinar
+check "webinar registration questions" 200 "$(get member "$WEB/register")"
+QF=$(grep -oE 'name="answers\[[0-9]+\]" value="Beginner"' "$WORK/last.html" | grep -oE '[0-9]+' | head -1)
+check "a missing required answer is refused" 302 "$(send member POST "$WEB/register" | cut -d' ' -f1)"
+get member "$WEB" >/dev/null
+contains "…so not registered yet" "$WORK/last.html" "The organizer asks 2 questions"
+check "member answers and registers" 302 "$(send member POST "$WEB/register" --data-urlencode "answers[$QF]=Beginner" | cut -d' ' -f1)"
+get expert "$WEB/attendees" >/dev/null
+contains "…organizer sees the answer" "$WORK/last.html" "Beginner"
+
+echo "Webinars, calendar & reminders"
+R=$(send expert POST /events --data-urlencode "title=Smoke test webinar" --data-urlencode "summary=An online session starting in three hours." \
+    --data-urlencode format=online --data-urlencode timezone=UTC --data-urlencode create_jitsi=1 --data-urlencode "meeting_notes=Cameras optional" \
+    --data-urlencode "starts_at=$(date -u -d '+3 hours' +%Y-%m-%dT%H:%M)" --data-urlencode "ends_at=$(date -u -d '+4 hours' +%Y-%m-%dT%H:%M)")
+check "expert creates a webinar with a Jitsi room" 302 "${R%% *}"
+WB=$(path_of "$R")
+check "…and publishes it" 302 "$(send expert PUT "$WB/publish" | cut -d' ' -f1)"
+check "member takes a seat" 302 "$(send member POST "$WB/register" | cut -d' ' -f1)"
+get member "$WB" >/dev/null
+contains "…sees the joining link" "$WORK/last.html" "https://meet.jit.si/AQDesk-"
+get sara "$WB" >/dev/null
+if grep -qF "https://meet.jit.si/AQDesk-" "$WORK/last.html"; then check "…a member without a seat does not" yes no; else check "…a member without a seat does not" yes yes; fi
+check "calendar file (.ics)" 200 "$(get member "$WB/calendar.ics")"
+contains "…is iCalendar" "$WORK/last.html" "BEGIN:VCALENDAR"
+contains "…with the joining link for a seat-holder" "$WORK/last.html" "meet.jit.si"
+check "guest calendar file" 200 "$(get guest "$WB/calendar.ics")"
+if grep -qF "meet.jit.si" "$WORK/last.html"; then check "…without the joining link" yes no; else check "…without the joining link" yes yes; fi
+REM=$("$PHP" artisan events:send-reminders 2>&1)
+case "$REM" in *"Sent 1 attendee"*) check "scheduled reminder command sends the reminder" yes yes ;; *) check "scheduled reminder command sends the reminder ($REM)" yes no ;; esac
+REM=$("$PHP" artisan events:send-reminders 2>&1)
+case "$REM" in *"Sent 0 attendee and 0 organizer"*) check "…and never twice" yes yes ;; *) check "…and never twice ($REM)" yes no ;; esac
+get member /notifications >/dev/null
+contains "…member sees it under the bell" "$WORK/last.html" "Reminder: Smoke test webinar"
+
+echo "Podcasts"
+PS=/podcasts/final-year-voices
+check "demo podcast" 200 "$(get guest "$PS")"
+EP=$(grep -oE "$PS/[a-z0-9-]+" "$WORK/last.html" | grep -v -E '/(edit|feed|episodes)' | head -1)
+check "episode page" 200 "$(get guest "$EP")"
+contains "…has a transcript" "$WORK/last.html" "<strong>Sara:</strong>"
+check "audio streams" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$B$EP/audio")"
+check "…and can seek (HTTP Range)" 206 "$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=0-99' "$B$EP/audio")"
+check "RSS feed" 200 "$(get guest "$PS/feed.xml")"
+contains "…has an audio enclosure" "$WORK/last.html" "<enclosure url="
+check "sara cannot start a series" 403 "$(get sara /podcasts/new)"
+R=$(send member POST /podcasts --data-urlencode "title=Smoke Cast" --data-urlencode "summary=A podcast made by the smoke test.")
+check "member (now an expert) starts a series" 302 "${R%% *}"
+SC=$(path_of "$R")
+"$PHP" -r '$s=str_repeat(chr(128),8000);echo "RIFF".pack("V",36+strlen($s))."WAVEfmt ".pack("VvvVVvv",16,1,1,8000,8000,1,8)."data".pack("V",strlen($s)).$s;' > "$WORK/ep.wav"
+R=$(upload member "$SC/episodes" -F "title=Pilot episode" -F "summary=The very first smoke test episode." -F "audio=@$WORK/ep.wav;type=audio/wav")
+check "uploads an episode with audio" 302 "${R%% *}"
+SE=$(path_of "$R")
+check "…publishing without a transcript is refused" 302 "$(send member PUT "$SE/publish" | cut -d' ' -f1)"
+check "a guest cannot see the draft" 404 "$(get guest "$SE")"
+check "adds the transcript" 302 "$(send member PUT "$SE" --data-urlencode "title=Pilot episode" --data-urlencode "summary=The very first smoke test episode." --data-urlencode "transcript=Host: Hello and welcome." | cut -d' ' -f1)"
+check "publishes" 302 "$(send member PUT "$SE/publish" | cut -d' ' -f1)"
+check "a guest hears the episode" 200 "$(get guest "$SE")"
+contains "…with the player" "$WORK/last.html" "<audio controls"
+
+echo "Consultants"
+check "consultant directory" 200 "$(get guest /consultants)"
+contains "…lists the demo consultant" "$WORK/last.html" "Final-year project reviews"
+check "sara cannot offer consulting" 403 "$(get sara /consulting/profile)"
+check "member (now an expert) creates a consultant profile" 302 "$(send member PUT /consulting/profile --data-urlencode "headline=Smoke testing advice for student projects" \
+    --data-urlencode "expertise=Testing, Bash" --data-urlencode session_minutes=30 --data-urlencode timezone=UTC --data-urlencode notice_hours=0 \
+    --data-urlencode window_days=14 --data-urlencode is_accepting=1 | cut -d' ' -f1)"
+for wd in 1 2 3 4 5 6 7; do send member POST /consulting/availability/hours --data-urlencode weekday=$wd --data-urlencode starts=00:00 --data-urlencode ends=23:30 >/dev/null; done
+check "availability page" 200 "$(get member /consulting/availability)"
+contains "…shows the hours" "$WORK/last.html" "00:00–23:30"
+check "overlapping hours are refused" 302 "$(send member POST /consulting/availability/hours --data-urlencode weekday=1 --data-urlencode starts=10:00 --data-urlencode ends=11:00 | cut -d' ' -f1)"
+get guest "/consultants?q=Bash" >/dev/null
+contains "…guests find the consultant with free times" "$WORK/last.html" "Next free:"
+CP=$(grep -oE '/consultants/[a-z0-9-]+' "$WORK/last.html" | grep -v '/consultants/book' | head -1)
+get sara "$CP" >/dev/null
+BOOK=$(grep -oE "$CP/book\?start=[^\"]+" "$WORK/last.html" | head -1 | sed 's/&amp;/\&/g')
+START=$(printf '%s' "${BOOK#*start=}" | sed 's/%3A/:/g')
+check "sara opens a free time" 200 "$(get sara "$BOOK")"
+R=$(send sara POST "$CP/book" --data-urlencode "start=$START" --data-urlencode "topic=Help with my smoke tests" --data-urlencode "message=Bring the script.")
+check "sara books it" 302 "${R%% *}"
+SS=$(path_of "$R")
+check "her session page" 200 "$(get sara "$SS")"
+contains "…has a private Jitsi room" "$WORK/last.html" "https://meet.jit.si/AQDesk-Session-"
+send admin POST "$CP/book" --data-urlencode "start=$START" --data-urlencode "topic=Trying the same time" >/dev/null
+get admin /consulting/sessions >/dev/null
+if grep -qF "Trying the same time" "$WORK/last.html"; then check "the same time cannot be booked twice" yes no; else check "the same time cannot be booked twice" yes yes; fi
+check "consultant's client list" 200 "$(get member /consulting/clients)"
+contains "…has sara from her booking" "$WORK/last.html" "Sara Malik"
+CL=$(grep -oE '/consulting/clients/[0-9]+' "$WORK/last.html" | head -1)
+check "consultant adds a private note" 302 "$(send member POST "$CL/notes" --data-urlencode "body=Wants a review of the e2e script." | cut -d' ' -f1)"
+check "sara cannot open the client record" 404 "$(get sara "$CL")"
+check "consultant adds a client by hand" 302 "$(send member POST /consulting/clients --data-urlencode "name=Hina Qureshi" --data-urlencode "organization=Lahore Startups" --data-urlencode status=lead | cut -d' ' -f1)"
+check "sara cancels the session" 302 "$(send sara PUT "$SS/cancel" --data-urlencode "reason=Found the bug myself" | cut -d' ' -f1)"
+get member /notifications >/dev/null
+contains "…the consultant is told" "$WORK/last.html" "Session cancelled by Sara Malik"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done
@@ -282,6 +417,19 @@ check "admin closes a question" 302 "$(send admin PUT "$QID" | cut -d' ' -f1)"
 echo "Sign out"
 check "member signs out" 302 "$(send member POST /logout | cut -d' ' -f1)"
 check "dashboard needs sign-in again" 302 "$(get member /dashboard)"
+
+echo "Deployment"
+check "health check /up" 200 "$(get guest /up)"
+check ".env is never served" 404 "$(get guest /.env)"
+check "routes and views cache for production" ok "$("$PHP" artisan route:cache -q && "$PHP" artisan view:cache -q && echo ok; "$PHP" artisan route:clear -q; "$PHP" artisan view:clear -q)"
+check "deploy.sh is valid bash" ok "$(bash -n deploy.sh && echo ok)"
+echo "Deliverables"
+login member member@aqdesk.test >/dev/null
+for p in /accessibility /guidelines /settings /expert-verification /privacy/my-data /forms; do check "manual page $p" 200 "$(get member "$p")"; done
+check "docs:schema writes the ERDs and schema SQL" ok "$("$PHP" artisan docs:schema --diagrams="$WORK/erd" --sql="$WORK/schema.sql" -q && [ -s "$WORK/erd/00-overview.mmd" ] && grep -q 'CREATE TABLE "consultations"' "$WORK/schema.sql" && echo ok)"
+
+SCHED=$("$PHP" artisan schedule:list 2>&1)
+check "scheduler has reminders and the cPanel queue worker" yes "$(grep -q 'events:send-reminders' <<<"$SCHED" && grep -q 'queue:work' <<<"$SCHED" && echo yes || echo no)"
 
 if [ -s "$WORK/php-errors.txt" ]; then
     FAIL=$((FAIL + 1)); echo "  ✗ PHP warnings/errors on: $(sort -u "$WORK/php-errors.txt" | tr '\n' ' ')"

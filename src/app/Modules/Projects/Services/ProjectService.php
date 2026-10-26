@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 /** Project spaces and their members (FR3, roadmap 3.1). */
 class ProjectService
 {
-    public function __construct(private ActivityLogger $activity, private ProjectFileService $files) {}
+    public function __construct(private ActivityLogger $activity, private ProjectFileService $files, private TaskService $tasks) {}
 
     /** @param  array<string, mixed>  $data  validated ProjectRequest data */
     public function create(User $owner, array $data): Project
@@ -56,6 +56,9 @@ class ProjectService
         }
 
         $project->members()->updateExistingPivot($member->id, ['role' => $role]);
+        if ($role === 'viewer') {
+            $this->tasks->unassign($member, $project);   // viewers cannot work on tasks
+        }
     }
 
     /** Remove a member, or leave the project yourself. The owner cannot leave. */
@@ -66,6 +69,7 @@ class ProjectService
         }
 
         $project->members()->detach($member->id);
+        $this->tasks->unassign($member, $project);
     }
 
     /**
@@ -89,5 +93,6 @@ class ProjectService
         });
 
         DB::table('project_members')->where('user_id', $user->id)->delete();
+        $this->tasks->unassign($user);
     }
 }

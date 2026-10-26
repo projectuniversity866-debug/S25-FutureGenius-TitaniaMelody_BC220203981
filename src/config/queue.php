@@ -16,6 +16,14 @@ return [
     'default' => env('QUEUE_CONNECTION', 'database'),
 
     /*
+    | Hosts without a process manager (cPanel) cannot keep `queue:work`
+    | running. With this on, the every-minute cron (routes/console.php) also
+    | drains the queue for up to 50 seconds (roadmap 5.1).
+    */
+
+    'worker_in_scheduler' => (bool) env('QUEUE_WORKER_IN_SCHEDULER', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------

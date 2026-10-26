@@ -4,6 +4,8 @@ use App\Modules\Projects\Http\Controllers\InvitationController;
 use App\Modules\Projects\Http\Controllers\ProjectController;
 use App\Modules\Projects\Http\Controllers\ProjectFileController;
 use App\Modules\Projects\Http\Controllers\ProjectMemberController;
+use App\Modules\Projects\Http\Controllers\ProjectTaskController;
+use App\Modules\Projects\Http\Controllers\ProjectThreadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +41,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/projects/{project}/files/{file}/versions', [ProjectFileController::class, 'storeVersion'])->name('projects.files.versions.store');
     Route::get('/projects/{project}/files/{file}/versions/{version}', [ProjectFileController::class, 'download'])->name('projects.files.download');
     Route::delete('/projects/{project}/files/{file}', [ProjectFileController::class, 'destroy'])->name('projects.files.destroy');
+
+    Route::get('/projects/{project}/feedback', [ProjectThreadController::class, 'index'])->name('projects.threads.index');
+    Route::post('/projects/{project}/feedback', [ProjectThreadController::class, 'store'])->middleware('throttle:20,1,feedback')->name('projects.threads.store');
+    Route::get('/projects/{project}/feedback/{thread}', [ProjectThreadController::class, 'show'])->name('projects.threads.show');
+    Route::post('/projects/{project}/feedback/{thread}/replies', [ProjectThreadController::class, 'reply'])->middleware('throttle:30,1,feedback')->name('projects.threads.reply');
+    Route::put('/projects/{project}/feedback/{thread}/resolve', [ProjectThreadController::class, 'resolve'])->name('projects.threads.resolve');
+    Route::delete('/projects/{project}/feedback/{thread}', [ProjectThreadController::class, 'destroy'])->name('projects.threads.destroy');
+    Route::delete('/projects/{project}/feedback/{thread}/replies/{reply}', [ProjectThreadController::class, 'destroyReply'])->name('projects.threads.replies.destroy');
+
+    Route::get('/projects/{project}/tasks', [ProjectTaskController::class, 'index'])->name('projects.tasks.index');
+    Route::post('/projects/{project}/tasks', [ProjectTaskController::class, 'store'])->name('projects.tasks.store');
+    Route::get('/projects/{project}/tasks/{task}/edit', [ProjectTaskController::class, 'edit'])->name('projects.tasks.edit');
+    Route::put('/projects/{project}/tasks/{task}', [ProjectTaskController::class, 'update'])->name('projects.tasks.update');
+    Route::put('/projects/{project}/tasks/{task}/move', [ProjectTaskController::class, 'move'])->name('projects.tasks.move');
+    Route::delete('/projects/{project}/tasks/{task}', [ProjectTaskController::class, 'destroy'])->name('projects.tasks.destroy');
 
     // Declared last so /projects/new wins over the {project} wildcard.
     Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');

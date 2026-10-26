@@ -53,6 +53,24 @@ class Project extends Model
         return $this->hasMany(ProjectFile::class)->latest('updated_at');
     }
 
+    /** Feedback threads, most recently active first (roadmap 3.4). */
+    public function threads(): HasMany
+    {
+        return $this->hasMany(ProjectThread::class)->latest('last_activity_at')->orderByDesc('id');
+    }
+
+    /** Task board cards (roadmap 3.5). */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(ProjectTask::class);
+    }
+
+    /** Owners and collaborators: the people a task can be assigned to. */
+    public function workers(): BelongsToMany
+    {
+        return $this->members()->wherePivotIn('role', ['owner', 'collaborator']);
+    }
+
     /** The user's role here, or null when they are not a member. */
     public function roleOf(?User $user): ?string
     {

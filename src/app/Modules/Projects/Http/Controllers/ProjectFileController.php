@@ -32,8 +32,9 @@ class ProjectFileController extends Controller
         abort_unless($file->project_id === $project->id, 404);
 
         $file->load('versions.uploader', 'creator');
+        $threads = $project->threads()->where('project_file_id', $file->id)->with('author')->get();
 
-        return view('projects::file', compact('project', 'file'));
+        return view('projects::file', compact('project', 'file', 'threads'));
     }
 
     public function storeVersion(ProjectFileRequest $request, Project $project, ProjectFile $file): RedirectResponse

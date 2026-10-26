@@ -1,0 +1,71 @@
+---
+title: AQDesk — Platform module
+---
+erDiagram
+    users |o--o{ activity_logs : "user_id"
+    form_fields ||--o{ form_answers : "form_field_id"
+    form_responses ||--o{ form_answers : "form_response_id"
+    forms ||--o{ form_fields : "form_id"
+    forms ||--o{ form_responses : "form_id"
+    users |o--o{ form_responses : "user_id"
+    users ||--o{ forms : "user_id"
+    activity_logs {
+        bigint id PK
+        bigint user_id FK "nullable"
+        varchar action
+        varchar subject_type "nullable"
+        bigint subject_id "nullable"
+        varchar description
+        json properties "nullable"
+        varchar ip_address "nullable"
+        timestamp created_at
+    }
+    form_answers {
+        bigint id PK
+        bigint form_response_id FK
+        bigint form_field_id FK
+        text value "nullable"
+    }
+    form_fields {
+        bigint id PK
+        bigint form_id FK
+        varchar type
+        varchar label
+        varchar help "nullable"
+        json options "nullable"
+        tinyint is_required
+        smallint position
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    form_responses {
+        bigint id PK
+        bigint form_id FK
+        bigint user_id FK "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    forms {
+        bigint id PK
+        bigint user_id FK
+        varchar title
+        varchar slug UK
+        text description "nullable"
+        varchar status
+        tinyint requires_login
+        tinyint one_response_per_user
+        varchar confirmation_message "nullable"
+        timestamp closes_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    notifications {
+        char id PK
+        varchar type
+        varchar notifiable_type
+        bigint notifiable_id
+        text data
+        timestamp read_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

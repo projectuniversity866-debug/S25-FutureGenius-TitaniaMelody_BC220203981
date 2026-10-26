@@ -1,0 +1,46 @@
+---
+title: "AQDesk — System Architecture (Final)"
+---
+flowchart TB
+    U["Browser<br/>Blade pages (work without JS) + Vue 3 islands<br/>Bootstrap 5 · aqdesk.css · accessibility toolbar"]
+
+    subgraph APP["Laravel 12 modular monolith"]
+        direction TB
+        H["HTTP layer<br/>routes per module · middleware (auth · verified · active · can:permission · throttle · CSRF)<br/>Form Requests validate · Policies authorise · thin Controllers"]
+
+        subgraph MODS["Feature modules — each: routes · controllers · requests · policies · services · models · migrations · views"]
+            direction LR
+            ID["Identity<br/>FR1"]
+            CO["Community<br/>FR2"]
+            KN["Knowledge<br/>experts · learning"]
+            CA["Careers<br/>FR5"]
+            PR["Projects<br/>FR3"]
+            EV["EventsMedia<br/>FR4"]
+            CS["Consulting<br/>FR6"]
+            CM["Communications<br/>FR7"]
+            GV["Governance<br/>moderation · privacy"]
+        end
+
+        PL["Platform (shared kernel)<br/>notifications · forms engine · private storage · Markdown<br/>activity log · personal-data registry · accessibility preferences"]
+
+        H --> MODS
+        MODS -->|"services, domain events"| PL
+        MODS -.->|"user identity"| ID
+    end
+
+    subgraph INF["Infrastructure"]
+        direction LR
+        DB[("MySQL 8 · InnoDB<br/>65 tables")]
+        Q["Database queue<br/>queue:work / cron"]
+        SC["Scheduler<br/>reminders · deadlines · pruning"]
+        ST["Storage<br/>public · private"]
+    end
+
+    EXT["External<br/>SMTP mail · Google / GitHub OAuth<br/>Jitsi · Zoom · Meet · Teams · calendar apps · podcast apps"]
+
+    U -->|HTTPS| H
+    APP --> DB & ST
+    PL -->|"queued after commit"| Q
+    SC --> Q
+    Q -->|SMTP| EXT
+    APP -->|"OAuth · meeting links · .ics · RSS"| EXT

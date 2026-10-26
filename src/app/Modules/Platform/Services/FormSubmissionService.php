@@ -45,6 +45,20 @@ class FormSubmissionService
             throw ValidationException::withMessages(['form' => $reason]);
         }
 
+        return $this->store($form, $user, $input);
+    }
+
+    /**
+     * Validate and store answers without the form's own open / one-response
+     * rules — for a module that uses the form as its questionnaire and
+     * enforces its own rules (event registration, roadmap 3.7).
+     *
+     * @param  array<string, mixed>  $input  answers keyed by field id
+     *
+     * @throws ValidationException
+     */
+    public function store(Form $form, ?User $user, array $input): FormResponse
+    {
         $fields = $form->fields;
         $rules = [];
         $names = [];
@@ -109,6 +123,12 @@ class FormSubmissionService
         });
     }
 
+    /** Spreadsheet formula injection: a CSV cell never starts with = + - @. */
+    public static function csvSafe(mixed $cell): mixed
+    {
+        return preg_match('/^[=+\-@]/', (string) $cell) ? "'".$cell : $cell;
+    }
+
     /** Every response as CSV, one column per field. */
     public function export(Form $form): StreamedResponse
     {
@@ -124,8 +144,7 @@ class FormSubmissionService
                 foreach ($fields as $field) {
                     $row[] = $byField->has($field->id) ? $byField[$field->id]->display() : '';
                 }
-                // Spreadsheet formula injection: never start a cell with = + - @.
-                fputcsv($out, array_map(fn ($cell) => preg_match('/^[=+\-@]/', (string) $cell) ? "'".$cell : $cell, $row));
+                fputcsv($out, array_map([self::class, 'csvSafe'], $row));
             }
             fclose($out);
         }, 'responses-'.$form->slug.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

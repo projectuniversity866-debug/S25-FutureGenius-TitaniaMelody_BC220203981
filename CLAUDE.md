@@ -13,6 +13,22 @@ Blade + Bootstrap 5 and Vue 3 "islands", on MySQL (WAMP).
 
 ## How the student wants us to work
 
+**Lean mode (since 2026-10-28, deadline close, usage limit nearly reached) —
+this overrides the heavier rules below:**
+
+- Two steps per go, **core only**: migration/model, service, policy, form
+  request, controller, plain Blade pages. No extras unless the step names them
+  (no demo seeders, CSV/RSS/ICS exports, privacy export/eraser hooks,
+  email-setting switches); suggest extras in one line instead.
+- Tests: 3–5 PHPUnit cases per step + 2–4 new `smoke.sh` checks. Per go, run
+  PHPUnit on CLI PHP and `smoke.sh` once. WAMP PHP 8.3 tests, `php artisan
+  migrate` on WAMP and page checks **only on "commit"**.
+- Read only the files you need; match style from one similar file.
+- ROADMAP: mark `[x]`, counts, "Next steps", **one short log line per step**.
+  Report in 3–5 short bullets, then wait for "continue" or "commit".
+
+The usual rules:
+
 - **Two roadmap steps per go.** When they say "continue", build the next two
   steps from `ROADMAP.md`, test them, mark them `[x]`, update the phase counts,
   the "Next steps" line and the progress log, report in short bullets, then

@@ -1,0 +1,67 @@
+---
+title: AQDesk — Identity module
+---
+erDiagram
+    permissions ||--o{ permission_role : "permission_id"
+    roles ||--o{ permission_role : "role_id"
+    users ||--o| profiles : "user_id"
+    users ||--o{ social_accounts : "user_id"
+    roles |o--o{ users : "role_id"
+    permission_role {
+        bigint permission_id FK
+        bigint role_id FK
+    }
+    permissions {
+        bigint id PK
+        varchar slug UK
+        varchar name
+        varchar group
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    profiles {
+        bigint id PK
+        bigint user_id FK, UK
+        varchar avatar_path "nullable"
+        varchar headline "nullable"
+        text bio "nullable"
+        varchar skills "nullable"
+        varchar organization "nullable"
+        varchar location "nullable"
+        varchar website "nullable"
+        varchar linkedin "nullable"
+        varchar github "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    roles {
+        bigint id PK
+        varchar name
+        varchar slug UK
+        varchar description "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    social_accounts {
+        bigint id PK
+        bigint user_id FK
+        varchar provider
+        varchar provider_id
+        varchar email "nullable"
+        varchar avatar_url "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    users {
+        bigint id PK
+        varchar name
+        varchar email UK
+        bigint role_id FK "nullable"
+        timestamp email_verified_at "nullable"
+        varchar password
+        varchar remember_token "nullable"
+        tinyint is_active
+        json settings "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

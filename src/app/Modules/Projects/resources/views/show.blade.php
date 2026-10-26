@@ -16,9 +16,8 @@
     </x-slot:actions>
 </x-page-header>
 
-@if ($project->isArchived())
-    <div class="alert alert-secondary py-2 aq-text-sm" role="status"><i class="bi bi-archive me-1" aria-hidden="true"></i> This project is archived and read-only.</div>
-@endif
+@include('projects::_archived')
+@include('projects::_nav', ['active' => 'overview'])
 
 <div class="row g-4">
     <div class="col-lg-7">
@@ -75,6 +74,28 @@
     </div>
 
     <div class="col-lg-5">
+        @php $totalTasks = $taskCounts->sum(); $doneTasks = (int) ($taskCounts['done'] ?? 0); @endphp
+        <x-card title="Progress" icon="kanban" class="mb-4">
+            @if ($totalTasks)
+                <label for="task_progress" class="aq-text-sm d-block mb-1">{{ $doneTasks }} of {{ $totalTasks }} {{ \Illuminate\Support\Str::plural('task', $totalTasks) }} done</label>
+                <progress id="task_progress" class="aq-progress w-100" max="{{ $totalTasks }}" value="{{ $doneTasks }}">{{ round($doneTasks / $totalTasks * 100) }}%</progress>
+                <p class="aq-text-xs aq-muted mt-1 mb-2">
+                    @foreach (\App\Modules\Projects\Models\ProjectTask::STATUSES as $status => [$label]) {{ $label }}: {{ (int) ($taskCounts[$status] ?? 0) }}@if (! $loop->last) · @endif @endforeach
+                </p>
+            @else
+                <p class="aq-text-sm aq-muted mb-2">No tasks yet.</p>
+            @endif
+            <a href="{{ route('projects.tasks.index', $project) }}" class="btn btn-soft btn-sm">Open the task board</a>
+
+            <h3 class="aq-label mt-3 mb-2">Open feedback</h3>
+            @forelse ($threads as $thread)
+                <a href="{{ route('projects.threads.show', [$project, $thread]) }}" class="d-block text-decoration-none aq-text-sm text-truncate">{{ $thread->title }}</a>
+                <span class="d-block aq-text-xs aq-muted mb-1">{{ $thread->author?->name ?? 'a former member' }} · {{ $thread->replies_count }} {{ \Illuminate\Support\Str::plural('reply', $thread->replies_count) }}</span>
+            @empty
+                <p class="aq-text-sm aq-muted mb-0">Nothing waiting. <a href="{{ route('projects.threads.index', $project) }}">Feedback</a></p>
+            @endforelse
+        </x-card>
+
         <x-card title="Members ({{ $project->members->count() }})" icon="people" id="members">
             <ul class="aq-member-list">
                 @foreach ($project->members as $member)

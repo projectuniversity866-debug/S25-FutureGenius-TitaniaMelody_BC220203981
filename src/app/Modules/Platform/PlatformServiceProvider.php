@@ -4,6 +4,7 @@ namespace App\Modules\Platform;
 
 use App\Modules\Identity\Models\User;
 use App\Modules\ModuleServiceProvider;
+use App\Modules\Platform\Console\DocumentSchema;
 use App\Modules\Platform\Models\ActivityLog;
 use App\Modules\Platform\Models\Form;
 use App\Modules\Platform\Models\FormResponse;
@@ -17,6 +18,15 @@ use App\Modules\Platform\Policies\FormPolicy;
 class PlatformServiceProvider extends ModuleServiceProvider
 {
     protected string $module = 'Platform';
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([DocumentSchema::class]);
+        }
+    }
 
     protected function policies(): array
     {

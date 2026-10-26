@@ -48,6 +48,15 @@
         <li><a class="{{ request()->routeIs('organizations.*') ? 'is-active' : '' }}" href="{{ route('organizations.index') }}">
             <i class="bi bi-buildings" aria-hidden="true"></i> Organizations
         </a></li>
+        <li><a class="{{ request()->routeIs('events.*') ? 'is-active' : '' }}" href="{{ route('events.index') }}">
+            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events
+        </a></li>
+        <li><a class="{{ request()->routeIs('podcasts.*') ? 'is-active' : '' }}" href="{{ route('podcasts.index') }}">
+            <i class="bi bi-mic" aria-hidden="true"></i> Podcasts
+        </a></li>
+        <li><a class="{{ request()->routeIs('consultants.*', 'consulting.profile*', 'consulting.availability', 'consulting.hours.*', 'consulting.days-off.*') ? 'is-active' : '' }}" href="{{ route('consultants.index') }}">
+            <i class="bi bi-person-video3" aria-hidden="true"></i> Consultants
+        </a></li>
 
         @auth
             <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
@@ -65,6 +74,14 @@
             <li><a class="{{ request()->routeIs('projects.*') ? 'is-active' : '' }}" href="{{ route('projects.index') }}">
                 <i class="bi bi-kanban" aria-hidden="true"></i> Projects
             </a></li>
+            <li><a class="{{ request()->routeIs('consulting.sessions.*') ? 'is-active' : '' }}" href="{{ route('consulting.sessions.index') }}">
+                <i class="bi bi-calendar-week" aria-hidden="true"></i> My sessions
+            </a></li>
+            @can('consulting.offer')
+                <li><a class="{{ request()->routeIs('consulting.clients.*') ? 'is-active' : '' }}" href="{{ route('consulting.clients.index') }}">
+                    <i class="bi bi-person-lines-fill" aria-hidden="true"></i> My clients
+                </a></li>
+            @endcan
             @can('forms.create')
                 <li><a class="{{ request()->routeIs('forms.*') ? 'is-active' : '' }}" href="{{ route('forms.index') }}">
                     <i class="bi bi-ui-checks" aria-hidden="true"></i> My forms
@@ -115,12 +132,6 @@
         {{-- Modules still being built. Each link is removed from this group
              as its module goes live. --}}
         <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'events') }}">
-            <i class="bi bi-calendar-event" aria-hidden="true"></i> Events &amp; podcasts
-        </a></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'consulting') }}">
-            <i class="bi bi-clipboard-data" aria-hidden="true"></i> Consulting
-        </a></li>
         <li><a class="is-muted" href="{{ route('modules.coming-soon', 'newsletter') }}">
             <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
         </a></li>
