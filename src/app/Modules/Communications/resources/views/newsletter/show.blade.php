@@ -39,5 +39,8 @@
     </x-card>
 @endif
 
-<p class="aq-text-xs aq-muted mt-3">We use your address only for the newsletter and never share it. See the <a href="{{ route('privacy') }}">privacy policy</a>.</p>
+<p class="aq-text-xs aq-muted mt-3">
+    We use your address only for the newsletter and never share it. Each email contains a tiny image that tells us whether it was opened;
+    blocking images in your mail app turns this off. See the <a href="{{ route('privacy') }}">privacy policy</a>.
+</p>
 @endsection

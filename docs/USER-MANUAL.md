@@ -130,7 +130,7 @@ a transcript.
 | Proposals (consultants) | On a client's page, **New proposal** → title, what you will do, price, valid until → **Save draft** → check it → **Send to …**. A client on AQDesk answers it themselves; for anyone else, record their answer. When the work is done, **Mark the work as completed**. |
 | Proposals (clients) | **Proposals** in the menu, or the notification → read it → optional note → **Accept** or **Decline** before its "valid until" day. |
 
-### 11. Newsletter
+### 11. Newsletter and updates
 
 **Newsletter** in the menu (`/newsletter`): enter your email, tick the
 agreement and press **Subscribe**. Visitors get an email with a link to
@@ -138,6 +138,10 @@ confirm (it works for 7 days); nothing is sent before that. Signed in, your
 own account email is subscribed at once. Every newsletter ends with
 **Unsubscribe with one click**; mail apps that show their own "Unsubscribe"
 button use the same link.
+
+Announcements from the AQDesk team appear as a banner at the top of every
+page (News, Good news or Important). Close one with its **×** button; it stays
+closed. **Updates** in the menu lists the current and earlier announcements.
 
 ### 12. Privacy and your data
 
@@ -156,7 +160,8 @@ upcoming bookings are cancelled with notice to the other side).
 | **Moderate questions / opportunities** | Close, reopen or delete any post. |
 | **Expert verification** | Approve or reject requests (a rejection needs a reason). |
 | **Activity log** | Who did what, when (kept for a limited time). |
-| **Newsletter** | Subscriber numbers and campaigns. **New campaign** → subject and message (Markdown) → **Save draft** → send yourself a test → **Schedule** (date, time and time zone) or **Send now**. Emails go out from the queue in batches; the campaign page shows how many were sent. A scheduled campaign can go back to draft with **Cancel the schedule**. |
+| **Newsletter** | Subscriber numbers and campaigns. **New campaign** → subject and message (Markdown) → **Save draft** → send yourself a test → **Schedule** (date, time and time zone) or **Send now**. Emails go out from the queue in batches; the campaign page shows how many were sent. A scheduled campaign can go back to draft with **Cancel the schedule**. **Delivery report**: sent, failed (with the reason), skipped and opened; **Retry failed** sends only to the addresses that failed. |
+| **Announcements** | **New announcement** → title, message, optional link, kind, who sees it (everyone, members or visitors), whether it can be closed, and when it shows (from / until, in a time zone) → **Post announcement**. The list shows which are live, upcoming or ended and how many members closed each. |
 
 ---
 

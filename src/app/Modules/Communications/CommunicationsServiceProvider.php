@@ -11,8 +11,8 @@ use App\Modules\ModuleServiceProvider;
 
 /**
  * FR7 Newsletter and Announcements — subscriptions with double opt-in
- * (roadmap 3.15) and campaigns with scheduled, queued sending (3.16);
- * delivery reports (3.17) and announcements (3.18) follow.
+ * (roadmap 3.15), campaigns with scheduled, queued sending (3.16), delivery
+ * reports (3.17) and site announcements (3.18).
  */
 class CommunicationsServiceProvider extends ModuleServiceProvider
 {

@@ -419,6 +419,23 @@ check "admin sends a test to themselves" 302 "$(send admin POST "$NC/test" | cut
 check "admin sends it now" 302 "$(send admin PUT "$NC/send" | cut -d' ' -f1)"
 get admin "$NC" >/dev/null
 contains "…delivered to the one confirmed subscriber" "$WORK/last.html" "1 of 1 sent"
+OTOK=$("$PHP" artisan tinker --execute="echo App\Modules\Communications\Models\CampaignRecipient::where('email', 'member@aqdesk.test')->value('token');" 2>/dev/null | tr -d '[:space:]')
+check "the email's tracking image loads" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$B/newsletter/open/$OTOK")"
+check "delivery report" 200 "$(get admin "$NC/report")"
+contains "…counts the open" "$WORK/last.html" "100% of sent · 1 open in all"
+
+echo "Announcements"
+check "member cannot post announcements" 403 "$(get member /admin/announcements)"
+check "admin posts an announcement" 302 "$(send admin POST /admin/announcements --data-urlencode "title=Smoke test week" --data-urlencode "body=Everything is being checked end to end this week." \
+    --data-urlencode tone=info --data-urlencode audience=everyone --data-urlencode is_dismissible=1 --data-urlencode timezone=UTC \
+    --data-urlencode "starts_at=$(date -u -d '-1 hour' +%Y-%m-%dT%H:%M)" | cut -d' ' -f1)"
+get guest / >/dev/null
+contains "…guests see the banner" "$WORK/last.html" "News: Smoke test week"
+AID=$(grep -oE '/updates/[0-9]+/dismiss' "$WORK/last.html" | head -1)
+check "…and can close it" 302 "$(send guest POST "$AID" | cut -d' ' -f1)"
+check "…it stays closed" no "$(get guest / >/dev/null; grep -q 'News: Smoke test week' "$WORK/last.html" && echo yes || echo no)"
+check "Updates page lists it" 200 "$(get guest /updates)"
+contains "…by title" "$WORK/last.html" "Smoke test week"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done

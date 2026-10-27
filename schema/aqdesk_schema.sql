@@ -239,6 +239,42 @@ CREATE TABLE `saved_opportunities` (
 -- Communications
 -- ---------------------------------------------------------------------
 
+DROP TABLE IF EXISTS `announcement_dismissals`;
+CREATE TABLE `announcement_dismissals` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_id` bigint unsigned NOT NULL,
+  `user_id` bigint unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `announcement_dismissals_announcement_id_user_id_unique` (`announcement_id`,`user_id`),
+  KEY `announcement_dismissals_user_id_foreign` (`user_id`),
+  CONSTRAINT `announcement_dismissals_announcement_id_foreign` FOREIGN KEY (`announcement_id`) REFERENCES `announcements` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `announcement_dismissals_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `announcements`;
+CREATE TABLE `announcements` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `title` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `body` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `link_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `link_label` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tone` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'info',
+  `audience` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'everyone',
+  `is_dismissible` tinyint(1) NOT NULL DEFAULT '1',
+  `timezone` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Asia/Karachi',
+  `starts_at` timestamp NOT NULL,
+  `ends_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `announcements_created_by_foreign` (`created_by`),
+  KEY `announcements_starts_at_ends_at_index` (`starts_at`,`ends_at`),
+  CONSTRAINT `announcements_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 DROP TABLE IF EXISTS `newsletter_campaign_recipients`;
 CREATE TABLE `newsletter_campaign_recipients` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -250,8 +286,12 @@ CREATE TABLE `newsletter_campaign_recipients` (
   `sent_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `token` varchar(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `opened_at` timestamp NULL DEFAULT NULL,
+  `open_count` int unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `campaign_recipient_unique` (`newsletter_campaign_id`,`newsletter_subscriber_id`),
+  UNIQUE KEY `newsletter_campaign_recipients_token_unique` (`token`),
   KEY `newsletter_campaign_recipients_newsletter_subscriber_id_foreign` (`newsletter_subscriber_id`),
   KEY `campaign_recipient_status_index` (`newsletter_campaign_id`,`status`),
   CONSTRAINT `newsletter_campaign_recipients_newsletter_campaign_id_foreign` FOREIGN KEY (`newsletter_campaign_id`) REFERENCES `newsletter_campaigns` (`id`) ON DELETE CASCADE,

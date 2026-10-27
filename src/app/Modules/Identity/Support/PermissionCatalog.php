@@ -32,6 +32,7 @@ final class PermissionCatalog
             'podcasts.publish'      => ['name' => 'Publish podcast series and episodes', 'group' => 'Events',    'roles' => [Role::ADMIN, Role::EXPERT]],
             'consulting.offer'      => ['name' => 'Offer consulting sessions',           'group' => 'Consulting', 'roles' => [Role::ADMIN, Role::EXPERT]],
             'newsletter.send'       => ['name' => 'Write and send newsletter campaigns', 'group' => 'Communications', 'roles' => [Role::ADMIN]],
+            'announcements.manage'  => ['name' => 'Post site announcements and banners', 'group' => 'Communications', 'roles' => [Role::ADMIN]],
             'experts.verify'      => ['name' => 'Review expert verification requests', 'group' => 'Administration', 'roles' => [Role::ADMIN]],
             'users.manage'          => ['name' => 'Manage users, roles and permissions', 'group' => 'Administration', 'roles' => [Role::ADMIN]],
             'activity.view'         => ['name' => 'View the activity log',             'group' => 'Administration', 'roles' => [Role::ADMIN]],

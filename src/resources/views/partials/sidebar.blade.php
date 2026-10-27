@@ -60,6 +60,9 @@
         <li><a class="{{ request()->routeIs('newsletter.*') ? 'is-active' : '' }}" href="{{ route('newsletter.show') }}">
             <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
         </a></li>
+        <li><a class="{{ request()->routeIs('announcements.*') ? 'is-active' : '' }}" href="{{ route('announcements.index') }}">
+            <i class="bi bi-megaphone" aria-hidden="true"></i> Updates
+        </a></li>
 
         @auth
             <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
@@ -99,7 +102,7 @@
         @endauth
 
         @auth
-            @canany(['users.manage', 'content.moderate', 'activity.view', 'experts.verify', 'newsletter.send'])
+            @canany(['users.manage', 'content.moderate', 'activity.view', 'experts.verify', 'newsletter.send', 'announcements.manage'])
                 <li class="aq-sidenav-group"><span class="aq-label">Administration</span></li>
                 @can('users.manage')
                     <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
@@ -125,6 +128,11 @@
                 @can('experts.verify')
                     <li><a class="{{ request()->routeIs('admin.verifications.*') ? 'is-active' : '' }}" href="{{ route('admin.verifications.index') }}">
                         <i class="bi bi-patch-check" aria-hidden="true"></i> Expert verification
+                    </a></li>
+                @endcan
+                @can('announcements.manage')
+                    <li><a class="{{ request()->routeIs('admin.announcements.*') ? 'is-active' : '' }}" href="{{ route('admin.announcements.index') }}">
+                        <i class="bi bi-megaphone" aria-hidden="true"></i> Announcements
                     </a></li>
                 @endcan
                 @can('newsletter.send')

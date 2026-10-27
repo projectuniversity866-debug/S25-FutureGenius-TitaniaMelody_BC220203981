@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Queue;
 /**
  * Suite NL — newsletter subscription with double opt-in and one-click
  * unsubscribe (3.15), and suite CM — campaigns with scheduled, queued
- * sending (3.16). Cases NL1–NL4, CM1–CM4.
+ * sending (3.16), and suite RP — delivery reports (3.17). Cases NL1–NL4,
+ * CM1–CM4, RP1–RP3.
  */
 class NewsletterTest extends AqDeskTestCase
 {
@@ -205,5 +206,76 @@ class NewsletterTest extends AqDeskTestCase
         Mail::assertSentCount(119);
         $this->assertSame(1, $campaign->recipients()->where('status', 'skipped')->count());
         $this->assertSame('sent', $campaign->fresh()->status);
+    }
+
+    // ------------------------------------------------------------------ 3.17
+
+    /** @return int emails the "array" mail transport has accepted so far */
+    private function mailbox(): int
+    {
+        return app('mailer')->getSymfonyTransport()->messages()->count();
+    }
+
+    /** RP1 — each email carries its own tracking image; opens are counted once per person and in total. */
+    public function test_rp1_open_tracking(): void
+    {
+        Mail::fake();
+        foreach (['a', 'b', 'c'] as $who) {
+            $this->subscriber("{$who}@example.com");
+        }
+        $campaign = $this->draft();
+        $this->actingAs($this->admin())->put(route('admin.newsletter.send', $campaign));
+
+        $a = $campaign->recipients()->where('email', 'a@example.com')->firstOrFail();
+        $this->assertSame(40, strlen($a->token));
+        Mail::assertSent(CampaignMail::class, fn (CampaignMail $m) => $m->hasTo('a@example.com') && $m->openUrl === route('newsletter.open', $a->token));
+
+        $this->signOut();
+        $this->get(route('newsletter.open', $a->token))->assertOk()->assertHeader('Content-Type', 'image/gif')->assertHeader('Cache-Control', 'max-age=0, no-store, private');
+        $this->get(route('newsletter.open', $a->token));
+        $this->get(route('newsletter.open', str_repeat('z', 40)))->assertOk();   // unknown: same image, nothing recorded
+        $this->assertSame(2, $a->fresh()->open_count);
+        $this->assertNotNull($a->fresh()->opened_at);
+
+        $this->actingAs($this->member())->get(route('admin.newsletter.report', $campaign))->assertForbidden();
+        $this->actingAs($this->admin())->get(route('admin.newsletter.report', $campaign))->assertOk()
+            ->assertSee('33% of sent · 2 opens in all')->assertSee('100% of recipients')->assertSee('No failures.');
+    }
+
+    /** RP2 — a failure keeps its reason; Retry failed sends only to those addresses. */
+    public function test_rp2_failures_and_retry(): void
+    {
+        $this->subscriber('good@example.com');
+        $bad = $this->subscriber('broken@@example');   // rejected by the mailer
+        $campaign = $this->draft();
+
+        $this->actingAs($this->admin())->put(route('admin.newsletter.send', $campaign));
+        $this->assertSame(1, $this->mailbox());
+        $failed = $campaign->recipients()->where('status', 'failed')->firstOrFail();
+        $this->assertNotEmpty($failed->error);
+        $this->actingAs($this->admin())->get(route('admin.newsletter.report', $campaign))->assertSee('broken@@example')->assertSee('Retry failed');
+
+        $failed->update(['email' => 'fixed@example.com']);   // e.g. the address was corrected
+        $this->actingAs($this->admin())->put(route('admin.newsletter.retry', $campaign))->assertSessionHas('status', '1 failed address is back in the queue.');
+
+        $this->assertSame(2, $this->mailbox());   // good@ was not sent to again
+        $this->assertSame(['sent', null], [$failed->fresh()->status, $failed->fresh()->error]);
+        $this->assertSame('sent', $campaign->fresh()->status);
+        $this->actingAs($this->admin())->put(route('admin.newsletter.retry', $campaign))->assertSessionHas('status', 'Nothing to retry.');
+        $this->assertNotNull($bad->id);
+    }
+
+    /** RP3 — the report shows every outcome; a campaign still sending cannot be retried. */
+    public function test_rp3_report_outcomes(): void
+    {
+        Queue::fake();
+        $this->subscriber('a@example.com');
+        $this->subscriber('b@example.com');
+        $campaign = $this->draft();
+        $this->actingAs($this->admin())->put(route('admin.newsletter.send', $campaign));
+
+        $this->actingAs($this->admin())->get(route('admin.newsletter.report', $campaign))->assertOk()->assertSee('Still sending')->assertSee('Waiting in the queue')->assertDontSee('Retry failed');
+        $this->assertSame(0, app(CampaignService::class)->retryFailed($campaign));
+        $this->actingAs($this->admin())->get(route('admin.newsletter.show', $campaign))->assertSee('Delivery report');
     }
 }

@@ -97,6 +97,24 @@ class CampaignController extends Controller
         return back()->with('status', 'Schedule cancelled; the campaign is a draft again.');
     }
 
+    /** Delivery report (3.17): what happened to every address, opens, and the failures with their reason. */
+    public function report(Campaign $campaign): View
+    {
+        $byStatus = $campaign->recipients()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $opened = $campaign->recipients()->whereNotNull('opened_at')->count();
+        $opens = (int) $campaign->recipients()->sum('open_count');
+        $failed = $campaign->recipients()->where('status', 'failed')->orderBy('email')->get(['email', 'error', 'updated_at']);
+
+        return view('communications::admin.report', compact('campaign', 'byStatus', 'opened', 'opens', 'failed'));
+    }
+
+    public function retry(Campaign $campaign): RedirectResponse
+    {
+        $count = $this->campaigns->retryFailed($campaign);
+
+        return back()->with('status', $count ? "{$count} failed ".($count === 1 ? 'address is' : 'addresses are').' back in the queue.' : 'Nothing to retry.');
+    }
+
     public function send(Campaign $campaign): RedirectResponse
     {
         $this->authorize('send', $campaign);

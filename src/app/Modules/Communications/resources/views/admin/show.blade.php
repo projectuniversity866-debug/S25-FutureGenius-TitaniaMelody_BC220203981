@@ -39,6 +39,7 @@
                     @if ($progress['failed'] ?? 0)<li>{{ $progress['failed'] }} failed</li>@endif
                     @if ($progress['skipped'] ?? 0)<li>{{ $progress['skipped'] }} skipped (unsubscribed meanwhile)</li>@endif
                 </ul>
+                <a href="{{ route('admin.newsletter.report', $c) }}" class="btn btn-soft btn-sm mt-3"><i class="bi bi-bar-chart me-1" aria-hidden="true"></i> Delivery report</a>
             @else
                 <p class="aq-text-sm aq-muted mb-0">Will go to the {{ $audience }} confirmed {{ $audience === 1 ? 'subscriber' : 'subscribers' }} at the time of sending.</p>
             @endif

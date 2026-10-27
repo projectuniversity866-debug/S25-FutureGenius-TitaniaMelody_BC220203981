@@ -12,11 +12,12 @@ use Illuminate\Mail\Mailables\Headers;
 /**
  * A campaign as one subscriber receives it (roadmap 3.16), with RFC 8058
  * one-click unsubscribe headers so mail apps can show their own
- * "Unsubscribe" button. A test send has no subscriber and no link.
+ * "Unsubscribe" button, and a 1×1 image that counts opens (3.17). A test
+ * send has neither.
  */
 class CampaignMail extends Mailable
 {
-    public function __construct(public Campaign $campaign, public ?string $unsubscribeUrl) {}
+    public function __construct(public Campaign $campaign, public ?string $unsubscribeUrl, public ?string $openUrl = null) {}
 
     public function envelope(): Envelope
     {

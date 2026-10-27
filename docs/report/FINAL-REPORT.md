@@ -101,7 +101,7 @@ than a separate role.
 | **FR4** | Events & podcasts | Events with capacity and numbered waitlist, registration through the Form Builder, webinar links (Zoom, Meet, Teams, Jitsi) shown only to seat-holders, `.ics` calendar files, scheduled reminders, podcast series and episodes with mandatory transcripts and an RSS feed |
 | **FR5** | Jobs & opportunities | Organization profiles; jobs, internships, scholarships, fellowships, grants, hackathons, calls for papers; application pipeline with status history, messages and private reviewer notes; private CV storage; saved opportunities; automatic deadline closing; job alerts |
 | **FR6** | Consulting | Consultant profiles, weekly hours and days off (time-zone and daylight-saving safe), conflict-free booking, private session rooms, client management with private notes, proposals Draft → Sent → Accepted/Rejected → Completed |
-| **FR7** | Newsletter & announcements | Double opt-in subscription, one-click unsubscribe (RFC 8058), campaigns with scheduling and queued sending; ⏳ delivery tracking, site announcements |
+| **FR7** | Newsletter & announcements | Double opt-in subscription, one-click unsubscribe (RFC 8058), campaigns with scheduling and queued sending, delivery and open reports with retry of failures, site announcements and banners |
 | Vision | Expert knowledge sharing | Expert verification (apply → admin review → verified badge), Knowledge Hub articles and guides |
 | Vision | Professional opportunities | The five non-job opportunity types in FR5 |
 | Note | Education technology | Learning Hub: resources, ordered learning paths, personal progress |
@@ -176,7 +176,7 @@ code owns which data. See ADR-01 to ADR-07 in the architecture document.
 
 ### 3.3 Data design
 
-One MySQL 8 schema (`utf8mb4`) with about **69 tables** created by 45
+One MySQL 8 schema (`utf8mb4`) with about **71 tables** created by 47
 module migrations. Key decisions:
 
 - **Polymorphic relations** with short aliases (`question`, `answer`) for
@@ -191,7 +191,7 @@ module migrations. Key decisions:
   zone stored beside it for display.
 
 The ERDs (an overview and one per module, `docs/diagrams/erd/`) and the
-schema export (`schema/aqdesk_schema.sql`, 69 tables, 96 foreign keys) are
+schema export (`schema/aqdesk_schema.sql`, 71 tables, 99 foreign keys) are
 generated from a migrated MySQL database by `php artisan docs:schema`, so
 they always match the migrations. Every table uses InnoDB, which the
 booking and waitlist row locks depend on.
@@ -251,7 +251,7 @@ styles anywhere). Six Vue 3 islands enhance plain forms: `VoteControl`,
 | PHP files in `app/` | 443 (≈ 26,500 lines) |
 | Routes | 252 |
 | Blade views | 150 |
-| Tables / migrations | 69 / 45 |
+| Tables / migrations | 71 / 47 |
 | Permissions | 12 |
 | Automated tests | 317 PHPUnit + 234 end-to-end checks |
 
@@ -327,8 +327,7 @@ Usability Scale (SUS) score and the changes made in response.
 
 | Requirement | Status |
 |---|---|
-| FR1–FR6 | Delivered and tested |
-| FR7 | Subscription and campaigns delivered and tested; ⏳ delivery reports (3.17), announcements (3.18) |
+| FR1–FR7 | Delivered and tested |
 | Expert knowledge sharing, education technology, digital governance, forms | Delivered and tested |
 | Accessibility | Built in throughout; formal audit ⏳ 4.3 |
 

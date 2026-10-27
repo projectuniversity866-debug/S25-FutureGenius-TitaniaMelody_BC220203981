@@ -10,6 +10,7 @@ use App\Modules\Communications\Models\Subscriber;
 use App\Modules\Identity\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -17,6 +18,7 @@ use Throwable;
  * Starting a campaign lists every confirmed subscriber as a recipient and
  * queues them in batches; each recipient is claimed before its email goes
  * out, so overlapping workers never send anyone the same campaign twice.
+ * Reports (3.17): opens are counted, failed addresses can be retried.
  */
 class CampaignService
 {
@@ -69,16 +71,47 @@ class CampaignService
         Subscriber::where('status', 'subscribed')->select('id', 'email')->chunkById(500, function ($subscribers) use ($campaign) {
             CampaignRecipient::insertOrIgnore($subscribers->map(fn (Subscriber $s) => [
                 'newsletter_campaign_id' => $campaign->id, 'newsletter_subscriber_id' => $s->id, 'email' => $s->email,
-                'status' => 'pending', 'created_at' => now(), 'updated_at' => now(),
+                'status' => 'pending', 'token' => Str::random(40), 'created_at' => now(), 'updated_at' => now(),
             ])->all());
         });
 
         $campaign->refresh();
         $campaign->update(['recipients_count' => $campaign->recipients()->count()]);
-        $campaign->recipients()->select('id')->chunkById(Campaign::BATCH, fn ($batch) => SendCampaignBatch::dispatch($campaign->id, $batch->pluck('id')->all()));
-        $this->finishIfDone($campaign);
+        $this->queue($campaign, $campaign->recipients());
 
         return true;
+    }
+
+    /** Report page (3.17): failed addresses go back in the queue; nobody already sent to gets it again. */
+    public function retryFailed(Campaign $campaign): int
+    {
+        $claimed = Campaign::whereKey($campaign->id)->where('status', 'sent')->update(['status' => 'sending', 'updated_at' => now()]);
+        if (! $claimed) {
+            return 0;
+        }
+
+        $retry = $campaign->recipients()->where('status', 'failed');
+        $ids = $retry->pluck('id')->all();
+        CampaignRecipient::whereIn('id', $ids)->update(['status' => 'pending', 'error' => null, 'updated_at' => now()]);
+        $this->queue($campaign, $campaign->recipients()->whereIn('id', $ids));
+
+        return count($ids);
+    }
+
+    /** The tracking image in a recipient's email was loaded (3.17). */
+    public function recordOpen(string $token): void
+    {
+        $recipient = CampaignRecipient::where('token', $token)->first();
+        if ($recipient) {
+            CampaignRecipient::whereKey($recipient->id)->whereNull('opened_at')->update(['opened_at' => now()]);
+            $recipient->increment('open_count');
+        }
+    }
+
+    private function queue(Campaign $campaign, $recipients): void
+    {
+        $recipients->select('id')->chunkById(Campaign::BATCH, fn ($batch) => SendCampaignBatch::dispatch($campaign->id, $batch->pluck('id')->all()));
+        $this->finishIfDone($campaign);
     }
 
     /** Scheduled campaigns whose time has come (every minute, routes/console.php). */
@@ -102,7 +135,7 @@ class CampaignService
             }
 
             try {
-                Mail::to($recipient->email)->send(new CampaignMail($campaign, route('newsletter.unsubscribe', $recipient->subscriber->token)));
+                Mail::to($recipient->email)->send(new CampaignMail($campaign, route('newsletter.unsubscribe', $recipient->subscriber->token), route('newsletter.open', $recipient->token)));
                 $recipient->update(['status' => 'sent', 'sent_at' => now(), 'error' => null]);
             } catch (Throwable $e) {
                 $recipient->update(['status' => 'failed', 'error' => mb_substr($e->getMessage(), 0, 500)]);

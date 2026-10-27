@@ -18,12 +18,12 @@ Results go in the progress log.
 | 0 | Foundation | 11 | 11 |
 | 1 | Rebuild existing modules | 15 | 15 |
 | 2 | Missing scope | 7 | 7 |
-| 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 16 |
+| 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 18 |
 | 4 | Quality | 4 | 0 |
 | 5 | Deployment & deliverables | 6 | 3 |
-| | **Total** | **61** | **52** |
+| | **Total** | **61** | **54** |
 
-**Next steps:** 3.17 + 3.18 (5.6 video and the 5.1 live URL need the student)
+**Next steps:** 4.1 + 4.2 (5.6 video and the 5.1 live URL need the student)
 
 ---
 
@@ -129,8 +129,8 @@ Results go in the progress log.
 |---|---|---|---|
 | [x] | 3.15 | Subscribe with double opt-in, one-click unsubscribe | Newsletter subscription |
 | [x] | 3.16 | Campaign builder, scheduling, queued sending | Email campaign management |
-| [ ] | 3.17 | Delivery tracking | Campaign reports |
-| [ ] | 3.18 | Site announcements & banners | Community updates |
+| [x] | 3.17 | Delivery tracking | Campaign reports |
+| [x] | 3.18 | Site announcements & banners | Community updates |
 
 ## Phase 4 — Quality
 
@@ -244,3 +244,5 @@ Results go in the progress log.
 | 2026-10-27 | 3.15 | Newsletter (Communications module, first code there): public **Newsletter** page; visitors get a **double opt-in** link (7 days; signing up again replaces it; same answer whether or not the address is on the list), a member's own verified email is in at once. **One-click unsubscribe**: the link asks first (mail scanners), the button or a mail app's RFC 8058 POST (CSRF-exempt, unguessable token) unsubscribes. Deleting an account removes its address. Last "Coming soon" placeholder retired (`/modules/newsletter` → 301). Tests NL1–NL4. |
 | 2026-10-27 | 3.16 | Campaigns (new `newsletter.send` permission, admins; migration adds it): **Administration → Newsletter** with subscriber counts and status tabs; Markdown draft → test to yourself → **Schedule** (time zone, stored UTC; cancel) or **Send now**. Sending claims the campaign once, lists confirmed subscribers as recipients and queues batches of 50; each recipient is claimed before sending (exactly once, retry-safe); unsubscribed meanwhile → skipped; `List-Unsubscribe` headers; `newsletter:send-due` every minute. Found by the MySQL docs build: an index name over MySQL's 64-character limit (named explicitly); `docs:schema` now clears old diagram files. Schema + ERDs regenerated (69 tables). Tests CM1–CM4 + 13 smoke checks; 337 PHPUnit pass (PHP 8.5), e2e smoke 258/258. |
 | 2026-10-27 | Commit | `e4c485b` pushed to `development` (steps 3.15–3.16); WAMP MySQL migrated (newsletter tables InnoDB, permission added). |
+| 2026-10-27 | 3.17 | Campaign reports: each recipient gets an unguessable token and a 1×1 open-tracking image (`/newsletter/open/{token}`, same image for unknown tokens, no-store); **Delivery report** per campaign: recipients, sent, opened (people and total, with the caveat that blocked images hide opens), failed; bar list of every outcome; failed addresses with the reason; **Retry failed** re-queues only those (claimed once). Newsletter page says opens are counted. Tests RP1–RP3. |
+| 2026-10-27 | 3.18 | Site announcements (new `announcements.manage` permission, admins; migration adds it): **Administration → Announcements** (title, message, optional http(s) link, kind News / Good news / Important with icon + word, audience everyone / members / visitors, closable or not, from–until in a time zone, stored UTC; live / upcoming / ended; how many closed it). **Banner** on every page as a labelled region (at most 2); closing it is kept per account (members) or per session (visitors). Public **Updates** page (now + earlier). Fixed: an edit without the link fields now removes the link. FR7 and Phase 3 complete. Schema + ERDs regenerated (71 tables). Tests AN1–AN4 + 14 smoke checks; 344 PHPUnit pass (PHP 8.5), e2e smoke 268/268. |

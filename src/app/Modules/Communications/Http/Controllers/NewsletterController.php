@@ -5,12 +5,14 @@ namespace App\Modules\Communications\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Communications\Http\Requests\SubscribeRequest;
 use App\Modules\Communications\Models\Subscriber;
+use App\Modules\Communications\Services\CampaignService;
 use App\Modules\Communications\Services\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
-/** The public newsletter page, the confirmation link and one-click unsubscribe (FR7, roadmap 3.15). */
+/** The public newsletter page, the confirmation link and one-click unsubscribe (FR7, roadmap 3.15), and open tracking (3.17). */
 class NewsletterController extends Controller
 {
     public function __construct(private SubscriptionService $subscriptions) {}
@@ -44,6 +46,16 @@ class NewsletterController extends Controller
             'text'  => $ok
                 ? 'Thank you for confirming. Every newsletter ends with a one-click unsubscribe link.'
                 : 'Confirmation links work for '.Subscriber::CONFIRM_DAYS.' days. Sign up again and we will send a new one.',
+        ]);
+    }
+
+    /** The 1×1 image in a campaign email (3.17): count the open, always answer with the same image. */
+    public function open(string $token, CampaignService $campaigns): Response
+    {
+        $campaigns->recordOpen($token);
+
+        return response(base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), 200, [
+            'Content-Type' => 'image/gif', 'Cache-Control' => 'no-store, max-age=0',
         ]);
     }
 

@@ -73,6 +73,7 @@
                             </div>
                         @endunless
                     @endauth
+                    @include('communications::announcements.banner')
                     @include('partials.alerts')
                     @yield('content')
                 </div>
