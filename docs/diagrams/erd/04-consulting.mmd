@@ -12,6 +12,8 @@ erDiagram
     consulting_clients ||--o{ consulting_client_notes : "consulting_client_id"
     consultant_profiles ||--o{ consulting_clients : "consultant_profile_id"
     users |o--o{ consulting_clients : "user_id"
+    consultant_profiles ||--o{ consulting_proposals : "consultant_profile_id"
+    consulting_clients ||--o{ consulting_proposals : "consulting_client_id"
     availability_exceptions {
         bigint id PK
         bigint consultant_profile_id FK
@@ -80,6 +82,22 @@ erDiagram
         varchar organization "nullable"
         varchar status
         varchar source
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    consulting_proposals {
+        bigint id PK
+        bigint consultant_profile_id FK
+        bigint consulting_client_id FK
+        varchar title
+        text body
+        int amount_pkr "nullable"
+        date valid_until "nullable"
+        varchar status
+        varchar response_note "nullable"
+        timestamp sent_at "nullable"
+        timestamp decided_at "nullable"
+        timestamp completed_at "nullable"
         timestamp created_at "nullable"
         timestamp updated_at "nullable"
     }

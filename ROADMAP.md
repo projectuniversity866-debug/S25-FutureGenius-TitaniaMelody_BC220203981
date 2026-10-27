@@ -18,12 +18,12 @@ Results go in the progress log.
 | 0 | Foundation | 11 | 11 |
 | 1 | Rebuild existing modules | 15 | 15 |
 | 2 | Missing scope | 7 | 7 |
-| 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 13 |
+| 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 14 |
 | 4 | Quality | 4 | 0 |
-| 5 | Deployment & deliverables | 6 | 2 |
-| | **Total** | **61** | **48** |
+| 5 | Deployment & deliverables | 6 | 3 |
+| | **Total** | **61** | **50** |
 
-**Next steps:** 5.5 + 3.14 (5.6 video and the 5.1 live URL need the student)
+**Next steps:** 3.15 + 3.16 (5.6 video and the 5.1 live URL need the student)
 
 ---
 
@@ -121,7 +121,7 @@ Results go in the progress log.
 | [x] | 3.11 | Consultant profiles & availability slots | Consultant setup |
 | [x] | 3.12 | Conflict-free booking | Consultation booking |
 | [x] | 3.13 | Client management | Client CRM |
-| [ ] | 3.14 | Proposals: Draft → Sent → Accepted / Rejected → Completed | Proposal tracking |
+| [x] | 3.14 | Proposals: Draft → Sent → Accepted / Rejected → Completed | Proposal tracking |
 
 ### FR7 Newsletter & Announcements
 
@@ -149,7 +149,7 @@ Results go in the progress log.
 | [~] | 5.2 | Final Report (analysis, design, implementation, evaluation) | Report |
 | [x] | 5.3 | User Manual (incl. form creators & respondents) | Manual |
 | [x] | 5.4 | Updated ERD, diagrams, `/schema` SQL | Design artefacts |
-| [ ] | 5.5 | README (overview, setup, features, reflection, future work) | Repo docs |
+| [x] | 5.5 | README (overview, setup, features, reflection, future work) | Repo docs |
 | [ ] | 5.6 | Demo video showing accessibility features | Presentation |
 
 ---
@@ -237,3 +237,6 @@ Results go in the progress log.
 | 2026-10-27 | Commit | `800315d` pushed to `development` (steps 5.1–5.2, in progress). |
 | 2026-10-27 | 5.3 | `docs/USER-MANUAL.md`: Part A per module (labels taken from the screens), Part B Form Builder guide for creators (10 field types, settings, open/close, responses, CSV, event registration) and respondents. Report appendix linked. |
 | 2026-10-27 | 5.4 | `php artisan docs:schema` writes Mermaid ERDs (overview + 9 modules, `docs/diagrams/erd/`) and `schema/aqdesk_schema.sql` (65 tables, 90 FKs) from a migrated DB; generated from a temporary fresh MySQL DB. Final use-case and architecture diagrams + `docs/diagrams/README.md` (prototype diagrams kept). **Found: WAMP MySQL defaults to MyISAM — 21 tables had no FKs, transactions or row locks**; `config/database.php` now forces InnoDB, new migration converts MyISAM tables (FKs return only with `migrate:fresh --seed`). Tests DC1–DC5 + 7 smoke checks; 322 PHPUnit pass (PHP 8.5), e2e smoke 241/241. |
+| 2026-10-27 | Commit | `12ab392` pushed to `development` (steps 5.3–5.4); WAMP MySQL migrated, all 66 tables now InnoDB. |
+| 2026-10-27 | 5.5 | Root `README.md`: overview, features per FR, stack, layout, local setup, demo accounts, tests, deploy, documents, reflection, future work. Tests DC6–DC7 (every link opens a real file; the listed demo accounts sign in). |
+| 2026-10-27 | 3.14 | Proposals (`consulting_proposals`): consultant writes one from a client's page (title, Markdown scope, price or free, valid until) → draft (private, editable, deletable) → **Send** (member client told; locked) → client **Accept / Decline** with a note (consultant told; a lead becomes active) — for clients outside AQDesk the consultant records the answer → **Mark completed** (client told). Fixed transitions; expired proposals cannot be answered; others get 404. **Proposals** page (I sent / Sent to me, status tabs) in the sidebar; list on the client page. Schema + ERDs regenerated (66 tables). Tests PR1–PR5 + 5 smoke checks; 329 PHPUnit pass (PHP 8.5), e2e smoke 246/246. |

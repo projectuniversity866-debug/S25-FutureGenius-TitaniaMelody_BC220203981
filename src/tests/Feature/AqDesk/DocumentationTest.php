@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Suite DC — deliverables (5.3, 5.4): the user manual matches the app, and
- * the ERDs and schema SQL match the migrations. Cases DC1–DC5.
+ * Suite DC — deliverables (5.3–5.5): the user manual and README match the
+ * app, and the ERDs and schema SQL match the migrations. Cases DC1–DC7.
  */
 class DocumentationTest extends AqDeskTestCase
 {
@@ -93,6 +93,31 @@ class DocumentationTest extends AqDeskTestCase
         $this->assertNotEmpty($m[1]);
         foreach (array_unique($m[1]) as $path) {
             $this->assertTrue($uris->contains($path), "$path in the manual is not a page");
+        }
+    }
+
+    /** DC6 — every link in the README opens a file in the repository (5.5). */
+    public function test_dc6_readme_links_exist(): void
+    {
+        $readme = File::get(dirname(base_path()).'/README.md');
+        preg_match_all('#\]\(([^)\s]+)\)#', $readme, $m);
+
+        $this->assertGreaterThanOrEqual(5, count($m[1]));
+        foreach (array_unique($m[1]) as $link) {
+            $this->assertFileExists(dirname(base_path()).'/'.strtok($link, '#'), "README links to a missing file: $link");
+        }
+    }
+
+    /** DC7 — the README's demo accounts exist after seeding and sign in with "password". */
+    public function test_dc7_readme_demo_accounts(): void
+    {
+        preg_match_all('#`([a-z]+@aqdesk\.test)`#', File::get(dirname(base_path()).'/README.md'), $m);
+
+        $this->assertCount(4, $m[1]);
+        foreach ($m[1] as $email) {
+            $this->post(route('login'), ['email' => $email, 'password' => 'password'])->assertRedirect();
+            $this->assertAuthenticated();
+            $this->post(route('logout'));
         }
     }
 

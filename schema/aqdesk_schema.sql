@@ -530,6 +530,29 @@ CREATE TABLE `consulting_clients` (
   CONSTRAINT `consulting_clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+DROP TABLE IF EXISTS `consulting_proposals`;
+CREATE TABLE `consulting_proposals` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `consultant_profile_id` bigint unsigned NOT NULL,
+  `consulting_client_id` bigint unsigned NOT NULL,
+  `title` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `body` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `amount_pkr` int unsigned DEFAULT NULL,
+  `valid_until` date DEFAULT NULL,
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `response_note` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `consulting_proposals_consulting_client_id_foreign` (`consulting_client_id`),
+  KEY `consulting_proposals_consultant_profile_id_status_index` (`consultant_profile_id`,`status`),
+  CONSTRAINT `consulting_proposals_consultant_profile_id_foreign` FOREIGN KEY (`consultant_profile_id`) REFERENCES `consultant_profiles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `consulting_proposals_consulting_client_id_foreign` FOREIGN KEY (`consulting_client_id`) REFERENCES `consulting_clients` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ---------------------------------------------------------------------
 -- EventsMedia
 -- ---------------------------------------------------------------------

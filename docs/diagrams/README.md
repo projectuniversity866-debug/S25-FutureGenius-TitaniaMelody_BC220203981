@@ -2,7 +2,7 @@
 
 | File | What | Phase |
 |---|---|---|
-| [`erd/`](erd/README.md) | **ERDs**: overview + one per module, generated from the database by `php artisan docs:schema` (65 tables) | Final |
+| [`erd/`](erd/README.md) | **ERDs**: overview + one per module, generated from the database by `php artisan docs:schema` (66 tables) | Final |
 | `10-use-case-final.mmd` | Use cases for every module and role (shown below) | Final |
 | `11-architecture-final.mmd` | Modular-monolith architecture (shown below) | Final |
 | `01-erd`, `02-architecture`, `03-use-case`, `04-scope`, `05-user-flow`, `06-sequence-apply`, `07-architecture-wide` | Diagrams in the prototype documentation | Prototype (kept as submitted) |
@@ -16,7 +16,7 @@ in `erd/README.md`. For PNG/SVG files paste a `.mmd` file into
 <https://mermaid.live> and export, or run
 `npx @mermaid-js/mermaid-cli -i file.mmd -o file.svg`.
 
-Dashed boxes in the use-case diagram are planned (roadmap 3.14–3.18).
+Dashed boxes in the use-case diagram are planned (roadmap 3.15–3.18).
 
 ## Use cases (final scope)
 
@@ -114,7 +114,7 @@ flowchart LR
     classDef actor fill:#0f172a,stroke:#0f172a,color:#fff
     classDef later fill:#eeeeee,stroke:#9e9e9e,color:#555,stroke-dasharray: 6 4
     class G,M,E,A actor
-    class s5,n1,n2,n3 later
+    class n1,n2,n3 later
 ```
 
 ## Architecture (final)
@@ -152,7 +152,7 @@ flowchart TB
 
     subgraph INF["Infrastructure"]
         direction LR
-        DB[("MySQL 8 · InnoDB<br/>65 tables")]
+        DB[("MySQL 8 · InnoDB<br/>66 tables")]
         Q["Database queue<br/>queue:work / cron"]
         SC["Scheduler<br/>reminders · deadlines · pruning"]
         ST["Storage<br/>public · private"]

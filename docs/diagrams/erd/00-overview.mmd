@@ -44,6 +44,8 @@ erDiagram
     consulting_clients ||--o{ consulting_client_notes : "consulting_client_id"
     consultant_profiles ||--o{ consulting_clients : "consultant_profile_id"
     users |o--o{ consulting_clients : "user_id"
+    consultant_profiles ||--o{ consulting_proposals : "consultant_profile_id"
+    consulting_clients ||--o{ consulting_proposals : "consulting_client_id"
     events ||--o{ event_registrations : "event_id"
     form_responses |o--o{ event_registrations : "form_response_id"
     users ||--o{ event_registrations : "user_id"

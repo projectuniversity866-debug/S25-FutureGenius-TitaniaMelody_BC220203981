@@ -3,7 +3,7 @@
 @section('subtitle', 'Consulting')
 
 @section('content')
-@php use App\Modules\Consulting\Models\Consultation; use App\Modules\Consulting\Models\ConsultingClient; [$sLabel, $sIcon] = ConsultingClient::STATUSES[$client->status]; @endphp
+@php use App\Modules\Consulting\Models\Consultation; use App\Modules\Consulting\Models\ConsultingClient; use App\Modules\Consulting\Models\Proposal; [$sLabel, $sIcon] = ConsultingClient::STATUSES[$client->status]; @endphp
 <x-page-header :title="$client->name" :subtitle="$client->organization" :breadcrumbs="['My clients' => route('consulting.clients.index'), $client->name => null]">
     <x-slot:actions>
         <a href="{{ route('consulting.clients.edit', $client) }}" class="btn btn-quiet btn-sm"><i class="bi bi-pencil me-1" aria-hidden="true"></i> Edit</a>
@@ -28,6 +28,22 @@
                 <li><i class="bi bi-{{ $client->user_id ? 'person-check' : 'person-plus' }}" aria-hidden="true"></i><div><strong class="d-block">Source</strong>
                     {{ $client->source === 'booking' ? 'Booked a session on AQDesk' : 'Added by you' }}
                     @if ($client->user) · <a href="{{ route('profile.show', $client->user) }}">profile</a>@endif</div></li>
+            </ul>
+        </x-card>
+
+        <x-card title="Proposals ({{ $client->proposals->count() }})" icon="file-earmark-text" class="mb-4" flush>
+            <ul class="list-group list-group-flush">
+                @foreach ($client->proposals as $p)
+                    <li class="list-group-item">
+                        <a href="{{ route('consulting.proposals.show', $p) }}" class="text-decoration-none">{{ $p->title }}</a>
+                        <span class="d-block aq-text-xs aq-muted">
+                            <i class="bi bi-{{ Proposal::STATUSES[$p->status][1] }} me-1" aria-hidden="true"></i>{{ Proposal::STATUSES[$p->status][0] }}{{ $p->isExpired() ? ' · expired' : '' }} · {{ $p->amountLabel() }}
+                        </span>
+                    </li>
+                @endforeach
+                <li class="list-group-item">
+                    <a href="{{ route('consulting.proposals.create', $client) }}" class="btn btn-soft btn-sm"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i> New proposal</a>
+                </li>
             </ul>
         </x-card>
 

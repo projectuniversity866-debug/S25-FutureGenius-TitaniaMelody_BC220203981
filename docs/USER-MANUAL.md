@@ -127,6 +127,8 @@ a transcript.
 | Your sessions | **My sessions** — *I booked* / *Booked with me*. **Join now** opens the private video room 10 minutes before. **Cancel session** with a reason before it starts. |
 | Offer sessions (experts) | **Consultants** → set up your profile (`/consulting/profile`), then **My availability**: weekly hours and days off. |
 | Clients (consultants) | **My clients** — people who book appear automatically; **Add a client** for others. Notes on a client are private to you. |
+| Proposals (consultants) | On a client's page, **New proposal** → title, what you will do, price, valid until → **Save draft** → check it → **Send to …**. A client on AQDesk answers it themselves; for anyone else, record their answer. When the work is done, **Mark the work as completed**. |
+| Proposals (clients) | **Proposals** in the menu, or the notification → read it → optional note → **Accept** or **Decline** before its "valid until" day. |
 
 ### 11. Privacy and your data
 

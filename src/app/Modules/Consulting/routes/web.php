@@ -4,6 +4,7 @@ use App\Modules\Consulting\Http\Controllers\BookingController;
 use App\Modules\Consulting\Http\Controllers\ClientController;
 use App\Modules\Consulting\Http\Controllers\ConsultantController;
 use App\Modules\Consulting\Http\Controllers\MyConsultingController;
+use App\Modules\Consulting\Http\Controllers\ProposalController;
 use App\Modules\Consulting\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,18 @@ Route::middleware(['auth', 'verified'])->prefix('consulting')->name('consulting.
     Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
     Route::post('/clients/{client}/notes', [ClientController::class, 'storeNote'])->name('clients.notes.store');
     Route::delete('/clients/{client}/notes/{note}', [ClientController::class, 'destroyNote'])->name('clients.notes.destroy');
+
+    // Proposals (3.14).
+    Route::get('/proposals', [ProposalController::class, 'index'])->name('proposals.index');
+    Route::get('/clients/{client}/proposals/new', [ProposalController::class, 'create'])->name('proposals.create');
+    Route::post('/clients/{client}/proposals', [ProposalController::class, 'store'])->name('proposals.store');
+    Route::get('/proposals/{proposal}', [ProposalController::class, 'show'])->name('proposals.show');
+    Route::get('/proposals/{proposal}/edit', [ProposalController::class, 'edit'])->name('proposals.edit');
+    Route::put('/proposals/{proposal}', [ProposalController::class, 'update'])->name('proposals.update');
+    Route::delete('/proposals/{proposal}', [ProposalController::class, 'destroy'])->name('proposals.destroy');
+    Route::put('/proposals/{proposal}/send', [ProposalController::class, 'send'])->name('proposals.send');
+    Route::put('/proposals/{proposal}/decide', [ProposalController::class, 'decide'])->name('proposals.decide');
+    Route::put('/proposals/{proposal}/complete', [ProposalController::class, 'complete'])->name('proposals.complete');
 
     Route::get('/profile', [MyConsultingController::class, 'edit'])->name('profile');
     Route::put('/profile', [MyConsultingController::class, 'update'])->name('profile.update');

@@ -388,6 +388,15 @@ contains "…has sara from her booking" "$WORK/last.html" "Sara Malik"
 CL=$(grep -oE '/consulting/clients/[0-9]+' "$WORK/last.html" | head -1)
 check "consultant adds a private note" 302 "$(send member POST "$CL/notes" --data-urlencode "body=Wants a review of the e2e script." | cut -d' ' -f1)"
 check "sara cannot open the client record" 404 "$(get sara "$CL")"
+R=$(send member POST "$CL/proposals" --data-urlencode "title=Three review sessions for the e2e script" --data-urlencode "body=We go through the smoke test together, one module per session." --data-urlencode amount_pkr=6000)
+check "consultant drafts a proposal for sara" 302 "${R%% *}"
+PP=$(path_of "$R")
+check "…sara cannot see the draft" 404 "$(get sara "$PP")"
+send member PUT "$PP/send" >/dev/null
+check "consultant sends it and sara accepts" 302 "$(send sara PUT "$PP/decide" --data-urlencode decision=accepted --data-urlencode "note=Yes please" | cut -d' ' -f1)"
+check "consultant marks the work completed" 302 "$(send member PUT "$PP/complete" | cut -d' ' -f1)"
+get member "$PP" >/dev/null
+contains "…and the proposal shows it" "$WORK/last.html" "Completed"
 check "consultant adds a client by hand" 302 "$(send member POST /consulting/clients --data-urlencode "name=Hina Qureshi" --data-urlencode "organization=Lahore Startups" --data-urlencode status=lead | cut -d' ' -f1)"
 check "sara cancels the session" 302 "$(send sara PUT "$SS/cancel" --data-urlencode "reason=Found the bug myself" | cut -d' ' -f1)"
 get member /notifications >/dev/null

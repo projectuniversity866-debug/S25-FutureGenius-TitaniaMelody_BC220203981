@@ -58,7 +58,7 @@ class ClientController extends Controller
     {
         $this->authorize('manage', $client);
 
-        $client->load(['notes', 'user', 'consultations' => fn ($c) => $c->with('profile')]);
+        $client->load(['notes', 'user', 'proposals', 'consultations' => fn ($c) => $c->with('profile')]);
 
         return view('consulting::clients.show', compact('client'));
     }

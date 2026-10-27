@@ -77,6 +77,9 @@
             <li><a class="{{ request()->routeIs('consulting.sessions.*') ? 'is-active' : '' }}" href="{{ route('consulting.sessions.index') }}">
                 <i class="bi bi-calendar-week" aria-hidden="true"></i> My sessions
             </a></li>
+            <li><a class="{{ request()->routeIs('consulting.proposals.*') ? 'is-active' : '' }}" href="{{ route('consulting.proposals.index') }}">
+                <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Proposals
+            </a></li>
             @can('consulting.offer')
                 <li><a class="{{ request()->routeIs('consulting.clients.*') ? 'is-active' : '' }}" href="{{ route('consulting.clients.index') }}">
                     <i class="bi bi-person-lines-fill" aria-hidden="true"></i> My clients
