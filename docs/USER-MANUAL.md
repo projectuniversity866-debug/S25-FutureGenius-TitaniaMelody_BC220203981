@@ -130,14 +130,23 @@ a transcript.
 | Proposals (consultants) | On a client's page, **New proposal** → title, what you will do, price, valid until → **Save draft** → check it → **Send to …**. A client on AQDesk answers it themselves; for anyone else, record their answer. When the work is done, **Mark the work as completed**. |
 | Proposals (clients) | **Proposals** in the menu, or the notification → read it → optional note → **Accept** or **Decline** before its "valid until" day. |
 
-### 11. Privacy and your data
+### 11. Newsletter
+
+**Newsletter** in the menu (`/newsletter`): enter your email, tick the
+agreement and press **Subscribe**. Visitors get an email with a link to
+confirm (it works for 7 days); nothing is sent before that. Signed in, your
+own account email is subscribed at once. Every newsletter ends with
+**Unsubscribe with one click**; mail apps that show their own "Unsubscribe"
+button use the same link.
+
+### 12. Privacy and your data
 
 **Privacy & my data** (`/privacy/my-data`): see your consents, **Download
 my data** (everything AQDesk holds about you, as a file), or **Delete my
 account** (needs your password; your posts stay as "Deleted user", and
 upcoming bookings are cancelled with notice to the other side).
 
-### 12. Administration (administrators)
+### 13. Administration (administrators)
 
 | Menu | Use |
 |---|---|
@@ -147,6 +156,7 @@ upcoming bookings are cancelled with notice to the other side).
 | **Moderate questions / opportunities** | Close, reopen or delete any post. |
 | **Expert verification** | Approve or reject requests (a rejection needs a reason). |
 | **Activity log** | Who did what, when (kept for a limited time). |
+| **Newsletter** | Subscriber numbers and campaigns. **New campaign** → subject and message (Markdown) → **Save draft** → send yourself a test → **Schedule** (date, time and time zone) or **Send now**. Emails go out from the queue in batches; the campaign page shows how many were sent. A scheduled campaign can go back to draft with **Cancel the schedule**. |
 
 ---
 

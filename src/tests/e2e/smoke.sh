@@ -68,7 +68,7 @@ login() {      # login who email
 path_of() { echo "${1#* }" | sed "s#^$B##"; }
 
 echo "Guest"
-for p in / /questions /jobs /login /register /modules/newsletter /accessibility /events /podcasts /consultants; do check "GET $p" 200 "$(get guest "$p")"; done
+for p in / /questions /jobs /login /register /newsletter /accessibility /events /podcasts /consultants; do check "GET $p" 200 "$(get guest "$p")"; done
 check "dashboard needs sign-in" 302 "$(get guest /dashboard)"
 check "unknown module is 404" 404 "$(get guest /modules/nope)"
 
@@ -401,6 +401,24 @@ check "consultant adds a client by hand" 302 "$(send member POST /consulting/cli
 check "sara cancels the session" 302 "$(send sara PUT "$SS/cancel" --data-urlencode "reason=Found the bug myself" | cut -d' ' -f1)"
 get member /notifications >/dev/null
 contains "…the consultant is told" "$WORK/last.html" "Session cancelled by Sara Malik"
+
+echo "Newsletter"
+check "old placeholder address redirects" 301 "$(get guest /modules/newsletter)"
+check "guest subscribes (double opt-in)" 302 "$(rm -f "$(jar reader)"; send reader POST /newsletter --data-urlencode email=smoke-reader@example.com --data-urlencode consent=1 | cut -d' ' -f1)"
+TOK=$("$PHP" artisan tinker --execute="echo App\Modules\Communications\Models\Subscriber::where('email', 'smoke-reader@example.com')->where('status', 'pending')->value('token');" 2>/dev/null | tr -d '[:space:]')
+check "…the confirmation link subscribes" 200 "$(get reader "/newsletter/confirm/$TOK")"
+contains "…and says so" "$WORK/last.html" "You are subscribed"
+check "mail app one-click unsubscribe (POST without CSRF token)" 200 "$(curl -s -o "$WORK/last.html" -w '%{http_code}' -d 'List-Unsubscribe=One-Click' "$B/newsletter/unsubscribe/$TOK")"
+contains "…unsubscribed" "$WORK/last.html" "You are unsubscribed"
+check "member subscribes their own email at once" 302 "$(send member POST /newsletter --data-urlencode email=member@aqdesk.test --data-urlencode consent=1 | cut -d' ' -f1)"
+check "member cannot open campaigns" 403 "$(get member /admin/newsletter)"
+R=$(send admin POST /admin/newsletter --data-urlencode "subject=Smoke test newsletter" --data-urlencode "body=Hello subscribers, this is the **smoke test** campaign.")
+check "admin drafts a campaign" 302 "${R%% *}"
+NC=$(path_of "$R")
+check "admin sends a test to themselves" 302 "$(send admin POST "$NC/test" | cut -d' ' -f1)"
+check "admin sends it now" 302 "$(send admin PUT "$NC/send" | cut -d' ' -f1)"
+get admin "$NC" >/dev/null
+contains "…delivered to the one confirmed subscriber" "$WORK/last.html" "1 of 1 sent"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done

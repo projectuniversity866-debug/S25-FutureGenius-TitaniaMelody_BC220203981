@@ -23,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Accessibility display preferences are not secret, and the page's
         // script must be able to change them instantly (roadmap 2.7).
         $middleware->encryptCookies(except: ['aq_a11y']);
+
+        // RFC 8058 one-click unsubscribe: mail apps POST without a CSRF token.
+        // The unguessable subscriber token in the URL is the proof (roadmap 3.15).
+        $middleware->validateCsrfTokens(except: ['newsletter/unsubscribe/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

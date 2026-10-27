@@ -61,7 +61,7 @@ class DocumentationTest extends AqDeskTestCase
     {
         $this->generate();
         $overview = File::get($this->out.'/erd/00-overview.mmd');
-        $consulting = File::get($this->out.'/erd/04-consulting.mmd');
+        $consulting = File::get(File::glob($this->out.'/erd/*-consulting.mmd')[0]);
 
         $this->assertStringContainsString('consultant_profiles ||--o{ consultations : "consultant_profile_id"', $overview);
         $this->assertStringContainsString('users ||--o| profiles : "user_id"', $overview);

@@ -40,7 +40,5 @@ Route::get('/guidelines', [PageController::class, 'legal'])->defaults('page', 'g
 Route::get('/terms', [PageController::class, 'legal'])->defaults('page', 'terms')->name('terms');
 Route::get('/privacy', [PageController::class, 'legal'])->defaults('page', 'privacy')->name('privacy');
 
-// Modules not built yet — visible placeholders that show the full scope.
-Route::get('/modules/{module}', [PageController::class, 'comingSoon'])
-    ->whereIn('module', ['newsletter'])
-    ->name('modules.coming-soon');
+// The last placeholder page went live as the newsletter (roadmap 3.15); old links still work.
+Route::permanentRedirect('/modules/newsletter', '/newsletter');

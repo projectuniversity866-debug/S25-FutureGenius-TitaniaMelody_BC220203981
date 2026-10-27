@@ -236,6 +236,68 @@ CREATE TABLE `saved_opportunities` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- Communications
+-- ---------------------------------------------------------------------
+
+DROP TABLE IF EXISTS `newsletter_campaign_recipients`;
+CREATE TABLE `newsletter_campaign_recipients` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `newsletter_campaign_id` bigint unsigned NOT NULL,
+  `newsletter_subscriber_id` bigint unsigned DEFAULT NULL,
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `error` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `campaign_recipient_unique` (`newsletter_campaign_id`,`newsletter_subscriber_id`),
+  KEY `newsletter_campaign_recipients_newsletter_subscriber_id_foreign` (`newsletter_subscriber_id`),
+  KEY `campaign_recipient_status_index` (`newsletter_campaign_id`,`status`),
+  CONSTRAINT `newsletter_campaign_recipients_newsletter_campaign_id_foreign` FOREIGN KEY (`newsletter_campaign_id`) REFERENCES `newsletter_campaigns` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `newsletter_campaign_recipients_newsletter_subscriber_id_foreign` FOREIGN KEY (`newsletter_subscriber_id`) REFERENCES `newsletter_subscribers` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `newsletter_campaigns`;
+CREATE TABLE `newsletter_campaigns` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `subject` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `body` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `timezone` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Asia/Karachi',
+  `scheduled_at` timestamp NULL DEFAULT NULL,
+  `started_at` timestamp NULL DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `recipients_count` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `newsletter_campaigns_created_by_foreign` (`created_by`),
+  KEY `newsletter_campaigns_status_scheduled_at_index` (`status`,`scheduled_at`),
+  CONSTRAINT `newsletter_campaigns_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `newsletter_subscribers`;
+CREATE TABLE `newsletter_subscribers` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `unsubscribed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `newsletter_subscribers_email_unique` (`email`),
+  UNIQUE KEY `newsletter_subscribers_token_unique` (`token`),
+  KEY `newsletter_subscribers_user_id_foreign` (`user_id`),
+  KEY `newsletter_subscribers_status_index` (`status`),
+  CONSTRAINT `newsletter_subscribers_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- Community
 -- ---------------------------------------------------------------------
 

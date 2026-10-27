@@ -29,6 +29,10 @@ Schedule::command('careers:close-expired')->dailyAt('00:15');
 // head count (roadmap 3.9). Each reminder is sent once, so overlap is safe.
 Schedule::command('events:send-reminders')->everyFifteenMinutes()->withoutOverlapping();
 
+// Newsletter campaigns whose scheduled time has come start sending (roadmap 3.16).
+// Starting is claimed in the database, so overlap is safe.
+Schedule::command('newsletter:send-due')->everyMinute()->withoutOverlapping();
+
 // Queue worker for hosts without Supervisor, e.g. cPanel (roadmap 5.1).
 // QUEUE_WORKER_IN_SCHEDULER=true turns it on; see docs/DEPLOYMENT.md.
 Schedule::command('queue:work', ['--stop-when-empty', '--max-time' => 50, '--tries' => 3])

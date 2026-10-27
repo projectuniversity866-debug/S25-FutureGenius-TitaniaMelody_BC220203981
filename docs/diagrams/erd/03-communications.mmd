@@ -1,0 +1,44 @@
+---
+title: AQDesk — Communications module
+---
+erDiagram
+    newsletter_campaigns ||--o{ newsletter_campaign_recipients : "newsletter_campaign_id"
+    newsletter_subscribers |o--o{ newsletter_campaign_recipients : "newsletter_subscriber_id"
+    users |o--o{ newsletter_campaigns : "created_by"
+    users |o--o{ newsletter_subscribers : "user_id"
+    newsletter_campaign_recipients {
+        bigint id PK
+        bigint newsletter_campaign_id FK
+        bigint newsletter_subscriber_id FK "nullable"
+        varchar email
+        varchar status
+        varchar error "nullable"
+        timestamp sent_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    newsletter_campaigns {
+        bigint id PK
+        bigint created_by FK "nullable"
+        varchar subject
+        text body
+        varchar status
+        varchar timezone
+        timestamp scheduled_at "nullable"
+        timestamp started_at "nullable"
+        timestamp sent_at "nullable"
+        int recipients_count
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+    newsletter_subscribers {
+        bigint id PK
+        varchar email UK
+        bigint user_id FK "nullable"
+        varchar status
+        varchar token UK
+        timestamp confirmed_at "nullable"
+        timestamp unsubscribed_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }

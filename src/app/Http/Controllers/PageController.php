@@ -33,29 +33,6 @@ class PageController extends Controller
         return view('home', compact('stats', 'categories', 'latestQuestions', 'latestJobs'));
     }
 
-    /**
-     * Placeholder pages for the four modules deferred to the final project
-     * (FR3 Project Collaboration, FR4 Events & Podcasts, FR6 Consulting,
-     * FR7 Newsletter). They exist so the navigation and the modular
-     * architecture are visible in the prototype.
-     */
-    public function comingSoon(string $module): View
-    {
-        $modules = [
-            'newsletter' => [
-                'title'    => 'Newsletter & Announcements',
-                'icon'     => 'envelope-paper',
-                'source'   => 'FR7 — Main Requirement File',
-                'summary'  => 'Community updates delivered by email campaign.',
-                'features' => ['Newsletter subscription', 'Email campaign management', 'Community updates'],
-            ],
-        ];
-
-        abort_unless(isset($modules[$module]), 404);
-
-        return view('coming-soon', ['module' => $modules[$module]]);
-    }
-
     /** Community guidelines, terms of use and privacy policy (roadmap 2.5 – 2.6). */
     public function legal(string $page): View
     {

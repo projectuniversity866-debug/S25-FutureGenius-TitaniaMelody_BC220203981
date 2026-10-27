@@ -39,6 +39,7 @@ class DocumentSchema extends Command
         $tables = $this->describe(array_merge(...array_values($modules)));
 
         File::ensureDirectoryExists($diagrams);
+        File::delete(File::glob($diagrams.'/*.mmd'));   // numbering shifts when a module gains its first table
         File::ensureDirectoryExists(dirname($sql));
 
         $features = array_filter($modules, fn ($m) => $m !== self::FRAMEWORK, ARRAY_FILTER_USE_KEY);

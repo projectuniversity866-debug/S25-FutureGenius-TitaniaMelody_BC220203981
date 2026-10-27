@@ -23,8 +23,9 @@ CS619 Final Year Project · Titania Melody (BC220203981) · Supervisor: Mr. Abdu
 | **Forms** | Form Builder for creators (10 question types), responses and CSV export |
 | **Governance** | Community guidelines, reporting and moderation queue with decision log, audit trail, download my data, delete my account |
 | **Accessibility** | WCAG 2.1 AA target, works without JavaScript, accessibility toolbar (text size, high contrast, readable font, line spacing, reduced motion), light and dark themes |
+| **Newsletter** (FR7) | Subscribe with double opt-in, one-click unsubscribe; administrators write, test, schedule and send campaigns (sent from the queue) |
 
-Newsletter and announcements (FR7) are in progress; see [ROADMAP.md](ROADMAP.md).
+Delivery reports and site announcements (FR7) are in progress; see [ROADMAP.md](ROADMAP.md).
 
 ## Built with
 
