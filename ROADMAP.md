@@ -19,11 +19,11 @@ Results go in the progress log.
 | 1 | Rebuild existing modules | 15 | 15 |
 | 2 | Missing scope | 7 | 7 |
 | 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 18 |
-| 4 | Quality | 4 | 0 |
+| 4 | Quality | 4 | 2 |
 | 5 | Deployment & deliverables | 6 | 3 |
-| | **Total** | **61** | **54** |
+| | **Total** | **61** | **56** |
 
-**Next steps:** 4.1 + 4.2 (5.6 video and the 5.1 live URL need the student)
+**Next steps:** 4.3 + 4.4 (4.4 needs real participants; 5.6 video and the 5.1 live URL need the student)
 
 ---
 
@@ -136,8 +136,8 @@ Results go in the progress log.
 
 | Status | ID | Step | Output |
 |---|---|---|---|
-| [ ] | 4.1 | Feature + unit tests for every module | Test suite |
-| [ ] | 4.2 | Performance: indexes, eager loading, caching | Scalability |
+| [x] | 4.1 | Feature + unit tests for every module | Test suite |
+| [x] | 4.2 | Performance: indexes, eager loading, caching | Scalability |
 | [ ] | 4.3 | WCAG 2.1 AA audit (axe, Lighthouse, WAVE, keyboard, screen reader) | Accessibility evidence |
 | [ ] | 4.4 | Usability study (tasks + SUS score) | Testing Report |
 
@@ -247,3 +247,5 @@ Results go in the progress log.
 | 2026-10-27 | 3.17 | Campaign reports: each recipient gets an unguessable token and a 1×1 open-tracking image (`/newsletter/open/{token}`, same image for unknown tokens, no-store); **Delivery report** per campaign: recipients, sent, opened (people and total, with the caveat that blocked images hide opens), failed; bar list of every outcome; failed addresses with the reason; **Retry failed** re-queues only those (claimed once). Newsletter page says opens are counted. Tests RP1–RP3. |
 | 2026-10-27 | 3.18 | Site announcements (new `announcements.manage` permission, admins; migration adds it): **Administration → Announcements** (title, message, optional http(s) link, kind News / Good news / Important with icon + word, audience everyone / members / visitors, closable or not, from–until in a time zone, stored UTC; live / upcoming / ended; how many closed it). **Banner** on every page as a labelled region (at most 2); closing it is kept per account (members) or per session (visitors). Public **Updates** page (now + earlier). Fixed: an edit without the link fields now removes the link. FR7 and Phase 3 complete. Schema + ERDs regenerated (71 tables). Tests AN1–AN4 + 14 smoke checks; 344 PHPUnit pass (PHP 8.5), e2e smoke 268/268. |
 | 2026-10-27 | Commit | `22be57d` pushed to `development` (steps 3.17–3.18); WAMP MySQL migrated (all 72 tables InnoDB, permission added). |
+| 2026-10-28 | 4.1 | Coverage measured with Xdebug (WAMP PHP 8.3): Blade views excluded from the source in `phpunit.xml` (they made it read 44%); real figure 94.1% → **95.0% lines, 91.0% methods**, every module ≥ 93%. Never-called methods pointed to untested paths, now suite GP1–GP5 (curation edit/delete, moderator removes a reported article, form settings/delete, notifications page, activity-log pruning, day off removal, draft proposal/campaign deletion, confirmation email text, verify/forgot pages). Unit suite UN1–UN5 (`tests/Unit/DomainRulesTest`, replaces Laravel's example): diff, permission catalogue, proposal lifecycle, confirmation expiry, announcement phases — found an empty-text diff bug (fixed). `docs/testing/TEST-SUITE.md` (catalogue per module, coverage, how to run); stale tests README replaced. |
+| 2026-10-28 | 4.2 | Lazy-loading guard run found **115 N+1 loads** (avatars → profile, permission checks → role, profile question list → authors/tags): `User::$with = ['profile', 'role']`, profile query eager-loads; guard now on in tests (`preventLazyLoading` when running tests only — never breaks real pages). Indexes: `job_posts` board + deadline, `notifications` unread (two migrations). Caching: home totals 10 min; live announcement banners 1 min per audience, cleared on post/edit/delete. Search stays `LIKE` (noted as a limitation). Schema regenerated. Tests PF1–PF5 (same query count with twice the rows on 4 list pages, guard on, eager relations, caches, indexes) + 2 smoke checks; 358 PHPUnit pass (PHP 8.5), e2e smoke 270/270. |

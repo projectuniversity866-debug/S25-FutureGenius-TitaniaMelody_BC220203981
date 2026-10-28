@@ -34,6 +34,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return UserFactory::new();
     }
 
+    /**
+     * Every list of people shows avatars (profile) and checks permissions
+     * (role), so both come with the users in one query each instead of one
+     * query per person (roadmap 4.2).
+     */
+    protected $with = ['profile', 'role'];
+
     protected $fillable = [
         'name',
         'email',

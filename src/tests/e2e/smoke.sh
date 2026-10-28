@@ -467,6 +467,10 @@ check "health check /up" 200 "$(get guest /up)"
 check ".env is never served" 404 "$(get guest /.env)"
 check "routes and views cache for production" ok "$("$PHP" artisan route:cache -q && "$PHP" artisan view:cache -q && echo ok; "$PHP" artisan route:clear -q; "$PHP" artisan view:clear -q)"
 check "deploy.sh is valid bash" ok "$(bash -n deploy.sh && echo ok)"
+echo "Performance"
+check "home page twice (totals cached)" "200 200" "$(get guest / ; echo -n ' '; get guest /)"
+check "list indexes exist in the real database" yes "$("$PHP" artisan tinker --execute="echo collect(['job_posts_board_index', 'job_posts_deadline_index'])->diff(array_column(Illuminate\Support\Facades\Schema::getIndexes('job_posts'), 'name'))->isEmpty() && in_array('notifications_unread_index', array_column(Illuminate\Support\Facades\Schema::getIndexes('notifications'), 'name')) ? 'yes' : 'no';" 2>/dev/null | tr -d '[:space:]')"
+
 echo "Deliverables"
 login member member@aqdesk.test >/dev/null
 for p in /accessibility /guidelines /settings /expert-verification /privacy/my-data /forms; do check "manual page $p" 200 "$(get member "$p")"; done

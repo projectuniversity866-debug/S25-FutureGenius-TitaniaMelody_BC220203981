@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
@@ -28,6 +29,11 @@ class AppServiceProvider extends ServiceProvider
 
         // The whole UI is Bootstrap 5, so paginate() links must be too.
         Paginator::useBootstrapFive();
+
+        // An N+1 query (a relation loaded once per row of a list) fails the
+        // test suite instead of slowing pages down unnoticed. Only in tests,
+        // so a missed case can never break a page for real users (roadmap 4.2).
+        Model::preventLazyLoading($this->app->runningUnitTests());
 
         // Behind WAMP/Apache with HTTPS off this is a no-op; it keeps
         // generated URLs correct if the app is later served over HTTPS.

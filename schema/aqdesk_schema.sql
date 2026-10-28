@@ -197,6 +197,8 @@ CREATE TABLE `job_posts` (
   KEY `job_posts_user_id_foreign` (`user_id`),
   KEY `job_posts_type_is_active_index` (`type`,`is_active`),
   KEY `job_posts_organization_id_foreign` (`organization_id`),
+  KEY `job_posts_board_index` (`is_active`,`created_at`),
+  KEY `job_posts_deadline_index` (`is_active`,`deadline`),
   CONSTRAINT `job_posts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `job_posts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1032,7 +1034,8 @@ CREATE TABLE `notifications` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `notifications_notifiable_type_notifiable_id_index` (`notifiable_type`,`notifiable_id`)
+  KEY `notifications_notifiable_type_notifiable_id_index` (`notifiable_type`,`notifiable_id`),
+  KEY `notifications_unread_index` (`notifiable_type`,`notifiable_id`,`read_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------

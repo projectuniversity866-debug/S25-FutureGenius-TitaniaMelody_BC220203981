@@ -36,7 +36,7 @@ class PublicProfileController extends Controller
         ];
 
         $data += match ($tab) {
-            'questions' => ['questions' => $user->questions()->with(['category', 'votes'])->withCount('answers')
+            'questions' => ['questions' => $user->questions()->with(['user', 'category', 'tags', 'votes'])->withCount('answers')
                                 ->latest()->paginate(10)->withQueryString()],
             'answers'   => ['answers' => $user->answers()->with(['question', 'votes'])
                                 ->orderByDesc('is_accepted')->latest()->paginate(10)->withQueryString()],
