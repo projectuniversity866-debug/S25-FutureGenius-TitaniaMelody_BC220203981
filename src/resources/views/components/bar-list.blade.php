@@ -27,7 +27,7 @@
                     </span>
                 </div>
                 <div class="aq-bars-track" aria-hidden="true">
-                    <span style="--w: {{ $item['value'] ? max(2, round($item['value'] / $max * 100, 1)) : 0 }}%"></span>
+                    <span data-w="{{ $item['value'] ? max(5, (int) round($item['value'] / $max * 20) * 5) : 0 }}"></span>
                 </div>
             </li>
         @endforeach

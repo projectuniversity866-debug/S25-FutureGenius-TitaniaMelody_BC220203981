@@ -19,7 +19,7 @@
     --aq-border-strong: #c6d2e0;
     --aq-ink:           #101c2b;
     --aq-ink-2:         #35485c;
-    --aq-muted:         #5f7186;
+    --aq-muted:         #596b80;   /* ≥ 4.7:1 on every light background (WCAG 1.4.3, roadmap 4.3) */
 
     --aq-accent:        #0f766e;
     --aq-accent-hover:  #0b5c55;
@@ -1182,6 +1182,29 @@ a.aq-bars-label:hover { color: var(--aq-accent); text-decoration: underline; }
     background: var(--aq-chart-1);
     border-radius: 0 4px 4px 0;
 }
+/* Bar widths in 5% steps, set by class-like data attributes instead of inline
+   styles (the exact value is written beside every bar). */
+.aq-bars-track > [data-w="0"] { --w: 0%; }
+.aq-bars-track > [data-w="5"] { --w: 5%; }
+.aq-bars-track > [data-w="10"] { --w: 10%; }
+.aq-bars-track > [data-w="15"] { --w: 15%; }
+.aq-bars-track > [data-w="20"] { --w: 20%; }
+.aq-bars-track > [data-w="25"] { --w: 25%; }
+.aq-bars-track > [data-w="30"] { --w: 30%; }
+.aq-bars-track > [data-w="35"] { --w: 35%; }
+.aq-bars-track > [data-w="40"] { --w: 40%; }
+.aq-bars-track > [data-w="45"] { --w: 45%; }
+.aq-bars-track > [data-w="50"] { --w: 50%; }
+.aq-bars-track > [data-w="55"] { --w: 55%; }
+.aq-bars-track > [data-w="60"] { --w: 60%; }
+.aq-bars-track > [data-w="65"] { --w: 65%; }
+.aq-bars-track > [data-w="70"] { --w: 70%; }
+.aq-bars-track > [data-w="75"] { --w: 75%; }
+.aq-bars-track > [data-w="80"] { --w: 80%; }
+.aq-bars-track > [data-w="85"] { --w: 85%; }
+.aq-bars-track > [data-w="90"] { --w: 90%; }
+.aq-bars-track > [data-w="95"] { --w: 95%; }
+.aq-bars-track > [data-w="100"] { --w: 100%; }
 
 /* Line chart — <x-line-chart> / LineChart.vue. */
 .aq-chart-canvas { min-height: 252px; }
@@ -1535,7 +1558,7 @@ a.aq-tag.aq-tag-lg { font-size: .8125rem; font-weight: 600; padding: .25rem .687
     font-size: 1.25rem;
     color: var(--aq-muted);
 }
-.aq-empty h3 { font-size: .9375rem; font-weight: 650; margin: 0 0 .25rem; }
+.aq-empty-title { font-size: .9375rem; font-weight: 650; margin: 0 0 .25rem; }
 .aq-empty p { font-size: .8125rem; color: var(--aq-muted); margin: 0; }
 
 /* Section heading with a "view all" link. */

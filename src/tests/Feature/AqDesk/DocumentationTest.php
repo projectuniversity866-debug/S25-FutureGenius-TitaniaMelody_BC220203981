@@ -121,6 +121,22 @@ class DocumentationTest extends AqDeskTestCase
         }
     }
 
+    /** DC8 — the usability study's tasks can be done with the demo data, and its SUS example adds up (4.4). */
+    public function test_dc8_usability_study_is_runnable(): void
+    {
+        $study = File::get(dirname(base_path()).'/docs/testing/USABILITY-STUDY.md');
+
+        $this->assertTrue(\App\Modules\EventsMedia\Models\Event::where('status', 'published')->where('title', 'like', '%accessibility%')->where('starts_at', '>', now())->exists());
+        $this->assertTrue(\App\Modules\Knowledge\Models\LearningPath::whereNotNull('published_at')->where('title', 'like', '%web accessibility%')->exists());
+        $this->assertTrue(\App\Modules\Consulting\Models\ConsultantProfile::where('is_accepting', true)->whereNull('price_pkr')->exists());
+
+        $answers = [4, 2, 5, 1, 4, 2, 5, 1, 4, 2];
+        $sus = 2.5 * array_sum(array_map(fn ($a, $i) => $i % 2 === 0 ? $a - 1 : 5 - $a, $answers, array_keys($answers)));
+        $this->assertSame(85.0, $sus);
+        $this->assertStringContainsString('× 2.5 = **85**', $study);
+        $this->assertSame(10, preg_match_all('/^\| (?:[1-9]|10) \| I /m', $study));
+    }
+
     /** DC5 — the forms guide covers every field type and the creator's buttons. */
     public function test_dc5_manual_covers_forms(): void
     {

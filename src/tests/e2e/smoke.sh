@@ -471,6 +471,12 @@ echo "Performance"
 check "home page twice (totals cached)" "200 200" "$(get guest / ; echo -n ' '; get guest /)"
 check "list indexes exist in the real database" yes "$("$PHP" artisan tinker --execute="echo collect(['job_posts_board_index', 'job_posts_deadline_index'])->diff(array_column(Illuminate\Support\Facades\Schema::getIndexes('job_posts'), 'name'))->isEmpty() && in_array('notifications_unread_index', array_column(Illuminate\Support\Facades\Schema::getIndexes('notifications'), 'name')) ? 'yes' : 'no';" 2>/dev/null | tr -d '[:space:]')"
 
+echo "Accessibility"
+get guest / >/dev/null
+contains "pages declare their language" "$WORK/last.html" '<html lang="en"'
+contains "skip link comes first" "$WORK/last.html" 'Skip to main content'
+check "no inline styles on the admin dashboard (charts use classes)" no "$(get admin /dashboard >/dev/null; grep -q ' style="' "$WORK/last.html" && echo yes || echo no)"
+
 echo "Deliverables"
 login member member@aqdesk.test >/dev/null
 for p in /accessibility /guidelines /settings /expert-verification /privacy/my-data /forms; do check "manual page $p" 200 "$(get member "$p")"; done

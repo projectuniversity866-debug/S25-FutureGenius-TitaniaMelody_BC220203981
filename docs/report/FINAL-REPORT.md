@@ -24,8 +24,8 @@ components. Accessibility to WCAG 2.1 AA is treated as a requirement on every
 page rather than as a final check: an accessibility toolbar, transcripts for
 every podcast episode, keyboard-operable components and screen-reader
 announcements are part of the design. Each feature was built in small
-roadmap steps and verified by an automated suite of 358 PHPUnit tests (95%
-line coverage) and a 270-check end-to-end test that drives the real
+roadmap steps and verified by an automated suite of 363 PHPUnit tests (95%
+line coverage) and a 273-check end-to-end test that drives the real
 application over HTTP.
 
 ---
@@ -254,7 +254,7 @@ styles anywhere). Six Vue 3 islands enhance plain forms: `VoteControl`,
 | Blade views | 150 |
 | Tables / migrations | 71 / 47 |
 | Permissions | 12 |
-| Automated tests | 358 PHPUnit (353 feature, 5 unit) + 270 end-to-end checks |
+| Automated tests | 363 PHPUnit (358 feature, 5 unit) + 273 end-to-end checks |
 
 ### 4.3 Development method
 
@@ -310,9 +310,9 @@ DP1–DP5 for deployment) and listed with results in the progress log of
 
 | Run | Result |
 |---|---|
-| PHPUnit | 358 tests, 3,163 assertions, all pass on PHP 8.3 and 8.5 (1 skipped: a manual keyboard check) |
+| PHPUnit | 363 tests, 3,182 assertions, all pass on PHP 8.3 and 8.5 (1 skipped: a manual keyboard check) |
 | Code coverage (Xdebug) | 95.0% of lines and 91.0% of methods in `src/app`; every module 93% or more of lines |
-| End-to-end | 270 of 270 checks pass |
+| End-to-end | 273 of 273 checks pass |
 
 A coverage run pointed to untested paths (for example a moderator removing a
 reported article, deleting forms and draft campaigns), which suite GP now
@@ -332,17 +332,32 @@ covers; the unit tests found and fixed a small bug in the edit-history diff.
 - Searches use `LIKE`, which indexes cannot speed up; a FULLTEXT index or a
   search engine is the next step if content grows (Section 7.4).
 
-### 5.4 Accessibility evaluation ⏳
+### 5.4 Accessibility evaluation
 
-To be completed in step 4.3: axe and Lighthouse scores per page type, WAVE
-results, a keyboard-only walk-through of the main tasks, and a screen-reader
-(NVDA) pass, with each issue found and how it was fixed.
+Full audit: `docs/testing/ACCESSIBILITY-AUDIT.md`.
+
+**Automated (done).** A PHPUnit audit opens every page as a visitor, a member
+and an administrator plus the detail and edit pages of every module (135 page
+views) and checks language, skip link, landmarks, one `h1` and heading order,
+labels on every form control, image alternatives, link and button names,
+unique ids and valid ARIA references. axe-core 4.14 ran its WCAG 2.1 A/AA
+rules on 52 pages of the running application: **0 violations**. Colour
+contrast is computed for every text colour on every background in both
+themes: all pass, lowest normal-text pair 4.76:1. Four issues were found and
+fixed: empty-state headings skipping a level (17 pages), resource cards
+without a section heading, muted text at 4.36:1 on tinted backgrounds
+(darkened), and inline styles in the bar charts. These checks now run with
+the test suite.
+
+**Manual ⏳.** Keyboard-only walk-through, NVDA screen-reader pass,
+Lighthouse and WAVE scores, recorded in part B of the audit.
 
 ### 5.5 Usability study ⏳
 
-To be completed in step 4.4: participants, tasks (e.g. ask a question,
-register for an event, book a session), completion rates, times, the System
-Usability Scale (SUS) score and the changes made in response.
+Plan, consent text, nine tasks across the modules, the SUS questionnaire
+with scoring, and result tables: `docs/testing/USABILITY-STUDY.md`. Results
+(participants, completion rates, times, SUS score, changes made) are added
+after the sessions.
 
 ### 5.6 Requirement coverage
 
@@ -350,7 +365,7 @@ Usability Scale (SUS) score and the changes made in response.
 |---|---|
 | FR1–FR7 | Delivered and tested |
 | Expert knowledge sharing, education technology, digital governance, forms | Delivered and tested |
-| Accessibility | Built in throughout; formal audit ⏳ 4.3 |
+| Accessibility | Automated audit: 0 issues on every page; manual checks ⏳ |
 
 ---
 

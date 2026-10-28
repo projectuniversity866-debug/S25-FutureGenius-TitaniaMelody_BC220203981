@@ -64,6 +64,7 @@
 @if ($resources->isEmpty())
     <div class="card"><x-empty icon="collection" title="No resources match" message="Try fewer filters." /></div>
 @else
+    <h2 class="visually-hidden">{{ $resources->total() }} {{ \Illuminate\Support\Str::plural('resource', $resources->total()) }}</h2>
     <ul class="aq-resource-list">
         @foreach ($resources as $resource)
             @include('knowledge::learning._resource', ['resource' => $resource])

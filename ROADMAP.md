@@ -23,7 +23,7 @@ Results go in the progress log.
 | 5 | Deployment & deliverables | 6 | 3 |
 | | **Total** | **61** | **56** |
 
-**Next steps:** 4.3 + 4.4 (4.4 needs real participants; 5.6 video and the 5.1 live URL need the student)
+**Next steps:** student — manual accessibility checks (4.3 part B), usability sessions (4.4), hosting (5.1), video (5.6); Claude — demo video script (5.6), then finish the report (5.2) from the results
 
 ---
 
@@ -138,8 +138,8 @@ Results go in the progress log.
 |---|---|---|---|
 | [x] | 4.1 | Feature + unit tests for every module | Test suite |
 | [x] | 4.2 | Performance: indexes, eager loading, caching | Scalability |
-| [ ] | 4.3 | WCAG 2.1 AA audit (axe, Lighthouse, WAVE, keyboard, screen reader) | Accessibility evidence |
-| [ ] | 4.4 | Usability study (tasks + SUS score) | Testing Report |
+| [~] | 4.3 | WCAG 2.1 AA audit (axe, Lighthouse, WAVE, keyboard, screen reader) | Accessibility evidence |
+| [~] | 4.4 | Usability study (tasks + SUS score) | Testing Report |
 
 ## Phase 5 — Deployment & deliverables
 
@@ -250,3 +250,5 @@ Results go in the progress log.
 | 2026-10-28 | 4.1 | Coverage measured with Xdebug (WAMP PHP 8.3): Blade views excluded from the source in `phpunit.xml` (they made it read 44%); real figure 94.1% → **95.0% lines, 91.0% methods**, every module ≥ 93%. Never-called methods pointed to untested paths, now suite GP1–GP5 (curation edit/delete, moderator removes a reported article, form settings/delete, notifications page, activity-log pruning, day off removal, draft proposal/campaign deletion, confirmation email text, verify/forgot pages). Unit suite UN1–UN5 (`tests/Unit/DomainRulesTest`, replaces Laravel's example): diff, permission catalogue, proposal lifecycle, confirmation expiry, announcement phases — found an empty-text diff bug (fixed). `docs/testing/TEST-SUITE.md` (catalogue per module, coverage, how to run); stale tests README replaced. |
 | 2026-10-28 | 4.2 | Lazy-loading guard run found **115 N+1 loads** (avatars → profile, permission checks → role, profile question list → authors/tags): `User::$with = ['profile', 'role']`, profile query eager-loads; guard now on in tests (`preventLazyLoading` when running tests only — never breaks real pages). Indexes: `job_posts` board + deadline, `notifications` unread (two migrations). Caching: home totals 10 min; live announcement banners 1 min per audience, cleared on post/edit/delete. Search stays `LIKE` (noted as a limitation). Schema regenerated. Tests PF1–PF5 (same query count with twice the rows on 4 list pages, guard on, eager relations, caches, indexes) + 2 smoke checks; 358 PHPUnit pass (PHP 8.5), e2e smoke 270/270. |
 | 2026-10-28 | Commit | `e2dfb7a` pushed to `development` (steps 4.1–4.2); WAMP MySQL migrated (3 indexes). |
+| 2026-10-28 | 4.3 `[~]` | Automated WCAG 2.1 AA audit: `AccessibilityAuditTest` WA1–WA3 opens **135 page views** (every page as visitor, member, admin + detail/edit pages of every module) and checks lang, skip link, main, one h1 + heading order, labels, alt, link/button names, unique ids, ARIA references, no inline styles; WA4 computes **colour contrast** of every token pair in both themes. **axe-core 4.14** (`tests/a11y/axe.sh`, jsdom, new dev packages) on 52 live pages: 0 violations. Fixed: empty-state `h3` under `h1` (17 page views; `x-empty` level prop, h2 default), resource library section heading, muted text 4.36:1 → `#596b80` (≥ 4.76:1), bar-chart inline styles → 5% `data-w` steps. `docs/testing/ACCESSIBILITY-AUDIT.md` (results, fixes, WCAG feature map, **part B checklist for the student**: keyboard, NVDA, Lighthouse, WAVE). |
+| 2026-10-28 | 4.4 `[~]` | `docs/testing/USABILITY-STUDY.md`: plan (5–8 participants), consent text, 9 tasks across the modules, SUS questionnaire with scoring and worked example, result tables (participants, tasks, SUS, problems → changes), facilitator note on WAMP email. **Sessions to be run by the student.** Report 5.4/5.5 updated. Tests DC8 (tasks doable with the demo data, SUS example correct) + 3 smoke checks; 363 PHPUnit pass (PHP 8.5), e2e smoke 273/273. |

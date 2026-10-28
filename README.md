@@ -76,7 +76,7 @@ php vendor/bin/phpunit        # feature tests on an in-memory SQLite database
 bash tests/e2e/smoke.sh       # end-to-end: starts the app and drives it over HTTP
 ```
 
-358 PHPUnit tests (95% line coverage) and 270 end-to-end checks; see
+363 PHPUnit tests (95% line coverage) and 273 end-to-end checks; see
 [docs/testing/TEST-SUITE.md](docs/testing/TEST-SUITE.md).
 
 ## Deploy

@@ -7,11 +7,11 @@ Roadmap steps 4.1 (feature and unit tests for every module) and 4.2
 
 | Measure | Result |
 |---|---|
-| PHPUnit tests | **358** (353 feature, 5 unit), all passing on PHP 8.3 (WampServer) and 8.5; 1 skipped (a manual keyboard check) |
-| Assertions | 3,163 |
+| PHPUnit tests | **363** (358 feature, 5 unit), all passing on PHP 8.3 (WampServer) and 8.5; 1 skipped (a manual keyboard check) |
+| Assertions | 3,182 |
 | Line coverage of `src/app` | **95.0%** (6,697 of 7,051 lines) |
 | Method coverage | **91.0%** (1,311 of 1,441) |
-| End-to-end checks | **270**, all passing (`src/tests/e2e/smoke.sh`) |
+| End-to-end checks | **273**, all passing (`src/tests/e2e/smoke.sh`) |
 | N+1 queries | 0 — any new one fails the tests |
 
 ## How to run
@@ -60,9 +60,9 @@ the file name tells them apart.
 | Communications | FR7 | NewsletterTest (NL, CM, RP), AnnouncementTest (AN) | 15 |
 | Governance | Digital governance | GovernanceTest (G), PrivacyTest (Y) | 15 |
 | Platform | Shared | PlatformTest (P), FormBuilderTest (B), AccessibilityToolbarTest (T), InterfaceTest (H) | 32 |
-| Across modules | — | DashboardTest (C), ModuleNavigationTest (G), SmokeTest, DeploymentTest (DP), DocumentationTest (DC), ModuleGapsTest (GP), PerformanceTest (PF) | 39 |
+| Across modules | — | DashboardTest (C), ModuleNavigationTest (G), SmokeTest, DeploymentTest (DP), DocumentationTest (DC), ModuleGapsTest (GP), PerformanceTest (PF), AccessibilityAuditTest (WA) | 44 |
 | Unit | — | DomainRulesTest (UN) | 5 |
-| **Total** | | | **358** |
+| **Total** | | | **363** |
 
 ## Coverage per module
 
