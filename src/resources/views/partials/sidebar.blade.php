@@ -149,7 +149,10 @@
         @endauth
     </ul>
 
-    <div class="aq-sidefoot">
+    {{-- Visitors: on large screens the top bar already has Sign in and Create
+         account, so the menu keeps its full height; on phones the top bar has
+         no room for both, so they stay here. --}}
+    <div class="aq-sidefoot @guest d-lg-none @endguest">
         @auth
             <div class="d-flex align-items-center gap-2">
                 <x-avatar :user="$user" size="sm" />

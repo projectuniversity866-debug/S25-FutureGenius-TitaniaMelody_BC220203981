@@ -475,6 +475,7 @@ echo "Accessibility"
 get guest / >/dev/null
 contains "pages declare their language" "$WORK/last.html" '<html lang="en"'
 contains "skip link comes first" "$WORK/last.html" 'Skip to main content'
+contains "visitors: menu sign-in box only below 992 px (the top bar has it above)" "$WORK/last.html" 'aq-sidefoot  d-lg-none'
 check "no inline styles on the admin dashboard (charts use classes)" no "$(get admin /dashboard >/dev/null; grep -q ' style="' "$WORK/last.html" && echo yes || echo no)"
 
 echo "Deliverables"
