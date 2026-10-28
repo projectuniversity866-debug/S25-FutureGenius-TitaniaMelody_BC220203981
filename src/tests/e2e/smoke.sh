@@ -68,7 +68,7 @@ login() {      # login who email
 path_of() { echo "${1#* }" | sed "s#^$B##"; }
 
 echo "Guest"
-for p in / /questions /jobs /login /register /modules/newsletter /accessibility /events /podcasts /consultants; do check "GET $p" 200 "$(get guest "$p")"; done
+for p in / /questions /jobs /login /register /newsletter /accessibility /events /podcasts /consultants; do check "GET $p" 200 "$(get guest "$p")"; done
 check "dashboard needs sign-in" 302 "$(get guest /dashboard)"
 check "unknown module is 404" 404 "$(get guest /modules/nope)"
 
@@ -388,10 +388,54 @@ contains "…has sara from her booking" "$WORK/last.html" "Sara Malik"
 CL=$(grep -oE '/consulting/clients/[0-9]+' "$WORK/last.html" | head -1)
 check "consultant adds a private note" 302 "$(send member POST "$CL/notes" --data-urlencode "body=Wants a review of the e2e script." | cut -d' ' -f1)"
 check "sara cannot open the client record" 404 "$(get sara "$CL")"
+R=$(send member POST "$CL/proposals" --data-urlencode "title=Three review sessions for the e2e script" --data-urlencode "body=We go through the smoke test together, one module per session." --data-urlencode amount_pkr=6000)
+check "consultant drafts a proposal for sara" 302 "${R%% *}"
+PP=$(path_of "$R")
+check "…sara cannot see the draft" 404 "$(get sara "$PP")"
+send member PUT "$PP/send" >/dev/null
+check "consultant sends it and sara accepts" 302 "$(send sara PUT "$PP/decide" --data-urlencode decision=accepted --data-urlencode "note=Yes please" | cut -d' ' -f1)"
+check "consultant marks the work completed" 302 "$(send member PUT "$PP/complete" | cut -d' ' -f1)"
+get member "$PP" >/dev/null
+contains "…and the proposal shows it" "$WORK/last.html" "Completed"
 check "consultant adds a client by hand" 302 "$(send member POST /consulting/clients --data-urlencode "name=Hina Qureshi" --data-urlencode "organization=Lahore Startups" --data-urlencode status=lead | cut -d' ' -f1)"
 check "sara cancels the session" 302 "$(send sara PUT "$SS/cancel" --data-urlencode "reason=Found the bug myself" | cut -d' ' -f1)"
 get member /notifications >/dev/null
 contains "…the consultant is told" "$WORK/last.html" "Session cancelled by Sara Malik"
+
+echo "Newsletter"
+check "old placeholder address redirects" 301 "$(get guest /modules/newsletter)"
+check "guest subscribes (double opt-in)" 302 "$(rm -f "$(jar reader)"; send reader POST /newsletter --data-urlencode email=smoke-reader@example.com --data-urlencode consent=1 | cut -d' ' -f1)"
+TOK=$("$PHP" artisan tinker --execute="echo App\Modules\Communications\Models\Subscriber::where('email', 'smoke-reader@example.com')->where('status', 'pending')->value('token');" 2>/dev/null | tr -d '[:space:]')
+check "…the confirmation link subscribes" 200 "$(get reader "/newsletter/confirm/$TOK")"
+contains "…and says so" "$WORK/last.html" "You are subscribed"
+check "mail app one-click unsubscribe (POST without CSRF token)" 200 "$(curl -s -o "$WORK/last.html" -w '%{http_code}' -d 'List-Unsubscribe=One-Click' "$B/newsletter/unsubscribe/$TOK")"
+contains "…unsubscribed" "$WORK/last.html" "You are unsubscribed"
+check "member subscribes their own email at once" 302 "$(send member POST /newsletter --data-urlencode email=member@aqdesk.test --data-urlencode consent=1 | cut -d' ' -f1)"
+check "member cannot open campaigns" 403 "$(get member /admin/newsletter)"
+R=$(send admin POST /admin/newsletter --data-urlencode "subject=Smoke test newsletter" --data-urlencode "body=Hello subscribers, this is the **smoke test** campaign.")
+check "admin drafts a campaign" 302 "${R%% *}"
+NC=$(path_of "$R")
+check "admin sends a test to themselves" 302 "$(send admin POST "$NC/test" | cut -d' ' -f1)"
+check "admin sends it now" 302 "$(send admin PUT "$NC/send" | cut -d' ' -f1)"
+get admin "$NC" >/dev/null
+contains "…delivered to the one confirmed subscriber" "$WORK/last.html" "1 of 1 sent"
+OTOK=$("$PHP" artisan tinker --execute="echo App\Modules\Communications\Models\CampaignRecipient::where('email', 'member@aqdesk.test')->value('token');" 2>/dev/null | tr -d '[:space:]')
+check "the email's tracking image loads" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$B/newsletter/open/$OTOK")"
+check "delivery report" 200 "$(get admin "$NC/report")"
+contains "…counts the open" "$WORK/last.html" "100% of sent · 1 open in all"
+
+echo "Announcements"
+check "member cannot post announcements" 403 "$(get member /admin/announcements)"
+check "admin posts an announcement" 302 "$(send admin POST /admin/announcements --data-urlencode "title=Smoke test week" --data-urlencode "body=Everything is being checked end to end this week." \
+    --data-urlencode tone=info --data-urlencode audience=everyone --data-urlencode is_dismissible=1 --data-urlencode timezone=UTC \
+    --data-urlencode "starts_at=$(date -u -d '-1 hour' +%Y-%m-%dT%H:%M)" | cut -d' ' -f1)"
+get guest / >/dev/null
+contains "…guests see the banner" "$WORK/last.html" "News: Smoke test week"
+AID=$(grep -oE '/updates/[0-9]+/dismiss' "$WORK/last.html" | head -1)
+check "…and can close it" 302 "$(send guest POST "$AID" | cut -d' ' -f1)"
+check "…it stays closed" no "$(get guest / >/dev/null; grep -q 'News: Smoke test week' "$WORK/last.html" && echo yes || echo no)"
+check "Updates page lists it" 200 "$(get guest /updates)"
+contains "…by title" "$WORK/last.html" "Smoke test week"
 
 echo "Governance & privacy"
 for p in /guidelines /terms /privacy; do check "GET $p" 200 "$(get guest "$p")"; done
@@ -423,6 +467,10 @@ check "health check /up" 200 "$(get guest /up)"
 check ".env is never served" 404 "$(get guest /.env)"
 check "routes and views cache for production" ok "$("$PHP" artisan route:cache -q && "$PHP" artisan view:cache -q && echo ok; "$PHP" artisan route:clear -q; "$PHP" artisan view:clear -q)"
 check "deploy.sh is valid bash" ok "$(bash -n deploy.sh && echo ok)"
+echo "Performance"
+check "home page twice (totals cached)" "200 200" "$(get guest / ; echo -n ' '; get guest /)"
+check "list indexes exist in the real database" yes "$("$PHP" artisan tinker --execute="echo collect(['job_posts_board_index', 'job_posts_deadline_index'])->diff(array_column(Illuminate\Support\Facades\Schema::getIndexes('job_posts'), 'name'))->isEmpty() && in_array('notifications_unread_index', array_column(Illuminate\Support\Facades\Schema::getIndexes('notifications'), 'name')) ? 'yes' : 'no';" 2>/dev/null | tr -d '[:space:]')"
+
 echo "Deliverables"
 login member member@aqdesk.test >/dev/null
 for p in /accessibility /guidelines /settings /expert-verification /privacy/my-data /forms; do check "manual page $p" 200 "$(get member "$p")"; done

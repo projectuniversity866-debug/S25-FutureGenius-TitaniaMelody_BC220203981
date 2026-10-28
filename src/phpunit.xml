@@ -16,6 +16,10 @@
         <include>
             <directory>app</directory>
         </include>
+        <!-- Module views run as compiled templates in storage/, so they can never count as covered (roadmap 4.1). -->
+        <exclude>
+            <directory suffix=".blade.php">app</directory>
+        </exclude>
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>

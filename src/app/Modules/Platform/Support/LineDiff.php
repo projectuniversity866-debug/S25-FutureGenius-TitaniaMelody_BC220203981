@@ -16,8 +16,9 @@ final class LineDiff
      */
     public static function compare(string $old, string $new): array
     {
-        $a = preg_split('/\R/', $old);
-        $b = preg_split('/\R/', $new);
+        // An empty text has no lines (not one empty line), so "" → "x" is a pure addition.
+        $a = $old === '' ? [] : preg_split('/\R/', $old);
+        $b = $new === '' ? [] : preg_split('/\R/', $new);
 
         if (count($a) > self::MAX_LINES || count($b) > self::MAX_LINES) {
             return [

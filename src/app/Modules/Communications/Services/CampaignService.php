@@ -1,0 +1,154 @@
+<?php
+
+namespace App\Modules\Communications\Services;
+
+use App\Modules\Communications\Jobs\SendCampaignBatch;
+use App\Modules\Communications\Mail\CampaignMail;
+use App\Modules\Communications\Models\Campaign;
+use App\Modules\Communications\Models\CampaignRecipient;
+use App\Modules\Communications\Models\Subscriber;
+use App\Modules\Identity\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Throwable;
+
+/**
+ * Campaigns: Draft → Scheduled → Sending → Sent (FR7, roadmap 3.16).
+ * Starting a campaign lists every confirmed subscriber as a recipient and
+ * queues them in batches; each recipient is claimed before its email goes
+ * out, so overlapping workers never send anyone the same campaign twice.
+ * Reports (3.17): opens are counted, failed addresses can be retried.
+ */
+class CampaignService
+{
+    public function create(User $author, array $data): Campaign
+    {
+        $campaign = new Campaign($data + ['status' => 'draft']);
+        $campaign->created_by = $author->id;
+        $campaign->save();
+
+        return $campaign;
+    }
+
+    public function update(Campaign $campaign, array $data): Campaign
+    {
+        $campaign->update($data);
+
+        return $campaign;
+    }
+
+    public function delete(Campaign $campaign): void
+    {
+        $campaign->delete();
+    }
+
+    /** The campaign exactly as subscribers will see it, to the sender's own inbox. */
+    public function sendTest(Campaign $campaign, User $to): void
+    {
+        Mail::to($to->email)->send(new CampaignMail($campaign, null));
+    }
+
+    public function schedule(Campaign $campaign, Carbon $at): void
+    {
+        $campaign->update(['status' => 'scheduled', 'scheduled_at' => $at]);
+    }
+
+    public function unschedule(Campaign $campaign): void
+    {
+        $campaign->update(['status' => 'draft', 'scheduled_at' => null]);
+    }
+
+    /** Send now, or when the scheduler finds it due. Only one caller wins the claim. */
+    public function start(Campaign $campaign): bool
+    {
+        $claimed = Campaign::whereKey($campaign->id)->whereIn('status', ['draft', 'scheduled'])
+            ->update(['status' => 'sending', 'started_at' => now(), 'updated_at' => now()]);
+        if (! $claimed) {
+            return false;
+        }
+
+        Subscriber::where('status', 'subscribed')->select('id', 'email')->chunkById(500, function ($subscribers) use ($campaign) {
+            CampaignRecipient::insertOrIgnore($subscribers->map(fn (Subscriber $s) => [
+                'newsletter_campaign_id' => $campaign->id, 'newsletter_subscriber_id' => $s->id, 'email' => $s->email,
+                'status' => 'pending', 'token' => Str::random(40), 'created_at' => now(), 'updated_at' => now(),
+            ])->all());
+        });
+
+        $campaign->refresh();
+        $campaign->update(['recipients_count' => $campaign->recipients()->count()]);
+        $this->queue($campaign, $campaign->recipients());
+
+        return true;
+    }
+
+    /** Report page (3.17): failed addresses go back in the queue; nobody already sent to gets it again. */
+    public function retryFailed(Campaign $campaign): int
+    {
+        $claimed = Campaign::whereKey($campaign->id)->where('status', 'sent')->update(['status' => 'sending', 'updated_at' => now()]);
+        if (! $claimed) {
+            return 0;
+        }
+
+        $retry = $campaign->recipients()->where('status', 'failed');
+        $ids = $retry->pluck('id')->all();
+        CampaignRecipient::whereIn('id', $ids)->update(['status' => 'pending', 'error' => null, 'updated_at' => now()]);
+        $this->queue($campaign, $campaign->recipients()->whereIn('id', $ids));
+
+        return count($ids);
+    }
+
+    /** The tracking image in a recipient's email was loaded (3.17). */
+    public function recordOpen(string $token): void
+    {
+        $recipient = CampaignRecipient::where('token', $token)->first();
+        if ($recipient) {
+            CampaignRecipient::whereKey($recipient->id)->whereNull('opened_at')->update(['opened_at' => now()]);
+            $recipient->increment('open_count');
+        }
+    }
+
+    private function queue(Campaign $campaign, $recipients): void
+    {
+        $recipients->select('id')->chunkById(Campaign::BATCH, fn ($batch) => SendCampaignBatch::dispatch($campaign->id, $batch->pluck('id')->all()));
+        $this->finishIfDone($campaign);
+    }
+
+    /** Scheduled campaigns whose time has come (every minute, routes/console.php). */
+    public function startDue(): int
+    {
+        return Campaign::where('status', 'scheduled')->where('scheduled_at', '<=', now())->get()
+            ->filter(fn (Campaign $c) => $this->start($c))->count();
+    }
+
+    /** Called by the queued job for its batch. */
+    public function deliver(Campaign $campaign, array $recipientIds): void
+    {
+        foreach (CampaignRecipient::with('subscriber')->whereIn('id', $recipientIds)->where('status', 'pending')->get() as $recipient) {
+            $claimed = CampaignRecipient::whereKey($recipient->id)->where('status', 'pending')->update(['status' => 'sending', 'updated_at' => now()]);
+            if (! $claimed) {
+                continue;
+            }
+            if ($recipient->subscriber?->status !== 'subscribed') {   // unsubscribed since the campaign started
+                $recipient->update(['status' => 'skipped']);
+                continue;
+            }
+
+            try {
+                Mail::to($recipient->email)->send(new CampaignMail($campaign, route('newsletter.unsubscribe', $recipient->subscriber->token), route('newsletter.open', $recipient->token)));
+                $recipient->update(['status' => 'sent', 'sent_at' => now(), 'error' => null]);
+            } catch (Throwable $e) {
+                $recipient->update(['status' => 'failed', 'error' => mb_substr($e->getMessage(), 0, 500)]);
+            }
+        }
+
+        $this->finishIfDone($campaign);
+    }
+
+    private function finishIfDone(Campaign $campaign): void
+    {
+        if (! $campaign->recipients()->whereIn('status', ['pending', 'sending'])->exists()) {
+            Campaign::whereKey($campaign->id)->where('status', 'sending')->update(['status' => 'sent', 'sent_at' => now(), 'updated_at' => now()]);
+        }
+    }
+}

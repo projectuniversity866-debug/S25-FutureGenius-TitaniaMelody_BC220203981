@@ -7,23 +7,11 @@ namespace Tests\Feature\AqDesk;
  */
 class ModuleNavigationTest extends AqDeskTestCase
 {
-    public static function moduleSlugs(): array
+    /** G1 — the last placeholder went live (3.15): its old address leads to the newsletter page. */
+    public function test_g1_old_placeholder_redirects(): void
     {
-        return [
-            'newsletter' => ['newsletter'],
-        ];
-    }
-
-    /**
-     * G1 — each Phase 2 placeholder renders with its planned features.
-     */
-    #[\PHPUnit\Framework\Attributes\DataProvider('moduleSlugs')]
-    public function test_g1_phase_two_placeholders_render(string $slug): void
-    {
-        $this->get(route('modules.coming-soon', $slug))
-            ->assertOk()
-            ->assertSee('Coming soon')
-            ->assertSee('Planned features');
+        $this->get('/modules/newsletter')->assertStatus(301)->assertRedirect(route('newsletter.show'));
+        $this->get(route('newsletter.show'))->assertOk()->assertDontSee('Coming soon');
     }
 
     /** G2 — an unknown module slug is a 404, not a blank placeholder. */

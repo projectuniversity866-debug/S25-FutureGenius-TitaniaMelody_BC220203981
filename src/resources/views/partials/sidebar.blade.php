@@ -57,6 +57,12 @@
         <li><a class="{{ request()->routeIs('consultants.*', 'consulting.profile*', 'consulting.availability', 'consulting.hours.*', 'consulting.days-off.*') ? 'is-active' : '' }}" href="{{ route('consultants.index') }}">
             <i class="bi bi-person-video3" aria-hidden="true"></i> Consultants
         </a></li>
+        <li><a class="{{ request()->routeIs('newsletter.*') ? 'is-active' : '' }}" href="{{ route('newsletter.show') }}">
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
+        </a></li>
+        <li><a class="{{ request()->routeIs('announcements.*') ? 'is-active' : '' }}" href="{{ route('announcements.index') }}">
+            <i class="bi bi-megaphone" aria-hidden="true"></i> Updates
+        </a></li>
 
         @auth
             <li><a class="{{ request()->routeIs('saved.*') ? 'is-active' : '' }}" href="{{ route('saved.index') }}">
@@ -77,6 +83,9 @@
             <li><a class="{{ request()->routeIs('consulting.sessions.*') ? 'is-active' : '' }}" href="{{ route('consulting.sessions.index') }}">
                 <i class="bi bi-calendar-week" aria-hidden="true"></i> My sessions
             </a></li>
+            <li><a class="{{ request()->routeIs('consulting.proposals.*') ? 'is-active' : '' }}" href="{{ route('consulting.proposals.index') }}">
+                <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Proposals
+            </a></li>
             @can('consulting.offer')
                 <li><a class="{{ request()->routeIs('consulting.clients.*') ? 'is-active' : '' }}" href="{{ route('consulting.clients.index') }}">
                     <i class="bi bi-person-lines-fill" aria-hidden="true"></i> My clients
@@ -93,7 +102,7 @@
         @endauth
 
         @auth
-            @canany(['users.manage', 'content.moderate', 'activity.view', 'experts.verify'])
+            @canany(['users.manage', 'content.moderate', 'activity.view', 'experts.verify', 'newsletter.send', 'announcements.manage'])
                 <li class="aq-sidenav-group"><span class="aq-label">Administration</span></li>
                 @can('users.manage')
                     <li><a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
@@ -121,6 +130,16 @@
                         <i class="bi bi-patch-check" aria-hidden="true"></i> Expert verification
                     </a></li>
                 @endcan
+                @can('announcements.manage')
+                    <li><a class="{{ request()->routeIs('admin.announcements.*') ? 'is-active' : '' }}" href="{{ route('admin.announcements.index') }}">
+                        <i class="bi bi-megaphone" aria-hidden="true"></i> Announcements
+                    </a></li>
+                @endcan
+                @can('newsletter.send')
+                    <li><a class="{{ request()->routeIs('admin.newsletter.*') ? 'is-active' : '' }}" href="{{ route('admin.newsletter.index') }}">
+                        <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
+                    </a></li>
+                @endcan
                 @can('activity.view')
                     <li><a class="{{ request()->routeIs('admin.activity.*') ? 'is-active' : '' }}" href="{{ route('admin.activity.index') }}">
                         <i class="bi bi-clock-history" aria-hidden="true"></i> Activity log
@@ -128,13 +147,6 @@
                 @endcan
             @endcanany
         @endauth
-
-        {{-- Modules still being built. Each link is removed from this group
-             as its module goes live. --}}
-        <li class="aq-sidenav-group"><span class="aq-label">Coming soon</span></li>
-        <li><a class="is-muted" href="{{ route('modules.coming-soon', 'newsletter') }}">
-            <i class="bi bi-envelope-paper" aria-hidden="true"></i> Newsletter
-        </a></li>
     </ul>
 
     <div class="aq-sidefoot">

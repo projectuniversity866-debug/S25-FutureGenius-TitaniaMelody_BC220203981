@@ -6,21 +6,25 @@ use App\Modules\Community\Models\Category;
 use App\Modules\Careers\Models\JobPost;
 use App\Modules\Community\Models\Question;
 use App\Modules\Identity\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class PageController extends Controller
 {
+    /** The landing page's totals are the same for every visitor, so they are counted every few minutes, not on each visit (roadmap 4.2). */
+    public const HOME_CACHE_SECONDS = 600;
+
     /** Public landing page. */
     public function home(): View
     {
-        $stats = [
+        $stats = Cache::remember('home.stats', self::HOME_CACHE_SECONDS, fn () => [
             'members'   => User::count(),
             'questions' => Question::count(),
             'answers'   => \App\Modules\Community\Models\Answer::count(),
             'jobs'      => JobPost::active()->count(),
-        ];
+        ]);
 
-        $categories = Category::withCount('questions')->get();
+        $categories = Cache::remember('home.categories', self::HOME_CACHE_SECONDS, fn () => Category::withCount('questions')->get());
 
         $latestQuestions = Question::with(['user', 'category', 'tags', 'votes'])
             ->withCount('answers')
@@ -31,29 +35,6 @@ class PageController extends Controller
         $latestJobs = JobPost::active()->latest()->take(4)->get();
 
         return view('home', compact('stats', 'categories', 'latestQuestions', 'latestJobs'));
-    }
-
-    /**
-     * Placeholder pages for the four modules deferred to the final project
-     * (FR3 Project Collaboration, FR4 Events & Podcasts, FR6 Consulting,
-     * FR7 Newsletter). They exist so the navigation and the modular
-     * architecture are visible in the prototype.
-     */
-    public function comingSoon(string $module): View
-    {
-        $modules = [
-            'newsletter' => [
-                'title'    => 'Newsletter & Announcements',
-                'icon'     => 'envelope-paper',
-                'source'   => 'FR7 — Main Requirement File',
-                'summary'  => 'Community updates delivered by email campaign.',
-                'features' => ['Newsletter subscription', 'Email campaign management', 'Community updates'],
-            ],
-        ];
-
-        abort_unless(isset($modules[$module]), 404);
-
-        return view('coming-soon', ['module' => $modules[$module]]);
     }
 
     /** Community guidelines, terms of use and privacy policy (roadmap 2.5 – 2.6). */

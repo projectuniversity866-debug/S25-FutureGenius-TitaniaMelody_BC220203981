@@ -24,8 +24,9 @@ components. Accessibility to WCAG 2.1 AA is treated as a requirement on every
 page rather than as a final check: an accessibility toolbar, transcripts for
 every podcast episode, keyboard-operable components and screen-reader
 announcements are part of the design. Each feature was built in small
-roadmap steps and verified by an automated suite of 317 PHPUnit tests and a
-234-check end-to-end test that drives the real application over HTTP.
+roadmap steps and verified by an automated suite of 358 PHPUnit tests (95%
+line coverage) and a 270-check end-to-end test that drives the real
+application over HTTP.
 
 ---
 
@@ -100,8 +101,8 @@ than a separate role.
 | **FR3** | Project collaboration | Project spaces with owner/collaborator/viewer roles, invitations (token, expiry, accept/decline), private file sharing with versions, feedback threads, task board |
 | **FR4** | Events & podcasts | Events with capacity and numbered waitlist, registration through the Form Builder, webinar links (Zoom, Meet, Teams, Jitsi) shown only to seat-holders, `.ics` calendar files, scheduled reminders, podcast series and episodes with mandatory transcripts and an RSS feed |
 | **FR5** | Jobs & opportunities | Organization profiles; jobs, internships, scholarships, fellowships, grants, hackathons, calls for papers; application pipeline with status history, messages and private reviewer notes; private CV storage; saved opportunities; automatic deadline closing; job alerts |
-| **FR6** | Consulting | Consultant profiles, weekly hours and days off (time-zone and daylight-saving safe), conflict-free booking, private session rooms, client management with private notes; ⏳ proposals Draft → Sent → Accepted/Rejected → Completed |
-| **FR7** | Newsletter & announcements | ⏳ double opt-in subscription, one-click unsubscribe, campaigns with scheduling and queued sending, delivery tracking, site announcements |
+| **FR6** | Consulting | Consultant profiles, weekly hours and days off (time-zone and daylight-saving safe), conflict-free booking, private session rooms, client management with private notes, proposals Draft → Sent → Accepted/Rejected → Completed |
+| **FR7** | Newsletter & announcements | Double opt-in subscription, one-click unsubscribe (RFC 8058), campaigns with scheduling and queued sending, delivery and open reports with retry of failures, site announcements and banners |
 | Vision | Expert knowledge sharing | Expert verification (apply → admin review → verified badge), Knowledge Hub articles and guides |
 | Vision | Professional opportunities | The five non-job opportunity types in FR5 |
 | Note | Education technology | Learning Hub: resources, ordered learning paths, personal progress |
@@ -176,7 +177,7 @@ code owns which data. See ADR-01 to ADR-07 in the architecture document.
 
 ### 3.3 Data design
 
-One MySQL 8 schema (`utf8mb4`) with about **65 tables** created by 42
+One MySQL 8 schema (`utf8mb4`) with about **71 tables** created by 47
 module migrations. Key decisions:
 
 - **Polymorphic relations** with short aliases (`question`, `answer`) for
@@ -191,7 +192,7 @@ module migrations. Key decisions:
   zone stored beside it for display.
 
 The ERDs (an overview and one per module, `docs/diagrams/erd/`) and the
-schema export (`schema/aqdesk_schema.sql`, 65 tables, 90 foreign keys) are
+schema export (`schema/aqdesk_schema.sql`, 71 tables, 99 foreign keys) are
 generated from a migrated MySQL database by `php artisan docs:schema`, so
 they always match the migrations. Every table uses InnoDB, which the
 booking and waitlist row locks depend on.
@@ -251,9 +252,9 @@ styles anywhere). Six Vue 3 islands enhance plain forms: `VoteControl`,
 | PHP files in `app/` | 443 (≈ 26,500 lines) |
 | Routes | 252 |
 | Blade views | 150 |
-| Tables / migrations | ≈ 65 / 42 |
+| Tables / migrations | 71 / 47 |
 | Permissions | 12 |
-| Automated tests | 317 PHPUnit + 234 end-to-end checks |
+| Automated tests | 358 PHPUnit (353 feature, 5 unit) + 270 end-to-end checks |
 
 ### 4.3 Development method
 
@@ -296,40 +297,58 @@ branch in groups of steps.
 
 | Level | Tool | What it proves |
 |---|---|---|
+| Unit tests | PHPUnit 11, no database | Rules in plain classes and models: edit-history diff, permission catalogue, proposal lifecycle, confirmation expiry, announcement phases |
 | Feature tests | PHPUnit 11 on in-memory SQLite, PHP 8.3 and 8.4/8.5 | Business rules, permissions, validation and edge cases per module (e.g. no double booking, drafts 404 for others, exports) |
 | End-to-end | `src/tests/e2e/smoke.sh` | Starts the real application on a throw-away database and drives it over HTTP with real sessions and CSRF tokens as guest, member, expert and admin; any PHP warning fails the run |
 | Manual | Browser checks on WampServer | Pages load on MySQL after each migration |
 
 Test cases are grouped in suites with IDs (for example BK1–BK8 for booking,
 DP1–DP5 for deployment) and listed with results in the progress log of
-`ROADMAP.md`.
+`ROADMAP.md`. The catalogue per module is in `docs/testing/TEST-SUITE.md`.
 
-### 5.2 Results so far
+### 5.2 Results
 
 | Run | Result |
 |---|---|
-| PHPUnit | 317 tests, 2,410 assertions, all pass (1 skipped: a manual keyboard check) |
-| End-to-end | 234 of 234 checks pass |
+| PHPUnit | 358 tests, 3,163 assertions, all pass on PHP 8.3 and 8.5 (1 skipped: a manual keyboard check) |
+| Code coverage (Xdebug) | 95.0% of lines and 91.0% of methods in `src/app`; every module 93% or more of lines |
+| End-to-end | 270 of 270 checks pass |
 
-### 5.3 Accessibility evaluation ⏳
+A coverage run pointed to untested paths (for example a moderator removing a
+reported article, deleting forms and draft campaigns), which suite GP now
+covers; the unit tests found and fixed a small bug in the edit-history diff.
+
+### 5.3 Performance
+
+- **N+1 queries removed.** Running the suite with Laravel's lazy-loading guard
+  found 115 relations loaded one row at a time (each avatar's profile, each
+  person's role, authors and tags on the profile's question list). They are
+  now loaded together, and the guard stays on in tests so a new one fails the
+  suite; four list pages make the same number of queries with twice the rows.
+- **Indexes** for the opportunity board, the daily deadline closing and the
+  notification bell's unread count, alongside the existing list indexes.
+- **Caching** of the home page totals (10 minutes) and of the live
+  announcement banners read on every page (1 minute, cleared on any change).
+- Searches use `LIKE`, which indexes cannot speed up; a FULLTEXT index or a
+  search engine is the next step if content grows (Section 7.4).
+
+### 5.4 Accessibility evaluation ⏳
 
 To be completed in step 4.3: axe and Lighthouse scores per page type, WAVE
 results, a keyboard-only walk-through of the main tasks, and a screen-reader
 (NVDA) pass, with each issue found and how it was fixed.
 
-### 5.4 Usability study ⏳
+### 5.5 Usability study ⏳
 
 To be completed in step 4.4: participants, tasks (e.g. ask a question,
 register for an event, book a session), completion rates, times, the System
 Usability Scale (SUS) score and the changes made in response.
 
-### 5.5 Requirement coverage
+### 5.6 Requirement coverage
 
 | Requirement | Status |
 |---|---|
-| FR1, FR2, FR3, FR4, FR5 | Delivered and tested |
-| FR6 | Delivered except proposals (⏳ 3.14) |
-| FR7 | ⏳ 3.15–3.18 |
+| FR1–FR7 | Delivered and tested |
 | Expert knowledge sharing, education technology, digital governance, forms | Delivered and tested |
 | Accessibility | Built in throughout; formal audit ⏳ 4.3 |
 

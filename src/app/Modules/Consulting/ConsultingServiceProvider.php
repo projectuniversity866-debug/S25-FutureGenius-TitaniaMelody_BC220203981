@@ -5,17 +5,19 @@ namespace App\Modules\Consulting;
 use App\Modules\Consulting\Models\ConsultantProfile;
 use App\Modules\Consulting\Models\Consultation;
 use App\Modules\Consulting\Models\ConsultingClient;
+use App\Modules\Consulting\Models\Proposal;
 use App\Modules\Consulting\Policies\ConsultantProfilePolicy;
 use App\Modules\Consulting\Policies\ConsultationPolicy;
 use App\Modules\Consulting\Policies\ConsultingClientPolicy;
+use App\Modules\Consulting\Policies\ProposalPolicy;
 use App\Modules\Consulting\Services\BookingService;
 use App\Modules\Identity\Models\User;
 use App\Modules\ModuleServiceProvider;
 
 /**
  * FR6 Consulting Management — consultant profiles and availability (roadmap
- * 3.11), conflict-free booking (3.12) and client management (3.13);
- * proposals follow in 3.14.
+ * 3.11), conflict-free booking (3.12), client management (3.13) and
+ * proposals (3.14).
  */
 class ConsultingServiceProvider extends ModuleServiceProvider
 {
@@ -27,6 +29,7 @@ class ConsultingServiceProvider extends ModuleServiceProvider
             ConsultantProfile::class => ConsultantProfilePolicy::class,
             Consultation::class      => ConsultationPolicy::class,
             ConsultingClient::class  => ConsultingClientPolicy::class,
+            Proposal::class          => ProposalPolicy::class,
         ];
     }
 

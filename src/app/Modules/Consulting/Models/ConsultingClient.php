@@ -39,4 +39,9 @@ class ConsultingClient extends Model
     {
         return $this->hasMany(Consultation::class)->orderByDesc('starts_at');
     }
+
+    public function proposals(): HasMany
+    {
+        return $this->hasMany(Proposal::class)->latest('updated_at');
+    }
 }
