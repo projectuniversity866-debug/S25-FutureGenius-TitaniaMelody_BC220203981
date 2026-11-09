@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 /**
  * Suite DP — production readiness (5.1): queued notifications, HTTPS behind
  * a proxy and in production, the cPanel queue worker, safe production
- * settings. Cases DP1–DP5.
+ * settings, short overlap locks. Cases DP1–DP6.
  */
 class DeploymentTest extends AqDeskTestCase
 {
@@ -66,6 +66,20 @@ class DeploymentTest extends AqDeskTestCase
 
         config(['queue.worker_in_scheduler' => true]);
         $this->assertTrue($worker->filtersPass($this->app));
+    }
+
+    /** DP6 — overlap locks expire within minutes, so a killed run cannot stop the queue for a day. */
+    public function test_dp6_overlap_locks_expire_quickly(): void
+    {
+        $locked = collect($this->app->make(Schedule::class)->events())->filter(fn ($event) => $event->withoutOverlapping);
+
+        $this->assertCount(3, $locked);
+        foreach ($locked as $event) {
+            $this->assertLessThanOrEqual(10, $event->expiresAt, $event->command.' keeps its lock too long');
+        }
+
+        $worker = $locked->first(fn ($event) => str_contains((string) $event->command, 'queue:work'));
+        $this->assertSame(5, $worker->expiresAt);
     }
 
     /** DP5 — the production template is safe and holds no secrets. */

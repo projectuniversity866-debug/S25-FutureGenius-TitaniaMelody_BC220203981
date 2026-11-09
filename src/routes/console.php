@@ -25,17 +25,21 @@ Schedule::command('queue:prune-failed', ['--hours' => 168])->daily();
 // their posters (roadmap 1.15).
 Schedule::command('careers:close-expired')->dailyAt('00:15');
 
+// Overlap locks expire after a few minutes, not Laravel's default 24 hours:
+// if the host kills a run before it finishes, the lock is never released,
+// and with the default the task (and every queued email) would stop for a day.
+
 // Event reminders: the day before and an hour before, plus the organizer's
 // head count (roadmap 3.9). Each reminder is sent once, so overlap is safe.
-Schedule::command('events:send-reminders')->everyFifteenMinutes()->withoutOverlapping();
+Schedule::command('events:send-reminders')->everyFifteenMinutes()->withoutOverlapping(10);
 
 // Newsletter campaigns whose scheduled time has come start sending (roadmap 3.16).
 // Starting is claimed in the database, so overlap is safe.
-Schedule::command('newsletter:send-due')->everyMinute()->withoutOverlapping();
+Schedule::command('newsletter:send-due')->everyMinute()->withoutOverlapping(10);
 
 // Queue worker for hosts without Supervisor, e.g. cPanel (roadmap 5.1).
 // QUEUE_WORKER_IN_SCHEDULER=true turns it on; see docs/DEPLOYMENT.md.
 Schedule::command('queue:work', ['--stop-when-empty', '--max-time' => 50, '--tries' => 3])
     ->everyMinute()
-    ->withoutOverlapping()
+    ->withoutOverlapping(5)
     ->when(fn () => config('queue.worker_in_scheduler'));
