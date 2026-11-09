@@ -20,10 +20,12 @@ Results go in the progress log.
 | 2 | Missing scope | 7 | 7 |
 | 3 | New modules (FR3, FR4, FR6, FR7) | 18 | 18 |
 | 4 | Quality | 4 | 2 |
-| 5 | Deployment & deliverables | 6 | 3 |
-| | **Total** | **61** | **56** |
+| 5 | Deployment & deliverables | 6 | 4 |
+| | **Total** | **61** | **57** |
 
-**Next steps:** student — manual accessibility checks (4.3 part B), usability sessions (4.4), hosting (5.1), video (5.6); Claude — demo video script (5.6), then finish the report (5.2) from the results
+**Live demo:** https://aqdesk.alwaysdata.net
+
+**Next steps:** student — manual accessibility checks (4.3 part B), usability sessions (4.4), video (5.6); Claude — demo video script (5.6), then finish the report (5.2) from the results
 
 ---
 
@@ -145,7 +147,7 @@ Results go in the progress log.
 
 | Status | ID | Step | Output |
 |---|---|---|---|
-| [~] | 5.1 | Cloud deployment (cPanel / DigitalOcean / AWS), SMTP, HTTPS, cron, queue worker | Live demo URL |
+| [x] | 5.1 | Cloud deployment (cPanel / DigitalOcean / AWS), SMTP, HTTPS, cron, queue worker | Live demo URL |
 | [~] | 5.2 | Final Report (analysis, design, implementation, evaluation) | Report |
 | [x] | 5.3 | User Manual (incl. form creators & respondents) | Manual |
 | [x] | 5.4 | Updated ERD, diagrams, `/schema` SQL | Design artefacts |
@@ -254,3 +256,4 @@ Results go in the progress log.
 | 2026-10-28 | 4.4 `[~]` | `docs/testing/USABILITY-STUDY.md`: plan (5–8 participants), consent text, 9 tasks across the modules, SUS questionnaire with scoring and worked example, result tables (participants, tasks, SUS, problems → changes), facilitator note on WAMP email. **Sessions to be run by the student.** Report 5.4/5.5 updated. Tests DC8 (tasks doable with the demo data, SUS example correct) + 3 smoke checks; 363 PHPUnit pass (PHP 8.5), e2e smoke 273/273. |
 | 2026-10-28 | Commit | `fd04943` pushed to `development` (steps 4.3–4.4, in progress). |
 | 2026-10-28 | Fix | Sidebar for visitors stays (public pages, by design); its "Create account / Sign in" box now shows only below 992 px, where the top bar lacks room, so on desktop the menu no longer scrolls with Sign in cut off. WAMP demo data: the 5 demo opportunities (seeded in August, closed by the deadline job) reopened with new deadlines (local data only). 1 smoke check. |
+| 2026-11-09 | 5.1 | **Live at https://aqdesk.alwaysdata.net** (alwaysdata Free: 1 GB, 256 MB RAM, PHP 8.4, MariaDB 11.8). `development` cloned to `~/aqdesk`, `~/www` → `src/public`, `.env` from `.env.production.example`, `BRANCH=development bash deploy.sh` (all migrations on MariaDB) + `db:seed`. Gmail SMTP (app password); scheduled task every minute runs `schedule:run` with `QUEUE_WORKER_IN_SCHEDULER=true` (queued test mail sent in 55 s, 0 failed); Force HTTPS (301); `TRUSTED_PROXIES=*`. Checked: `/up`, home, questions, jobs, events, login 200 (<1 s); member sign-in → dashboard; secure cookies; `/.env` 404; web upload limit 256M. Update: `cd ~/aqdesk/src && BRANCH=development bash deploy.sh`. |
